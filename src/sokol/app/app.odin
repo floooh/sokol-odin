@@ -3,21 +3,21 @@
 package sokol_app
 
 when ODIN_OS == .Windows {
-    when ODIN_DEBUG == true { foreign import sokol_app_clib "sokol_app_windows_x64_d3d11_debug.lib" }
-    else                    { foreign import sokol_app_clib "sokol_app_windows_x64_d3d11_release.lib" }
+    when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_debug.lib" } }
+    else                    { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_release.lib" } }
 }
 else when ODIN_OS == .Darwin {
     when ODIN_ARCH == .arm64 {
-        when ODIN_DEBUG == true { foreign import sokol_app_clib "sokol_app_macos_arm64_metal_debug.a" }
-        else                    { foreign import sokol_app_clib "sokol_app_macos_arm64_metal_release.a" }
+        when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
+        else                    { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
    } else {
-        when ODIN_DEBUG == true { foreign import sokol_app_clib "sokol_app_macos_x64_metal_debug.a" }
-        else                    { foreign import sokol_app_clib "sokol_app_macos_x64_metal_release.a" }
+        when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
+        else                    { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
     }
 }
 else {
-    when ODIN_DEBUG == true { foreign import sokol_app_clib "sokol_app_linux_x64_gl_debug.lib" }
-    else                    { foreign import sokol_app_clib "sokol_app_linux_x64_gl_release.lib" }
+    when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.lib" } }
+    else                    { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.lib" } }
 }
 @(default_calling_convention="c")
 foreign sokol_app_clib {
