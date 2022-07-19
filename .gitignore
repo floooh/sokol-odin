@@ -1,0 +1,6 @@
+*.a
+*.o
+*.lib
+*.obj
+*.pwd
+*.bin

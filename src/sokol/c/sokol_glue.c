@@ -1,4 +1,4 @@
-#ifdef SOKOL_NIM_IMPL
+#if defined(IMPL)
 #define SOKOL_GLUE_IMPL
 #endif
 #include "sokol_defines.h"
