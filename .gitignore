@@ -1,6 +1,8 @@
+.vscode/
 *.a
 *.o
 *.lib
 *.obj
-*.pwd
+*.pdb
 *.bin
+*.dSYM/
