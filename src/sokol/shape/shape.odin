@@ -50,10 +50,10 @@ foreign sokol_shape_clib {
 Range :: struct {
     ptr : rawptr,
     size : u64,
-};
+}
 Mat4 :: struct {
     m : [4][4]f32,
-};
+}
 Vertex :: struct {
     x : f32,
     y : f32,
@@ -62,161 +62,161 @@ Vertex :: struct {
     u : u16,
     v : u16,
     color : u32,
-};
+}
 Element_Range :: struct {
     base_element : i32,
     num_elements : i32,
-    __pad : [3]u32,
-};
+    _ : [3]u32,
+}
 Sizes_Item :: struct {
     num : u32,
     size : u32,
-    __pad : [3]u32,
-};
+    _ : [3]u32,
+}
 Sizes :: struct {
     vertices : Sizes_Item,
     indices : Sizes_Item,
-};
+}
 Buffer_Item :: struct {
     buffer : Range,
     data_size : u64,
     shape_offset : u64,
-};
+}
 Buffer :: struct {
-    valid : b8,
+    valid : bool,
     vertices : Buffer_Item,
     indices : Buffer_Item,
-};
+}
 Plane :: struct {
     width : f32,
     depth : f32,
     tiles : u16,
     color : u32,
-    random_colors : b8,
-    merge : b8,
+    random_colors : bool,
+    merge : bool,
     transform : Mat4,
-};
+}
 Box :: struct {
     width : f32,
     height : f32,
     depth : f32,
     tiles : u16,
     color : u32,
-    random_colors : b8,
-    merge : b8,
+    random_colors : bool,
+    merge : bool,
     transform : Mat4,
-};
+}
 Sphere :: struct {
     radius : f32,
     slices : u16,
     stacks : u16,
     color : u32,
-    random_colors : b8,
-    merge : b8,
+    random_colors : bool,
+    merge : bool,
     transform : Mat4,
-};
+}
 Cylinder :: struct {
     radius : f32,
     height : f32,
     slices : u16,
     stacks : u16,
     color : u32,
-    random_colors : b8,
-    merge : b8,
+    random_colors : bool,
+    merge : bool,
     transform : Mat4,
-};
+}
 Torus :: struct {
     radius : f32,
     ring_radius : f32,
     sides : u16,
     rings : u16,
     color : u32,
-    random_colors : b8,
-    merge : b8,
+    random_colors : bool,
+    merge : bool,
     transform : Mat4,
-};
+}
 build_plane :: proc(buf: Buffer, params: Plane) -> Buffer {
-    _buf := buf;
-    _params := params;
-    return sshape_build_plane(&_buf, &_params);
+    _buf := buf
+    _params := params
+    return sshape_build_plane(&_buf, &_params)
 }
 build_box :: proc(buf: Buffer, params: Box) -> Buffer {
-    _buf := buf;
-    _params := params;
-    return sshape_build_box(&_buf, &_params);
+    _buf := buf
+    _params := params
+    return sshape_build_box(&_buf, &_params)
 }
 build_sphere :: proc(buf: Buffer, params: Sphere) -> Buffer {
-    _buf := buf;
-    _params := params;
-    return sshape_build_sphere(&_buf, &_params);
+    _buf := buf
+    _params := params
+    return sshape_build_sphere(&_buf, &_params)
 }
 build_cylinder :: proc(buf: Buffer, params: Cylinder) -> Buffer {
-    _buf := buf;
-    _params := params;
-    return sshape_build_cylinder(&_buf, &_params);
+    _buf := buf
+    _params := params
+    return sshape_build_cylinder(&_buf, &_params)
 }
 build_torus :: proc(buf: Buffer, params: Torus) -> Buffer {
-    _buf := buf;
-    _params := params;
-    return sshape_build_torus(&_buf, &_params);
+    _buf := buf
+    _params := params
+    return sshape_build_torus(&_buf, &_params)
 }
 plane_sizes :: proc(tiles: int) -> Sizes {
-    return sshape_plane_sizes(cast(u32)tiles);
+    return sshape_plane_sizes(cast(u32)tiles)
 }
 box_sizes :: proc(tiles: int) -> Sizes {
-    return sshape_box_sizes(cast(u32)tiles);
+    return sshape_box_sizes(cast(u32)tiles)
 }
 sphere_sizes :: proc(slices: int, stacks: int) -> Sizes {
-    return sshape_sphere_sizes(cast(u32)slices, cast(u32)stacks);
+    return sshape_sphere_sizes(cast(u32)slices, cast(u32)stacks)
 }
 cylinder_sizes :: proc(slices: int, stacks: int) -> Sizes {
-    return sshape_cylinder_sizes(cast(u32)slices, cast(u32)stacks);
+    return sshape_cylinder_sizes(cast(u32)slices, cast(u32)stacks)
 }
 torus_sizes :: proc(sides: int, rings: int) -> Sizes {
-    return sshape_torus_sizes(cast(u32)sides, cast(u32)rings);
+    return sshape_torus_sizes(cast(u32)sides, cast(u32)rings)
 }
 element_range :: proc(buf: Buffer) -> Element_Range {
-    _buf := buf;
-    return sshape_element_range(&_buf);
+    _buf := buf
+    return sshape_element_range(&_buf)
 }
 vertex_buffer_desc :: proc(buf: Buffer) -> sg.Buffer_Desc {
-    _buf := buf;
-    return sshape_vertex_buffer_desc(&_buf);
+    _buf := buf
+    return sshape_vertex_buffer_desc(&_buf)
 }
 index_buffer_desc :: proc(buf: Buffer) -> sg.Buffer_Desc {
-    _buf := buf;
-    return sshape_index_buffer_desc(&_buf);
+    _buf := buf
+    return sshape_index_buffer_desc(&_buf)
 }
 buffer_layout_desc :: proc() -> sg.Buffer_Layout_Desc {
-    return sshape_buffer_layout_desc();
+    return sshape_buffer_layout_desc()
 }
 position_attr_desc :: proc() -> sg.Vertex_Attr_Desc {
-    return sshape_position_attr_desc();
+    return sshape_position_attr_desc()
 }
 normal_attr_desc :: proc() -> sg.Vertex_Attr_Desc {
-    return sshape_normal_attr_desc();
+    return sshape_normal_attr_desc()
 }
 texcoord_attr_desc :: proc() -> sg.Vertex_Attr_Desc {
-    return sshape_texcoord_attr_desc();
+    return sshape_texcoord_attr_desc()
 }
 color_attr_desc :: proc() -> sg.Vertex_Attr_Desc {
-    return sshape_color_attr_desc();
+    return sshape_color_attr_desc()
 }
 color_4f :: proc(r: f32, g: f32, b: f32, a: f32) -> int {
-    return cast(int)sshape_color_4f(r, g, b, a);
+    return cast(int)sshape_color_4f(r, g, b, a)
 }
 color_3f :: proc(r: f32, g: f32, b: f32) -> int {
-    return cast(int)sshape_color_3f(r, g, b);
+    return cast(int)sshape_color_3f(r, g, b)
 }
 color_4b :: proc(r: u8, g: u8, b: u8, a: u8) -> int {
-    return cast(int)sshape_color_4b(r, g, b, a);
+    return cast(int)sshape_color_4b(r, g, b, a)
 }
 color_3b :: proc(r: u8, g: u8, b: u8) -> int {
-    return cast(int)sshape_color_3b(r, g, b);
+    return cast(int)sshape_color_3b(r, g, b)
 }
 mat4 :: proc(m: ^f32) -> Mat4 {
-    return sshape_mat4(m);
+    return sshape_mat4(m)
 }
 mat4_transpose :: proc(m: ^f32) -> Mat4 {
-    return sshape_mat4_transpose(m);
+    return sshape_mat4_transpose(m)
 }

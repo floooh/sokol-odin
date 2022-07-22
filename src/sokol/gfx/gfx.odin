@@ -23,7 +23,7 @@ else {
 foreign sokol_gfx_clib {
     sg_setup :: proc(desc: ^Desc)  ---
     sg_shutdown :: proc()  ---
-    sg_isvalid :: proc() -> b8 ---
+    sg_isvalid :: proc() -> bool ---
     sg_reset_state_cache :: proc()  ---
     sg_push_debug_group :: proc(name: cstring)  ---
     sg_pop_debug_group :: proc()  ---
@@ -40,15 +40,15 @@ foreign sokol_gfx_clib {
     sg_update_buffer :: proc(buf: Buffer, data: ^Range)  ---
     sg_update_image :: proc(img: Image, data: ^Image_Data)  ---
     sg_append_buffer :: proc(buf: Buffer, data: ^Range) -> i32 ---
-    sg_query_buffer_overflow :: proc(buf: Buffer) -> b8 ---
-    sg_query_buffer_will_overflow :: proc(buf: Buffer, size: u64) -> b8 ---
+    sg_query_buffer_overflow :: proc(buf: Buffer) -> bool ---
+    sg_query_buffer_will_overflow :: proc(buf: Buffer, size: u64) -> bool ---
     sg_begin_default_pass :: proc(pass_action: ^Pass_Action, width: i32, height: i32)  ---
     sg_begin_default_passf :: proc(pass_action: ^Pass_Action, width: f32, height: f32)  ---
     sg_begin_pass :: proc(pass: Pass, pass_action: ^Pass_Action)  ---
-    sg_apply_viewport :: proc(x: i32, y: i32, width: i32, height: i32, origin_top_left: b8)  ---
-    sg_apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: b8)  ---
-    sg_apply_scissor_rect :: proc(x: i32, y: i32, width: i32, height: i32, origin_top_left: b8)  ---
-    sg_apply_scissor_rectf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: b8)  ---
+    sg_apply_viewport :: proc(x: i32, y: i32, width: i32, height: i32, origin_top_left: bool)  ---
+    sg_apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
+    sg_apply_scissor_rect :: proc(x: i32, y: i32, width: i32, height: i32, origin_top_left: bool)  ---
+    sg_apply_scissor_rectf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
     sg_apply_pipeline :: proc(pip: Pipeline)  ---
     sg_apply_bindings :: proc(bindings: ^Bindings)  ---
     sg_apply_uniforms :: proc(stage: Shader_Stage, ub_index: i32, data: ^Range)  ---
@@ -90,11 +90,11 @@ foreign sokol_gfx_clib {
     sg_init_shader :: proc(shd_id: Shader, desc: ^Shader_Desc)  ---
     sg_init_pipeline :: proc(pip_id: Pipeline, desc: ^Pipeline_Desc)  ---
     sg_init_pass :: proc(pass_id: Pass, desc: ^Pass_Desc)  ---
-    sg_uninit_buffer :: proc(buf_id: Buffer) -> b8 ---
-    sg_uninit_image :: proc(img_id: Image) -> b8 ---
-    sg_uninit_shader :: proc(shd_id: Shader) -> b8 ---
-    sg_uninit_pipeline :: proc(pip_id: Pipeline) -> b8 ---
-    sg_uninit_pass :: proc(pass_id: Pass) -> b8 ---
+    sg_uninit_buffer :: proc(buf_id: Buffer) -> bool ---
+    sg_uninit_image :: proc(img_id: Image) -> bool ---
+    sg_uninit_shader :: proc(shd_id: Shader) -> bool ---
+    sg_uninit_pipeline :: proc(pip_id: Pipeline) -> bool ---
+    sg_uninit_pass :: proc(pass_id: Pass) -> bool ---
     sg_fail_buffer :: proc(buf_id: Buffer)  ---
     sg_fail_image :: proc(img_id: Image)  ---
     sg_fail_shader :: proc(shd_id: Shader)  ---
@@ -109,43 +109,43 @@ foreign sokol_gfx_clib {
 }
 Buffer :: struct {
     id : u32,
-};
+}
 Image :: struct {
     id : u32,
-};
+}
 Shader :: struct {
     id : u32,
-};
+}
 Pipeline :: struct {
     id : u32,
-};
+}
 Pass :: struct {
     id : u32,
-};
+}
 Context :: struct {
     id : u32,
-};
+}
 Range :: struct {
     ptr : rawptr,
     size : u64,
-};
-INVALID_ID :: 0;
-NUM_SHADER_STAGES :: 2;
-NUM_INFLIGHT_FRAMES :: 2;
-MAX_COLOR_ATTACHMENTS :: 4;
-MAX_SHADERSTAGE_BUFFERS :: 8;
-MAX_SHADERSTAGE_IMAGES :: 12;
-MAX_SHADERSTAGE_UBS :: 4;
-MAX_UB_MEMBERS :: 16;
-MAX_VERTEX_ATTRIBUTES :: 16;
-MAX_MIPMAPS :: 16;
-MAX_TEXTUREARRAY_LAYERS :: 128;
+}
+INVALID_ID :: 0
+NUM_SHADER_STAGES :: 2
+NUM_INFLIGHT_FRAMES :: 2
+MAX_COLOR_ATTACHMENTS :: 4
+MAX_SHADERSTAGE_BUFFERS :: 8
+MAX_SHADERSTAGE_IMAGES :: 12
+MAX_SHADERSTAGE_UBS :: 4
+MAX_UB_MEMBERS :: 16
+MAX_VERTEX_ATTRIBUTES :: 16
+MAX_MIPMAPS :: 16
+MAX_TEXTUREARRAY_LAYERS :: 128
 Color :: struct {
     r : f32,
     g : f32,
     b : f32,
     a : f32,
-};
+}
 Backend :: enum i32 {
     GLCORE33,
     GLES2,
@@ -156,7 +156,7 @@ Backend :: enum i32 {
     METAL_SIMULATOR,
     WGPU,
     DUMMY,
-};
+}
 Pixel_Format :: enum i32 {
     DEFAULT,
     NONE,
@@ -221,28 +221,28 @@ Pixel_Format :: enum i32 {
     ETC2_RG11,
     ETC2_RG11SN,
     NUM,
-};
+}
 Pixelformat_Info :: struct {
-    sample : b8,
-    filter : b8,
-    render : b8,
-    blend : b8,
-    msaa : b8,
-    depth : b8,
-    __pad : [3]u32,
-};
+    sample : bool,
+    filter : bool,
+    render : bool,
+    blend : bool,
+    msaa : bool,
+    depth : bool,
+    _ : [3]u32,
+}
 Features :: struct {
-    instancing : b8,
-    origin_top_left : b8,
-    multiple_render_targets : b8,
-    msaa_render_targets : b8,
-    imagetype_3d : b8,
-    imagetype_array : b8,
-    image_clamp_to_border : b8,
-    mrt_independent_blend_state : b8,
-    mrt_independent_write_mask : b8,
-    __pad : [3]u32,
-};
+    instancing : bool,
+    origin_top_left : bool,
+    multiple_render_targets : bool,
+    msaa_render_targets : bool,
+    imagetype_3d : bool,
+    imagetype_array : bool,
+    image_clamp_to_border : bool,
+    mrt_independent_blend_state : bool,
+    mrt_independent_write_mask : bool,
+    _ : [3]u32,
+}
 Limits :: struct {
     max_image_size_2d : i32,
     max_image_size_cube : i32,
@@ -251,34 +251,34 @@ Limits :: struct {
     max_image_array_layers : i32,
     max_vertex_attrs : i32,
     gl_max_vertex_uniform_vectors : i32,
-};
+}
 Resource_State :: enum i32 {
     INITIAL,
     ALLOC,
     VALID,
     FAILED,
     INVALID,
-};
+}
 Usage :: enum i32 {
     DEFAULT,
     IMMUTABLE,
     DYNAMIC,
     STREAM,
     NUM,
-};
+}
 Buffer_Type :: enum i32 {
     DEFAULT,
     VERTEXBUFFER,
     INDEXBUFFER,
     NUM,
-};
+}
 Index_Type :: enum i32 {
     DEFAULT,
     NONE,
     UINT16,
     UINT32,
     NUM,
-};
+}
 Image_Type :: enum i32 {
     DEFAULT,
     _2D,
@@ -286,13 +286,13 @@ Image_Type :: enum i32 {
     _3D,
     ARRAY,
     NUM,
-};
+}
 Sampler_Type :: enum i32 {
     DEFAULT,
     FLOAT,
     SINT,
     UINT,
-};
+}
 Cube_Face :: enum i32 {
     POS_X,
     NEG_X,
@@ -301,11 +301,11 @@ Cube_Face :: enum i32 {
     POS_Z,
     NEG_Z,
     NUM,
-};
+}
 Shader_Stage :: enum i32 {
     VS,
     FS,
-};
+}
 Primitive_Type :: enum i32 {
     DEFAULT,
     POINTS,
@@ -314,7 +314,7 @@ Primitive_Type :: enum i32 {
     TRIANGLES,
     TRIANGLE_STRIP,
     NUM,
-};
+}
 Filter :: enum i32 {
     DEFAULT,
     NEAREST,
@@ -324,7 +324,7 @@ Filter :: enum i32 {
     LINEAR_MIPMAP_NEAREST,
     LINEAR_MIPMAP_LINEAR,
     NUM,
-};
+}
 Wrap :: enum i32 {
     DEFAULT,
     REPEAT,
@@ -332,14 +332,14 @@ Wrap :: enum i32 {
     CLAMP_TO_BORDER,
     MIRRORED_REPEAT,
     NUM,
-};
+}
 Border_Color :: enum i32 {
     DEFAULT,
     TRANSPARENT_BLACK,
     OPAQUE_BLACK,
     OPAQUE_WHITE,
     NUM,
-};
+}
 Vertex_Format :: enum i32 {
     INVALID,
     FLOAT,
@@ -358,13 +358,13 @@ Vertex_Format :: enum i32 {
     USHORT4N,
     UINT10_N2,
     NUM,
-};
+}
 Vertex_Step :: enum i32 {
     DEFAULT,
     PER_VERTEX,
     PER_INSTANCE,
     NUM,
-};
+}
 Uniform_Type :: enum i32 {
     INVALID,
     FLOAT,
@@ -377,26 +377,26 @@ Uniform_Type :: enum i32 {
     INT4,
     MAT4,
     NUM,
-};
+}
 Uniform_Layout :: enum i32 {
     DEFAULT,
     NATIVE,
     STD140,
     NUM,
-};
+}
 Cull_Mode :: enum i32 {
     DEFAULT,
     NONE,
     FRONT,
     BACK,
     NUM,
-};
+}
 Face_Winding :: enum i32 {
     DEFAULT,
     CCW,
     CW,
     NUM,
-};
+}
 Compare_Func :: enum i32 {
     DEFAULT,
     NEVER,
@@ -408,7 +408,7 @@ Compare_Func :: enum i32 {
     GREATER_EQUAL,
     ALWAYS,
     NUM,
-};
+}
 Stencil_Op :: enum i32 {
     DEFAULT,
     KEEP,
@@ -420,7 +420,7 @@ Stencil_Op :: enum i32 {
     INCR_WRAP,
     DECR_WRAP,
     NUM,
-};
+}
 Blend_Factor :: enum i32 {
     DEFAULT,
     ZERO,
@@ -439,14 +439,14 @@ Blend_Factor :: enum i32 {
     BLEND_ALPHA,
     ONE_MINUS_BLEND_ALPHA,
     NUM,
-};
+}
 Blend_Op :: enum i32 {
     DEFAULT,
     ADD,
     SUBTRACT,
     REVERSE_SUBTRACT,
     NUM,
-};
+}
 Color_Mask :: enum i32 {
     DEFAULT = 0,
     NONE = 16,
@@ -465,45 +465,45 @@ Color_Mask :: enum i32 {
     RBA = 13,
     GBA = 14,
     RGBA = 15,
-};
+}
 Action :: enum i32 {
     DEFAULT,
     CLEAR,
     LOAD,
     DONTCARE,
     NUM,
-};
+}
 Color_Attachment_Action :: struct {
     action : Action,
     value : Color,
-};
+}
 Depth_Attachment_Action :: struct {
     action : Action,
     value : f32,
-};
+}
 Stencil_Attachment_Action :: struct {
     action : Action,
     value : u8,
-};
+}
 Pass_Action :: struct {
-    _start_canary : u32,
+    _ : u32,
     colors : [4]Color_Attachment_Action,
     depth : Depth_Attachment_Action,
     stencil : Stencil_Attachment_Action,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Bindings :: struct {
-    _start_canary : u32,
+    _ : u32,
     vertex_buffers : [8]Buffer,
     vertex_buffer_offsets : [8]i32,
     index_buffer : Buffer,
     index_buffer_offset : i32,
     vs_images : [12]Image,
     fs_images : [12]Image,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Buffer_Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     size : u64,
     type : Buffer_Type,
     usage : Usage,
@@ -513,15 +513,15 @@ Buffer_Desc :: struct {
     mtl_buffers : [2]rawptr,
     d3d11_buffer : rawptr,
     wgpu_buffer : rawptr,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Image_Data :: struct {
     subimage : [6][16]Range,
-};
+}
 Image_Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     type : Image_Type,
-    render_target : b8,
+    render_target : bool,
     width : i32,
     height : i32,
     num_slices : i32,
@@ -546,28 +546,28 @@ Image_Desc :: struct {
     d3d11_texture : rawptr,
     d3d11_shader_resource_view : rawptr,
     wgpu_texture : rawptr,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Shader_Attr_Desc :: struct {
     name : cstring,
     sem_name : cstring,
     sem_index : i32,
-};
+}
 Shader_Uniform_Desc :: struct {
     name : cstring,
     type : Uniform_Type,
     array_count : i32,
-};
+}
 Shader_Uniform_Block_Desc :: struct {
     size : u64,
     layout : Uniform_Layout,
     uniforms : [16]Shader_Uniform_Desc,
-};
+}
 Shader_Image_Desc :: struct {
     name : cstring,
     image_type : Image_Type,
     sampler_type : Sampler_Type,
-};
+}
 Shader_Stage_Desc :: struct {
     source : cstring,
     bytecode : Range,
@@ -575,69 +575,69 @@ Shader_Stage_Desc :: struct {
     d3d11_target : cstring,
     uniform_blocks : [4]Shader_Uniform_Block_Desc,
     images : [12]Shader_Image_Desc,
-};
+}
 Shader_Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     attrs : [16]Shader_Attr_Desc,
     vs : Shader_Stage_Desc,
     fs : Shader_Stage_Desc,
     label : cstring,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Buffer_Layout_Desc :: struct {
     stride : i32,
     step_func : Vertex_Step,
     step_rate : i32,
-    __pad : [2]u32,
-};
+    _ : [2]u32,
+}
 Vertex_Attr_Desc :: struct {
     buffer_index : i32,
     offset : i32,
     format : Vertex_Format,
-    __pad : [2]u32,
-};
+    _ : [2]u32,
+}
 Layout_Desc :: struct {
     buffers : [8]Buffer_Layout_Desc,
     attrs : [16]Vertex_Attr_Desc,
-};
+}
 Stencil_Face_State :: struct {
     compare : Compare_Func,
     fail_op : Stencil_Op,
     depth_fail_op : Stencil_Op,
     pass_op : Stencil_Op,
-};
+}
 Stencil_State :: struct {
-    enabled : b8,
+    enabled : bool,
     front : Stencil_Face_State,
     back : Stencil_Face_State,
     read_mask : u8,
     write_mask : u8,
     ref : u8,
-};
+}
 Depth_State :: struct {
     pixel_format : Pixel_Format,
     compare : Compare_Func,
-    write_enabled : b8,
+    write_enabled : bool,
     bias : f32,
     bias_slope_scale : f32,
     bias_clamp : f32,
-};
+}
 Blend_State :: struct {
-    enabled : b8,
+    enabled : bool,
     src_factor_rgb : Blend_Factor,
     dst_factor_rgb : Blend_Factor,
     op_rgb : Blend_Op,
     src_factor_alpha : Blend_Factor,
     dst_factor_alpha : Blend_Factor,
     op_alpha : Blend_Op,
-};
+}
 Color_State :: struct {
     pixel_format : Pixel_Format,
     write_mask : Color_Mask,
     blend : Blend_State,
-};
+}
 Pipeline_Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     shader : Shader,
     layout : Layout_Desc,
     depth : Depth_State,
@@ -650,36 +650,36 @@ Pipeline_Desc :: struct {
     face_winding : Face_Winding,
     sample_count : i32,
     blend_color : Color,
-    alpha_to_coverage_enabled : b8,
+    alpha_to_coverage_enabled : bool,
     label : cstring,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Pass_Attachment_Desc :: struct {
     image : Image,
     mip_level : i32,
     slice : i32,
-};
+}
 Pass_Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     color_attachments : [4]Pass_Attachment_Desc,
     depth_stencil_attachment : Pass_Attachment_Desc,
     label : cstring,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 Slot_Info :: struct {
     state : Resource_State,
     res_id : u32,
     ctx_id : u32,
-};
+}
 Buffer_Info :: struct {
     slot : Slot_Info,
     update_frame_index : u32,
     append_frame_index : u32,
     append_pos : i32,
-    append_overflow : b8,
+    append_overflow : bool,
     num_slots : i32,
     active_slot : i32,
-};
+}
 Image_Info :: struct {
     slot : Slot_Info,
     upd_frame_index : u32,
@@ -687,19 +687,19 @@ Image_Info :: struct {
     active_slot : i32,
     width : i32,
     height : i32,
-};
+}
 Shader_Info :: struct {
     slot : Slot_Info,
-};
+}
 Pipeline_Info :: struct {
     slot : Slot_Info,
-};
+}
 Pass_Info :: struct {
     slot : Slot_Info,
-};
+}
 Gl_Context_Desc :: struct {
-    force_gles2 : b8,
-};
+    force_gles2 : bool,
+}
 Metal_Context_Desc :: struct {
     device : rawptr,
     renderpass_descriptor_cb : proc "c" () -> rawptr,
@@ -707,7 +707,7 @@ Metal_Context_Desc :: struct {
     drawable_cb : proc "c" () -> rawptr,
     drawable_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
     user_data : rawptr,
-};
+}
 D3d11_Context_Desc :: struct {
     device : rawptr,
     device_context : rawptr,
@@ -716,7 +716,7 @@ D3d11_Context_Desc :: struct {
     depth_stencil_view_cb : proc "c" () -> rawptr,
     depth_stencil_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
     user_data : rawptr,
-};
+}
 Wgpu_Context_Desc :: struct {
     device : rawptr,
     render_view_cb : proc "c" () -> rawptr,
@@ -726,7 +726,7 @@ Wgpu_Context_Desc :: struct {
     depth_stencil_view_cb : proc "c" () -> rawptr,
     depth_stencil_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
     user_data : rawptr,
-};
+}
 Context_Desc :: struct {
     color_format : i32,
     depth_format : i32,
@@ -735,14 +735,14 @@ Context_Desc :: struct {
     metal : Metal_Context_Desc,
     d3d11 : D3d11_Context_Desc,
     wgpu : Wgpu_Context_Desc,
-};
+}
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
-};
+}
 Desc :: struct {
-    _start_canary : u32,
+    _ : u32,
     buffer_pool_size : i32,
     image_pool_size : i32,
     shader_pool_size : i32,
@@ -754,284 +754,284 @@ Desc :: struct {
     sampler_cache_size : i32,
     allocator : Allocator,
     ctx : Context_Desc,
-    _end_canary : u32,
-};
+    _ : u32,
+}
 setup :: proc(desc: Desc)  {
-    _desc := desc;
-    sg_setup(&_desc);
+    _desc := desc
+    sg_setup(&_desc)
 }
 shutdown :: proc()  {
-    sg_shutdown();
+    sg_shutdown()
 }
 isvalid :: proc() -> bool {
-    return cast(bool)sg_isvalid();
+    return sg_isvalid()
 }
 reset_state_cache :: proc()  {
-    sg_reset_state_cache();
+    sg_reset_state_cache()
 }
 push_debug_group :: proc(name: cstring)  {
-    sg_push_debug_group(name);
+    sg_push_debug_group(name)
 }
 pop_debug_group :: proc()  {
-    sg_pop_debug_group();
+    sg_pop_debug_group()
 }
 make_buffer :: proc(desc: Buffer_Desc) -> Buffer {
-    _desc := desc;
-    return sg_make_buffer(&_desc);
+    _desc := desc
+    return sg_make_buffer(&_desc)
 }
 make_image :: proc(desc: Image_Desc) -> Image {
-    _desc := desc;
-    return sg_make_image(&_desc);
+    _desc := desc
+    return sg_make_image(&_desc)
 }
 make_shader :: proc(desc: Shader_Desc) -> Shader {
-    _desc := desc;
-    return sg_make_shader(&_desc);
+    _desc := desc
+    return sg_make_shader(&_desc)
 }
 make_pipeline :: proc(desc: Pipeline_Desc) -> Pipeline {
-    _desc := desc;
-    return sg_make_pipeline(&_desc);
+    _desc := desc
+    return sg_make_pipeline(&_desc)
 }
 make_pass :: proc(desc: Pass_Desc) -> Pass {
-    _desc := desc;
-    return sg_make_pass(&_desc);
+    _desc := desc
+    return sg_make_pass(&_desc)
 }
 destroy_buffer :: proc(buf: Buffer)  {
-    sg_destroy_buffer(buf);
+    sg_destroy_buffer(buf)
 }
 destroy_image :: proc(img: Image)  {
-    sg_destroy_image(img);
+    sg_destroy_image(img)
 }
 destroy_shader :: proc(shd: Shader)  {
-    sg_destroy_shader(shd);
+    sg_destroy_shader(shd)
 }
 destroy_pipeline :: proc(pip: Pipeline)  {
-    sg_destroy_pipeline(pip);
+    sg_destroy_pipeline(pip)
 }
 destroy_pass :: proc(pass: Pass)  {
-    sg_destroy_pass(pass);
+    sg_destroy_pass(pass)
 }
 update_buffer :: proc(buf: Buffer, data: Range)  {
-    _data := data;
-    sg_update_buffer(buf, &_data);
+    _data := data
+    sg_update_buffer(buf, &_data)
 }
 update_image :: proc(img: Image, data: Image_Data)  {
-    _data := data;
-    sg_update_image(img, &_data);
+    _data := data
+    sg_update_image(img, &_data)
 }
 append_buffer :: proc(buf: Buffer, data: Range) -> int {
-    _data := data;
-    return cast(int)sg_append_buffer(buf, &_data);
+    _data := data
+    return cast(int)sg_append_buffer(buf, &_data)
 }
 query_buffer_overflow :: proc(buf: Buffer) -> bool {
-    return cast(bool)sg_query_buffer_overflow(buf);
+    return sg_query_buffer_overflow(buf)
 }
 query_buffer_will_overflow :: proc(buf: Buffer, size: u64) -> bool {
-    return cast(bool)sg_query_buffer_will_overflow(buf, size);
+    return sg_query_buffer_will_overflow(buf, size)
 }
 begin_default_pass :: proc(pass_action: Pass_Action, width: int, height: int)  {
-    _pass_action := pass_action;
-    sg_begin_default_pass(&_pass_action, cast(i32)width, cast(i32)height);
+    _pass_action := pass_action
+    sg_begin_default_pass(&_pass_action, cast(i32)width, cast(i32)height)
 }
 begin_default_passf :: proc(pass_action: Pass_Action, width: f32, height: f32)  {
-    _pass_action := pass_action;
-    sg_begin_default_passf(&_pass_action, width, height);
+    _pass_action := pass_action
+    sg_begin_default_passf(&_pass_action, width, height)
 }
 begin_pass :: proc(pass: Pass, pass_action: Pass_Action)  {
-    _pass_action := pass_action;
-    sg_begin_pass(pass, &_pass_action);
+    _pass_action := pass_action
+    sg_begin_pass(pass, &_pass_action)
 }
 apply_viewport :: proc(x: int, y: int, width: int, height: int, origin_top_left: bool)  {
-    sg_apply_viewport(cast(i32)x, cast(i32)y, cast(i32)width, cast(i32)height, cast(b8)origin_top_left);
+    sg_apply_viewport(cast(i32)x, cast(i32)y, cast(i32)width, cast(i32)height, origin_top_left)
 }
 apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  {
-    sg_apply_viewportf(x, y, width, height, cast(b8)origin_top_left);
+    sg_apply_viewportf(x, y, width, height, origin_top_left)
 }
 apply_scissor_rect :: proc(x: int, y: int, width: int, height: int, origin_top_left: bool)  {
-    sg_apply_scissor_rect(cast(i32)x, cast(i32)y, cast(i32)width, cast(i32)height, cast(b8)origin_top_left);
+    sg_apply_scissor_rect(cast(i32)x, cast(i32)y, cast(i32)width, cast(i32)height, origin_top_left)
 }
 apply_scissor_rectf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  {
-    sg_apply_scissor_rectf(x, y, width, height, cast(b8)origin_top_left);
+    sg_apply_scissor_rectf(x, y, width, height, origin_top_left)
 }
 apply_pipeline :: proc(pip: Pipeline)  {
-    sg_apply_pipeline(pip);
+    sg_apply_pipeline(pip)
 }
 apply_bindings :: proc(bindings: Bindings)  {
-    _bindings := bindings;
-    sg_apply_bindings(&_bindings);
+    _bindings := bindings
+    sg_apply_bindings(&_bindings)
 }
 apply_uniforms :: proc(stage: Shader_Stage, ub_index: int, data: Range)  {
-    _data := data;
-    sg_apply_uniforms(stage, cast(i32)ub_index, &_data);
+    _data := data
+    sg_apply_uniforms(stage, cast(i32)ub_index, &_data)
 }
 draw :: proc(base_element: int, num_elements: int, num_instances: int)  {
-    sg_draw(cast(i32)base_element, cast(i32)num_elements, cast(i32)num_instances);
+    sg_draw(cast(i32)base_element, cast(i32)num_elements, cast(i32)num_instances)
 }
 end_pass :: proc()  {
-    sg_end_pass();
+    sg_end_pass()
 }
 commit :: proc()  {
-    sg_commit();
+    sg_commit()
 }
 query_desc :: proc() -> Desc {
-    return sg_query_desc();
+    return sg_query_desc()
 }
 query_backend :: proc() -> Backend {
-    return sg_query_backend();
+    return sg_query_backend()
 }
 query_features :: proc() -> Features {
-    return sg_query_features();
+    return sg_query_features()
 }
 query_limits :: proc() -> Limits {
-    return sg_query_limits();
+    return sg_query_limits()
 }
 query_pixelformat :: proc(fmt: Pixel_Format) -> Pixelformat_Info {
-    return sg_query_pixelformat(fmt);
+    return sg_query_pixelformat(fmt)
 }
 query_buffer_state :: proc(buf: Buffer) -> Resource_State {
-    return sg_query_buffer_state(buf);
+    return sg_query_buffer_state(buf)
 }
 query_image_state :: proc(img: Image) -> Resource_State {
-    return sg_query_image_state(img);
+    return sg_query_image_state(img)
 }
 query_shader_state :: proc(shd: Shader) -> Resource_State {
-    return sg_query_shader_state(shd);
+    return sg_query_shader_state(shd)
 }
 query_pipeline_state :: proc(pip: Pipeline) -> Resource_State {
-    return sg_query_pipeline_state(pip);
+    return sg_query_pipeline_state(pip)
 }
 query_pass_state :: proc(pass: Pass) -> Resource_State {
-    return sg_query_pass_state(pass);
+    return sg_query_pass_state(pass)
 }
 query_buffer_info :: proc(buf: Buffer) -> Buffer_Info {
-    return sg_query_buffer_info(buf);
+    return sg_query_buffer_info(buf)
 }
 query_image_info :: proc(img: Image) -> Image_Info {
-    return sg_query_image_info(img);
+    return sg_query_image_info(img)
 }
 query_shader_info :: proc(shd: Shader) -> Shader_Info {
-    return sg_query_shader_info(shd);
+    return sg_query_shader_info(shd)
 }
 query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info {
-    return sg_query_pipeline_info(pip);
+    return sg_query_pipeline_info(pip)
 }
 query_pass_info :: proc(pass: Pass) -> Pass_Info {
-    return sg_query_pass_info(pass);
+    return sg_query_pass_info(pass)
 }
 query_buffer_defaults :: proc(desc: Buffer_Desc) -> Buffer_Desc {
-    _desc := desc;
-    return sg_query_buffer_defaults(&_desc);
+    _desc := desc
+    return sg_query_buffer_defaults(&_desc)
 }
 query_image_defaults :: proc(desc: Image_Desc) -> Image_Desc {
-    _desc := desc;
-    return sg_query_image_defaults(&_desc);
+    _desc := desc
+    return sg_query_image_defaults(&_desc)
 }
 query_shader_defaults :: proc(desc: Shader_Desc) -> Shader_Desc {
-    _desc := desc;
-    return sg_query_shader_defaults(&_desc);
+    _desc := desc
+    return sg_query_shader_defaults(&_desc)
 }
 query_pipeline_defaults :: proc(desc: Pipeline_Desc) -> Pipeline_Desc {
-    _desc := desc;
-    return sg_query_pipeline_defaults(&_desc);
+    _desc := desc
+    return sg_query_pipeline_defaults(&_desc)
 }
 query_pass_defaults :: proc(desc: Pass_Desc) -> Pass_Desc {
-    _desc := desc;
-    return sg_query_pass_defaults(&_desc);
+    _desc := desc
+    return sg_query_pass_defaults(&_desc)
 }
 alloc_buffer :: proc() -> Buffer {
-    return sg_alloc_buffer();
+    return sg_alloc_buffer()
 }
 alloc_image :: proc() -> Image {
-    return sg_alloc_image();
+    return sg_alloc_image()
 }
 alloc_shader :: proc() -> Shader {
-    return sg_alloc_shader();
+    return sg_alloc_shader()
 }
 alloc_pipeline :: proc() -> Pipeline {
-    return sg_alloc_pipeline();
+    return sg_alloc_pipeline()
 }
 alloc_pass :: proc() -> Pass {
-    return sg_alloc_pass();
+    return sg_alloc_pass()
 }
 dealloc_buffer :: proc(buf_id: Buffer)  {
-    sg_dealloc_buffer(buf_id);
+    sg_dealloc_buffer(buf_id)
 }
 dealloc_image :: proc(img_id: Image)  {
-    sg_dealloc_image(img_id);
+    sg_dealloc_image(img_id)
 }
 dealloc_shader :: proc(shd_id: Shader)  {
-    sg_dealloc_shader(shd_id);
+    sg_dealloc_shader(shd_id)
 }
 dealloc_pipeline :: proc(pip_id: Pipeline)  {
-    sg_dealloc_pipeline(pip_id);
+    sg_dealloc_pipeline(pip_id)
 }
 dealloc_pass :: proc(pass_id: Pass)  {
-    sg_dealloc_pass(pass_id);
+    sg_dealloc_pass(pass_id)
 }
 init_buffer :: proc(buf_id: Buffer, desc: Buffer_Desc)  {
-    _desc := desc;
-    sg_init_buffer(buf_id, &_desc);
+    _desc := desc
+    sg_init_buffer(buf_id, &_desc)
 }
 init_image :: proc(img_id: Image, desc: Image_Desc)  {
-    _desc := desc;
-    sg_init_image(img_id, &_desc);
+    _desc := desc
+    sg_init_image(img_id, &_desc)
 }
 init_shader :: proc(shd_id: Shader, desc: Shader_Desc)  {
-    _desc := desc;
-    sg_init_shader(shd_id, &_desc);
+    _desc := desc
+    sg_init_shader(shd_id, &_desc)
 }
 init_pipeline :: proc(pip_id: Pipeline, desc: Pipeline_Desc)  {
-    _desc := desc;
-    sg_init_pipeline(pip_id, &_desc);
+    _desc := desc
+    sg_init_pipeline(pip_id, &_desc)
 }
 init_pass :: proc(pass_id: Pass, desc: Pass_Desc)  {
-    _desc := desc;
-    sg_init_pass(pass_id, &_desc);
+    _desc := desc
+    sg_init_pass(pass_id, &_desc)
 }
 uninit_buffer :: proc(buf_id: Buffer) -> bool {
-    return cast(bool)sg_uninit_buffer(buf_id);
+    return sg_uninit_buffer(buf_id)
 }
 uninit_image :: proc(img_id: Image) -> bool {
-    return cast(bool)sg_uninit_image(img_id);
+    return sg_uninit_image(img_id)
 }
 uninit_shader :: proc(shd_id: Shader) -> bool {
-    return cast(bool)sg_uninit_shader(shd_id);
+    return sg_uninit_shader(shd_id)
 }
 uninit_pipeline :: proc(pip_id: Pipeline) -> bool {
-    return cast(bool)sg_uninit_pipeline(pip_id);
+    return sg_uninit_pipeline(pip_id)
 }
 uninit_pass :: proc(pass_id: Pass) -> bool {
-    return cast(bool)sg_uninit_pass(pass_id);
+    return sg_uninit_pass(pass_id)
 }
 fail_buffer :: proc(buf_id: Buffer)  {
-    sg_fail_buffer(buf_id);
+    sg_fail_buffer(buf_id)
 }
 fail_image :: proc(img_id: Image)  {
-    sg_fail_image(img_id);
+    sg_fail_image(img_id)
 }
 fail_shader :: proc(shd_id: Shader)  {
-    sg_fail_shader(shd_id);
+    sg_fail_shader(shd_id)
 }
 fail_pipeline :: proc(pip_id: Pipeline)  {
-    sg_fail_pipeline(pip_id);
+    sg_fail_pipeline(pip_id)
 }
 fail_pass :: proc(pass_id: Pass)  {
-    sg_fail_pass(pass_id);
+    sg_fail_pass(pass_id)
 }
 setup_context :: proc() -> Context {
-    return sg_setup_context();
+    return sg_setup_context()
 }
 activate_context :: proc(ctx_id: Context)  {
-    sg_activate_context(ctx_id);
+    sg_activate_context(ctx_id)
 }
 discard_context :: proc(ctx_id: Context)  {
-    sg_discard_context(ctx_id);
+    sg_discard_context(ctx_id)
 }
 d3d11_device :: proc() -> rawptr {
-    return sg_d3d11_device();
+    return sg_d3d11_device()
 }
 mtl_device :: proc() -> rawptr {
-    return sg_mtl_device();
+    return sg_mtl_device()
 }
 mtl_render_command_encoder :: proc() -> rawptr {
-    return sg_mtl_render_command_encoder();
+    return sg_mtl_render_command_encoder()
 }

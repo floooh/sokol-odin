@@ -33,32 +33,32 @@ foreign sokol_time_clib {
     stm_ns :: proc(ticks: u64) -> f64 ---
 }
 setup :: proc()  {
-    stm_setup();
+    stm_setup()
 }
 now :: proc() -> u64 {
-    return stm_now();
+    return stm_now()
 }
 diff :: proc(new_ticks: u64, old_ticks: u64) -> u64 {
-    return stm_diff(new_ticks, old_ticks);
+    return stm_diff(new_ticks, old_ticks)
 }
 since :: proc(start_ticks: u64) -> u64 {
-    return stm_since(start_ticks);
+    return stm_since(start_ticks)
 }
 laptime :: proc(last_time: ^u64) -> u64 {
-    return stm_laptime(last_time);
+    return stm_laptime(last_time)
 }
 round_to_common_refresh_rate :: proc(frame_ticks: u64) -> u64 {
-    return stm_round_to_common_refresh_rate(frame_ticks);
+    return stm_round_to_common_refresh_rate(frame_ticks)
 }
 sec :: proc(ticks: u64) -> f64 {
-    return stm_sec(ticks);
+    return stm_sec(ticks)
 }
 ms :: proc(ticks: u64) -> f64 {
-    return stm_ms(ticks);
+    return stm_ms(ticks)
 }
 us :: proc(ticks: u64) -> f64 {
-    return stm_us(ticks);
+    return stm_us(ticks)
 }
 ns :: proc(ticks: u64) -> f64 {
-    return stm_ns(ticks);
+    return stm_ns(ticks)
 }

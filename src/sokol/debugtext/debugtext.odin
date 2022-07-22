@@ -58,16 +58,16 @@ foreign sokol_debugtext_clib {
 }
 Context :: struct {
     id : u32,
-};
+}
 Range :: struct {
     ptr : rawptr,
     size : u64,
-};
+}
 Font_Desc :: struct {
     data : Range,
     first_char : u8,
     last_char : u8,
-};
+}
 Context_Desc :: struct {
     char_buf_size : i32,
     canvas_width : f32,
@@ -76,117 +76,117 @@ Context_Desc :: struct {
     color_format : sg.Pixel_Format,
     depth_format : sg.Pixel_Format,
     sample_count : i32,
-};
+}
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
-};
+}
 Desc :: struct {
     context_pool_size : i32,
     printf_buf_size : i32,
     fonts : [8]Font_Desc,
     ctx : Context_Desc,
     allocator : Allocator,
-};
+}
 setup :: proc(desc: Desc)  {
-    _desc := desc;
-    sdtx_setup(&_desc);
+    _desc := desc
+    sdtx_setup(&_desc)
 }
 shutdown :: proc()  {
-    sdtx_shutdown();
+    sdtx_shutdown()
 }
 font_kc853 :: proc() -> Font_Desc {
-    return sdtx_font_kc853();
+    return sdtx_font_kc853()
 }
 font_kc854 :: proc() -> Font_Desc {
-    return sdtx_font_kc854();
+    return sdtx_font_kc854()
 }
 font_z1013 :: proc() -> Font_Desc {
-    return sdtx_font_z1013();
+    return sdtx_font_z1013()
 }
 font_cpc :: proc() -> Font_Desc {
-    return sdtx_font_cpc();
+    return sdtx_font_cpc()
 }
 font_c64 :: proc() -> Font_Desc {
-    return sdtx_font_c64();
+    return sdtx_font_c64()
 }
 font_oric :: proc() -> Font_Desc {
-    return sdtx_font_oric();
+    return sdtx_font_oric()
 }
 make_context :: proc(desc: Context_Desc) -> Context {
-    _desc := desc;
-    return sdtx_make_context(&_desc);
+    _desc := desc
+    return sdtx_make_context(&_desc)
 }
 destroy_context :: proc(ctx: Context)  {
-    sdtx_destroy_context(ctx);
+    sdtx_destroy_context(ctx)
 }
 set_context :: proc(ctx: Context)  {
-    sdtx_set_context(ctx);
+    sdtx_set_context(ctx)
 }
 get_context :: proc() -> Context {
-    return sdtx_get_context();
+    return sdtx_get_context()
 }
 default_context :: proc() -> Context {
-    return sdtx_default_context();
+    return sdtx_default_context()
 }
 draw :: proc()  {
-    sdtx_draw();
+    sdtx_draw()
 }
 font :: proc(font_index: int)  {
-    sdtx_font(cast(i32)font_index);
+    sdtx_font(cast(i32)font_index)
 }
 canvas :: proc(w: f32, h: f32)  {
-    sdtx_canvas(w, h);
+    sdtx_canvas(w, h)
 }
 origin :: proc(x: f32, y: f32)  {
-    sdtx_origin(x, y);
+    sdtx_origin(x, y)
 }
 home :: proc()  {
-    sdtx_home();
+    sdtx_home()
 }
 pos :: proc(x: f32, y: f32)  {
-    sdtx_pos(x, y);
+    sdtx_pos(x, y)
 }
 pos_x :: proc(x: f32)  {
-    sdtx_pos_x(x);
+    sdtx_pos_x(x)
 }
 pos_y :: proc(y: f32)  {
-    sdtx_pos_y(y);
+    sdtx_pos_y(y)
 }
 move :: proc(dx: f32, dy: f32)  {
-    sdtx_move(dx, dy);
+    sdtx_move(dx, dy)
 }
 move_x :: proc(dx: f32)  {
-    sdtx_move_x(dx);
+    sdtx_move_x(dx)
 }
 move_y :: proc(dy: f32)  {
-    sdtx_move_y(dy);
+    sdtx_move_y(dy)
 }
 crlf :: proc()  {
-    sdtx_crlf();
+    sdtx_crlf()
 }
 color3b :: proc(r: u8, g: u8, b: u8)  {
-    sdtx_color3b(r, g, b);
+    sdtx_color3b(r, g, b)
 }
 color3f :: proc(r: f32, g: f32, b: f32)  {
-    sdtx_color3f(r, g, b);
+    sdtx_color3f(r, g, b)
 }
 color4b :: proc(r: u8, g: u8, b: u8, a: u8)  {
-    sdtx_color4b(r, g, b, a);
+    sdtx_color4b(r, g, b, a)
 }
 color4f :: proc(r: f32, g: f32, b: f32, a: f32)  {
-    sdtx_color4f(r, g, b, a);
+    sdtx_color4f(r, g, b, a)
 }
 color1i :: proc(rgba: int)  {
-    sdtx_color1i(cast(u32)rgba);
+    sdtx_color1i(cast(u32)rgba)
 }
 putc :: proc(c: u8)  {
-    sdtx_putc(c);
+    sdtx_putc(c)
 }
 puts :: proc(str: cstring)  {
-    sdtx_puts(str);
+    sdtx_puts(str)
 }
 putr :: proc(str: cstring, len: int)  {
-    sdtx_putr(str, cast(i32)len);
+    sdtx_putr(str, cast(i32)len)
 }

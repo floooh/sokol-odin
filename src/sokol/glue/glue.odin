@@ -25,5 +25,5 @@ foreign sokol_glue_clib {
     sapp_sgcontext :: proc() -> sg.Context_Desc ---
 }
 ctx :: proc() -> sg.Context_Desc {
-    return sapp_sgcontext();
+    return sapp_sgcontext()
 }

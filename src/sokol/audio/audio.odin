@@ -23,13 +23,13 @@ else {
 foreign sokol_audio_clib {
     saudio_setup :: proc(desc: ^Desc)  ---
     saudio_shutdown :: proc()  ---
-    saudio_isvalid :: proc() -> b8 ---
+    saudio_isvalid :: proc() -> bool ---
     saudio_userdata :: proc() -> rawptr ---
     saudio_query_desc :: proc() -> Desc ---
     saudio_sample_rate :: proc() -> i32 ---
     saudio_buffer_frames :: proc() -> i32 ---
     saudio_channels :: proc() -> i32 ---
-    saudio_suspended :: proc() -> b8 ---
+    saudio_suspended :: proc() -> bool ---
     saudio_expect :: proc() -> i32 ---
     saudio_push :: proc(frames: ^f32, num_frames: i32) -> i32 ---
 }
@@ -37,7 +37,7 @@ Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
-};
+}
 Desc :: struct {
     sample_rate : i32,
     num_channels : i32,
@@ -48,38 +48,38 @@ Desc :: struct {
     stream_userdata_cb : proc "c" (a0: ^f32, a1: i32, a2: i32, a3: rawptr),
     user_data : rawptr,
     allocator : Allocator,
-};
+}
 setup :: proc(desc: Desc)  {
-    _desc := desc;
-    saudio_setup(&_desc);
+    _desc := desc
+    saudio_setup(&_desc)
 }
 shutdown :: proc()  {
-    saudio_shutdown();
+    saudio_shutdown()
 }
 isvalid :: proc() -> bool {
-    return cast(bool)saudio_isvalid();
+    return saudio_isvalid()
 }
 userdata :: proc() -> rawptr {
-    return saudio_userdata();
+    return saudio_userdata()
 }
 query_desc :: proc() -> Desc {
-    return saudio_query_desc();
+    return saudio_query_desc()
 }
 sample_rate :: proc() -> int {
-    return cast(int)saudio_sample_rate();
+    return cast(int)saudio_sample_rate()
 }
 buffer_frames :: proc() -> int {
-    return cast(int)saudio_buffer_frames();
+    return cast(int)saudio_buffer_frames()
 }
 channels :: proc() -> int {
-    return cast(int)saudio_channels();
+    return cast(int)saudio_channels()
 }
 suspended :: proc() -> bool {
-    return cast(bool)saudio_suspended();
+    return saudio_suspended()
 }
 expect :: proc() -> int {
-    return cast(int)saudio_expect();
+    return cast(int)saudio_expect()
 }
 push :: proc(frames: ^f32, num_frames: int) -> int {
-    return cast(int)saudio_push(frames, cast(i32)num_frames);
+    return cast(int)saudio_push(frames, cast(i32)num_frames)
 }

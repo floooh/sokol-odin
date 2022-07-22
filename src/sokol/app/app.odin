@@ -21,7 +21,7 @@ else {
 }
 @(default_calling_convention="c")
 foreign sokol_app_clib {
-    sapp_isvalid :: proc() -> b8 ---
+    sapp_isvalid :: proc() -> bool ---
     sapp_width :: proc() -> i32 ---
     sapp_widthf :: proc() -> f32 ---
     sapp_height :: proc() -> i32 ---
@@ -29,16 +29,16 @@ foreign sokol_app_clib {
     sapp_color_format :: proc() -> i32 ---
     sapp_depth_format :: proc() -> i32 ---
     sapp_sample_count :: proc() -> i32 ---
-    sapp_high_dpi :: proc() -> b8 ---
+    sapp_high_dpi :: proc() -> bool ---
     sapp_dpi_scale :: proc() -> f32 ---
-    sapp_show_keyboard :: proc(show: b8)  ---
-    sapp_keyboard_shown :: proc() -> b8 ---
-    sapp_is_fullscreen :: proc() -> b8 ---
+    sapp_show_keyboard :: proc(show: bool)  ---
+    sapp_keyboard_shown :: proc() -> bool ---
+    sapp_is_fullscreen :: proc() -> bool ---
     sapp_toggle_fullscreen :: proc()  ---
-    sapp_show_mouse :: proc(show: b8)  ---
-    sapp_mouse_shown :: proc() -> b8 ---
-    sapp_lock_mouse :: proc(lock: b8)  ---
-    sapp_mouse_locked :: proc() -> b8 ---
+    sapp_show_mouse :: proc(show: bool)  ---
+    sapp_mouse_shown :: proc() -> bool ---
+    sapp_lock_mouse :: proc(lock: bool)  ---
+    sapp_mouse_locked :: proc() -> bool ---
     sapp_set_mouse_cursor :: proc(cursor: Mouse_Cursor)  ---
     sapp_get_mouse_cursor :: proc() -> Mouse_Cursor ---
     sapp_userdata :: proc() -> rawptr ---
@@ -56,8 +56,8 @@ foreign sokol_app_clib {
     sapp_get_num_dropped_files :: proc() -> i32 ---
     sapp_get_dropped_file_path :: proc(index: i32) -> cstring ---
     sapp_run :: proc(desc: ^Desc)  ---
-    sapp_gles2 :: proc() -> b8 ---
-    sapp_html5_ask_leave_site :: proc(ask: b8)  ---
+    sapp_gles2 :: proc() -> bool ---
+    sapp_html5_ask_leave_site :: proc(ask: bool)  ---
     sapp_html5_get_dropped_file_size :: proc(index: i32) -> u32 ---
     sapp_html5_fetch_dropped_file :: proc(request: ^Html5_Fetch_Request)  ---
     sapp_metal_get_device :: proc() -> rawptr ---
@@ -77,10 +77,10 @@ foreign sokol_app_clib {
     sapp_wgpu_get_depth_stencil_view :: proc() -> rawptr ---
     sapp_android_get_native_activity :: proc() -> rawptr ---
 }
-MAX_TOUCHPOINTS :: 8;
-MAX_MOUSEBUTTONS :: 3;
-MAX_KEYCODES :: 512;
-MAX_ICONIMAGES :: 8;
+MAX_TOUCHPOINTS :: 8
+MAX_MOUSEBUTTONS :: 3
+MAX_KEYCODES :: 512
+MAX_ICONIMAGES :: 8
 Event_Type :: enum i32 {
     INVALID,
     KEY_DOWN,
@@ -107,7 +107,7 @@ Event_Type :: enum i32 {
     CLIPBOARD_PASTED,
     FILES_DROPPED,
     NUM,
-};
+}
 Keycode :: enum i32 {
     INVALID = 0,
     SPACE = 32,
@@ -230,32 +230,32 @@ Keycode :: enum i32 {
     RIGHT_ALT = 346,
     RIGHT_SUPER = 347,
     MENU = 348,
-};
+}
 Touchpoint :: struct {
     identifier : u64,
     pos_x : f32,
     pos_y : f32,
-    changed : b8,
-};
+    changed : bool,
+}
 Mousebutton :: enum i32 {
     LEFT = 0,
     RIGHT = 1,
     MIDDLE = 2,
     INVALID = 256,
-};
-MODIFIER_SHIFT :: 1;
-MODIFIER_CTRL :: 2;
-MODIFIER_ALT :: 4;
-MODIFIER_SUPER :: 8;
-MODIFIER_LMB :: 256;
-MODIFIER_RMB :: 512;
-MODIFIER_MMB :: 1024;
+}
+MODIFIER_SHIFT :: 1
+MODIFIER_CTRL :: 2
+MODIFIER_ALT :: 4
+MODIFIER_SUPER :: 8
+MODIFIER_LMB :: 256
+MODIFIER_RMB :: 512
+MODIFIER_MMB :: 1024
 Event :: struct {
     frame_count : u64,
     type : Event_Type,
     key_code : Keycode,
     char_code : u32,
-    key_repeat : b8,
+    key_repeat : bool,
     modifiers : u32,
     mouse_button : Mousebutton,
     mouse_x : f32,
@@ -270,25 +270,25 @@ Event :: struct {
     window_height : i32,
     framebuffer_width : i32,
     framebuffer_height : i32,
-};
+}
 Range :: struct {
     ptr : rawptr,
     size : u64,
-};
+}
 Image_Desc :: struct {
     width : i32,
     height : i32,
     pixels : Range,
-};
+}
 Icon_Desc :: struct {
-    sokol_default : b8,
+    sokol_default : bool,
     images : [8]Image_Desc,
-};
+}
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
-};
+}
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -305,51 +305,51 @@ Desc :: struct {
     height : i32,
     sample_count : i32,
     swap_interval : i32,
-    high_dpi : b8,
-    fullscreen : b8,
-    alpha : b8,
+    high_dpi : bool,
+    fullscreen : bool,
+    alpha : bool,
     window_title : cstring,
-    enable_clipboard : b8,
+    enable_clipboard : bool,
     clipboard_size : i32,
-    enable_dragndrop : b8,
+    enable_dragndrop : bool,
     max_dropped_files : i32,
     max_dropped_file_path_length : i32,
     icon : Icon_Desc,
     allocator : Allocator,
-    gl_force_gles2 : b8,
+    gl_force_gles2 : bool,
     gl_major_version : i32,
     gl_minor_version : i32,
-    win32_console_utf8 : b8,
-    win32_console_create : b8,
-    win32_console_attach : b8,
+    win32_console_utf8 : bool,
+    win32_console_create : bool,
+    win32_console_attach : bool,
     html5_canvas_name : cstring,
-    html5_canvas_resize : b8,
-    html5_preserve_drawing_buffer : b8,
-    html5_premultiplied_alpha : b8,
-    html5_ask_leave_site : b8,
-    ios_keyboard_resizes_canvas : b8,
-};
+    html5_canvas_resize : bool,
+    html5_preserve_drawing_buffer : bool,
+    html5_premultiplied_alpha : bool,
+    html5_ask_leave_site : bool,
+    ios_keyboard_resizes_canvas : bool,
+}
 Html5_Fetch_Error :: enum i32 {
     FETCH_ERROR_NO_ERROR,
     FETCH_ERROR_BUFFER_TOO_SMALL,
     FETCH_ERROR_OTHER,
-};
+}
 Html5_Fetch_Response :: struct {
-    succeeded : b8,
+    succeeded : bool,
     error_code : Html5_Fetch_Error,
     file_index : i32,
     fetched_size : u32,
     buffer_ptr : rawptr,
     buffer_size : u32,
     user_data : rawptr,
-};
+}
 Html5_Fetch_Request :: struct {
     dropped_file_index : i32,
     callback : proc "c" (a0: ^Html5_Fetch_Response),
     buffer_ptr : rawptr,
     buffer_size : u32,
     user_data : rawptr,
-};
+}
 Mouse_Cursor :: enum i32 {
     DEFAULT = 0,
     ARROW,
@@ -363,172 +363,172 @@ Mouse_Cursor :: enum i32 {
     RESIZE_ALL,
     NOT_ALLOWED,
     NUM,
-};
+}
 isvalid :: proc() -> bool {
-    return cast(bool)sapp_isvalid();
+    return sapp_isvalid()
 }
 width :: proc() -> int {
-    return cast(int)sapp_width();
+    return cast(int)sapp_width()
 }
 widthf :: proc() -> f32 {
-    return sapp_widthf();
+    return sapp_widthf()
 }
 height :: proc() -> int {
-    return cast(int)sapp_height();
+    return cast(int)sapp_height()
 }
 heightf :: proc() -> f32 {
-    return sapp_heightf();
+    return sapp_heightf()
 }
 color_format :: proc() -> int {
-    return cast(int)sapp_color_format();
+    return cast(int)sapp_color_format()
 }
 depth_format :: proc() -> int {
-    return cast(int)sapp_depth_format();
+    return cast(int)sapp_depth_format()
 }
 sample_count :: proc() -> int {
-    return cast(int)sapp_sample_count();
+    return cast(int)sapp_sample_count()
 }
 high_dpi :: proc() -> bool {
-    return cast(bool)sapp_high_dpi();
+    return sapp_high_dpi()
 }
 dpi_scale :: proc() -> f32 {
-    return sapp_dpi_scale();
+    return sapp_dpi_scale()
 }
 show_keyboard :: proc(show: bool)  {
-    sapp_show_keyboard(cast(b8)show);
+    sapp_show_keyboard(show)
 }
 keyboard_shown :: proc() -> bool {
-    return cast(bool)sapp_keyboard_shown();
+    return sapp_keyboard_shown()
 }
 is_fullscreen :: proc() -> bool {
-    return cast(bool)sapp_is_fullscreen();
+    return sapp_is_fullscreen()
 }
 toggle_fullscreen :: proc()  {
-    sapp_toggle_fullscreen();
+    sapp_toggle_fullscreen()
 }
 show_mouse :: proc(show: bool)  {
-    sapp_show_mouse(cast(b8)show);
+    sapp_show_mouse(show)
 }
 mouse_shown :: proc() -> bool {
-    return cast(bool)sapp_mouse_shown();
+    return sapp_mouse_shown()
 }
 lock_mouse :: proc(lock: bool)  {
-    sapp_lock_mouse(cast(b8)lock);
+    sapp_lock_mouse(lock)
 }
 mouse_locked :: proc() -> bool {
-    return cast(bool)sapp_mouse_locked();
+    return sapp_mouse_locked()
 }
 set_mouse_cursor :: proc(cursor: Mouse_Cursor)  {
-    sapp_set_mouse_cursor(cursor);
+    sapp_set_mouse_cursor(cursor)
 }
 get_mouse_cursor :: proc() -> Mouse_Cursor {
-    return sapp_get_mouse_cursor();
+    return sapp_get_mouse_cursor()
 }
 userdata :: proc() -> rawptr {
-    return sapp_userdata();
+    return sapp_userdata()
 }
 query_desc :: proc() -> Desc {
-    return sapp_query_desc();
+    return sapp_query_desc()
 }
 request_quit :: proc()  {
-    sapp_request_quit();
+    sapp_request_quit()
 }
 cancel_quit :: proc()  {
-    sapp_cancel_quit();
+    sapp_cancel_quit()
 }
 quit :: proc()  {
-    sapp_quit();
+    sapp_quit()
 }
 consume_event :: proc()  {
-    sapp_consume_event();
+    sapp_consume_event()
 }
 frame_count :: proc() -> u64 {
-    return sapp_frame_count();
+    return sapp_frame_count()
 }
 frame_duration :: proc() -> f64 {
-    return sapp_frame_duration();
+    return sapp_frame_duration()
 }
 set_clipboard_string :: proc(str: cstring)  {
-    sapp_set_clipboard_string(str);
+    sapp_set_clipboard_string(str)
 }
 get_clipboard_string :: proc() -> cstring {
-    return sapp_get_clipboard_string();
+    return sapp_get_clipboard_string()
 }
 set_window_title :: proc(str: cstring)  {
-    sapp_set_window_title(str);
+    sapp_set_window_title(str)
 }
 set_icon :: proc(icon_desc: Icon_Desc)  {
-    _icon_desc := icon_desc;
-    sapp_set_icon(&_icon_desc);
+    _icon_desc := icon_desc
+    sapp_set_icon(&_icon_desc)
 }
 get_num_dropped_files :: proc() -> int {
-    return cast(int)sapp_get_num_dropped_files();
+    return cast(int)sapp_get_num_dropped_files()
 }
 get_dropped_file_path :: proc(index: int) -> cstring {
-    return sapp_get_dropped_file_path(cast(i32)index);
+    return sapp_get_dropped_file_path(cast(i32)index)
 }
 run :: proc(desc: Desc)  {
-    _desc := desc;
-    sapp_run(&_desc);
+    _desc := desc
+    sapp_run(&_desc)
 }
 gles2 :: proc() -> bool {
-    return cast(bool)sapp_gles2();
+    return sapp_gles2()
 }
 html5_ask_leave_site :: proc(ask: bool)  {
-    sapp_html5_ask_leave_site(cast(b8)ask);
+    sapp_html5_ask_leave_site(ask)
 }
 html5_get_dropped_file_size :: proc(index: int) -> int {
-    return cast(int)sapp_html5_get_dropped_file_size(cast(i32)index);
+    return cast(int)sapp_html5_get_dropped_file_size(cast(i32)index)
 }
 html5_fetch_dropped_file :: proc(request: Html5_Fetch_Request)  {
-    _request := request;
-    sapp_html5_fetch_dropped_file(&_request);
+    _request := request
+    sapp_html5_fetch_dropped_file(&_request)
 }
 metal_get_device :: proc() -> rawptr {
-    return sapp_metal_get_device();
+    return sapp_metal_get_device()
 }
 metal_get_renderpass_descriptor :: proc() -> rawptr {
-    return sapp_metal_get_renderpass_descriptor();
+    return sapp_metal_get_renderpass_descriptor()
 }
 metal_get_drawable :: proc() -> rawptr {
-    return sapp_metal_get_drawable();
+    return sapp_metal_get_drawable()
 }
 macos_get_window :: proc() -> rawptr {
-    return sapp_macos_get_window();
+    return sapp_macos_get_window()
 }
 ios_get_window :: proc() -> rawptr {
-    return sapp_ios_get_window();
+    return sapp_ios_get_window()
 }
 d3d11_get_device :: proc() -> rawptr {
-    return sapp_d3d11_get_device();
+    return sapp_d3d11_get_device()
 }
 d3d11_get_device_context :: proc() -> rawptr {
-    return sapp_d3d11_get_device_context();
+    return sapp_d3d11_get_device_context()
 }
 d3d11_get_swap_chain :: proc() -> rawptr {
-    return sapp_d3d11_get_swap_chain();
+    return sapp_d3d11_get_swap_chain()
 }
 d3d11_get_render_target_view :: proc() -> rawptr {
-    return sapp_d3d11_get_render_target_view();
+    return sapp_d3d11_get_render_target_view()
 }
 d3d11_get_depth_stencil_view :: proc() -> rawptr {
-    return sapp_d3d11_get_depth_stencil_view();
+    return sapp_d3d11_get_depth_stencil_view()
 }
 win32_get_hwnd :: proc() -> rawptr {
-    return sapp_win32_get_hwnd();
+    return sapp_win32_get_hwnd()
 }
 wgpu_get_device :: proc() -> rawptr {
-    return sapp_wgpu_get_device();
+    return sapp_wgpu_get_device()
 }
 wgpu_get_render_view :: proc() -> rawptr {
-    return sapp_wgpu_get_render_view();
+    return sapp_wgpu_get_render_view()
 }
 wgpu_get_resolve_view :: proc() -> rawptr {
-    return sapp_wgpu_get_resolve_view();
+    return sapp_wgpu_get_resolve_view()
 }
 wgpu_get_depth_stencil_view :: proc() -> rawptr {
-    return sapp_wgpu_get_depth_stencil_view();
+    return sapp_wgpu_get_depth_stencil_view()
 }
 android_get_native_activity :: proc() -> rawptr {
-    return sapp_android_get_native_activity();
+    return sapp_android_get_native_activity()
 }
