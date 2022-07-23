@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
-//  quad.odin
+//  triangle/main.odin
 //
-//  Simple 2D rendering with vertex- and index-buffer.
+//  Hello Triangle sample.
 //------------------------------------------------------------------------------
 package main
 
@@ -11,9 +11,9 @@ import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
 
 state: struct {
-    pass_action: sg.Pass_Action,
     pip: sg.Pipeline,
     bind: sg.Bindings,
+    pass_action: sg.Pass_Action,
 }
 
 init :: proc "c" () {
@@ -21,41 +21,32 @@ init :: proc "c" () {
 
     sg.setup({ ctx = sglue.ctx() })
 
-    // a vertex buffer
+    // a vertex buffer with 3 vertices
     vertices := [?]f32 {
-        // positions         colors
-        -0.5,  0.5, 0.5,     1.0, 0.0, 0.0, 1.0,
-         0.5,  0.5, 0.5,     0.0, 1.0, 0.0, 1.0,
-         0.5, -0.5, 0.5,     0.0, 0.0, 1.0, 1.0,
-        -0.5, -0.5, 0.5,     1.0, 1.0, 0.0, 1.0,
+        // positions         // colors
+         0.0,  0.5, 0.5,     1.0, 0.0, 0.0, 1.0,
+         0.5, -0.5, 0.5,     0.0, 1.0, 0.0, 1.0,
+        -0.5, -0.5, 0.5,     0.0, 0.0, 1.0, 1.0
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
         data = { ptr = &vertices, size = size_of(vertices) }
     })
 
-    // an index buffer
-    indices := [?]u16 { 0, 1, 2,  0, 2, 3 }
-    state.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
-    })
-
-    // a shader and pipeline object
+    // create a shader and pipeline object (default render states are fine for triangle)
     state.pip = sg.make_pipeline({
-        shader = sg.make_shader(quad_shader_desc(sg.query_backend())),
-        index_type = .UINT16,
+        shader = sg.make_shader(triangle_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
                 ATTR_vs_position = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .FLOAT4 }
+                ATTR_vs_color0 = { format = .FLOAT4 },
             }
         }
     })
 
-    // default pass action
+    // a pass action to clear framebuffer to black
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0, 0, 0, 1 }}
+            0 = { action = .CLEAR, value = { r = 0, g = 0, b = 0, a = 1 }}
         }
     }
 }
@@ -65,9 +56,10 @@ frame :: proc "c" () {
     sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
-    sg.draw(0, 6, 1)
+    sg.draw(0, 3, 1)
     sg.end_pass()
     sg.commit()
+
 }
 
 cleanup :: proc "c" () {
@@ -75,13 +67,13 @@ cleanup :: proc "c" () {
     sg.shutdown()
 }
 
-main :: proc () {
+main :: proc() {
     sapp.run({
         init_cb = init,
         frame_cb = frame,
         cleanup_cb = cleanup,
-        width = 800,
-        height = 600,
-        window_title = "quad.odin"
+        width = 640,
+        height = 480,
+        window_title = "triangle/main.odin",
     })
 }

@@ -1,14 +1,14 @@
 //------------------------------------------------------------------------------
-//  clear.odin
+//  clear/main.odin
 //
 //  Minimal sample which just clears the default framebuffer
 //------------------------------------------------------------------------------
 package main
 
 import "core:runtime"
-import sg "../sokol/gfx"
-import sapp "../sokol/app"
-import sglue "../sokol/glue"
+import sg "../../sokol/gfx"
+import sapp "../../sokol/app"
+import sglue "../../sokol/glue"
 
 pass_action: sg.Pass_Action;
 
