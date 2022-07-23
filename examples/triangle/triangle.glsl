@@ -1,4 +1,5 @@
-@cimport sg "../../../sokol/gfx"
+@cimport package main
+@cimport import sg "../../sokol/gfx"
 
 @vs vs
 in vec4 position;

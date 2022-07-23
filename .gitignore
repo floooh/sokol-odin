@@ -1,4 +1,5 @@
 .vscode/
+build/
 *.a
 *.o
 *.lib
