@@ -39,6 +39,6 @@ main :: proc() {
         cleanup_cb = cleanup,
         width = 400,
         height = 300,
-        window_title = "clear.odin",
+        window_title = "clear",
     });
 }

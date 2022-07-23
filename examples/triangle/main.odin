@@ -74,6 +74,6 @@ main :: proc() {
         cleanup_cb = cleanup,
         width = 640,
         height = 480,
-        window_title = "triangle/main.odin",
+        window_title = "triangle",
     })
 }

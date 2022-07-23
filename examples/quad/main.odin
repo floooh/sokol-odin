@@ -82,6 +82,6 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 800,
         height = 600,
-        window_title = "quad/main.odin"
+        window_title = "quad"
     })
 }
