@@ -15,12 +15,12 @@ state: struct {
     pip: sg.Pipeline,
     bind: sg.Bindings,
     pass_action: sg.Pass_Action,
-};
+}
 
 init :: proc "c" () {
-    context = runtime.default_context();
+    context = runtime.default_context()
 
-    sg.setup({ ctx = sglue.ctx() });
+    sg.setup({ ctx = sglue.ctx() })
 
     // a vertex buffer with 3 vertices
     vertices := [?]f32 {
@@ -31,7 +31,7 @@ init :: proc "c" () {
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
         data = { ptr = &vertices, size = size_of(vertices) }
-    });
+    })
 
     // create a shader and pipeline object (default render states are fine for triangle)
     state.pip = sg.make_pipeline({
@@ -55,9 +55,9 @@ init :: proc "c" () {
 frame :: proc "c" () {
     context = runtime.default_context()
     sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
-    sg.apply_pipeline(state.pip);
-    sg.apply_bindings(state.bind);
-    sg.draw(0, 3, 1);
+    sg.apply_pipeline(state.pip)
+    sg.apply_bindings(state.bind)
+    sg.draw(0, 3, 1)
     sg.end_pass()
     sg.commit()
 
