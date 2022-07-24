@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------------
-//  offscreen-sapp.c
+//  offscreen/main.odin
 //
 //  Render to an offscreen rendertarget texture, and use this texture
 //  for rendering to the display.
@@ -61,7 +61,7 @@ init :: proc "c" () {
         sample_count = OFFSCREEN_SAMPLE_COUNT,
     }
     color_img := sg.make_image(img_desc)
-    img_desc.pixel_format = .DEPTH;
+    img_desc.pixel_format = .DEPTH
     depth_img := sg.make_image(img_desc)
     state.offscreen.pass = sg.make_pass({
         color_attachments = {
@@ -70,7 +70,7 @@ init :: proc "c" () {
         depth_stencil_attachment = {
             image = depth_img
         }
-    });
+    })
 
     // a donut shape which is rendered into the offscreen render target, and
     // a sphere shape which is rendered into the default framebuffer
