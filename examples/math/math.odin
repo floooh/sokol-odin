@@ -70,7 +70,7 @@ persp :: proc {
     persp_mat4,
 }
 persp_mat4 :: proc(fov, aspect, near, far: f32) -> mat4 {
-    m : mat4 = identity()
+    m := identity()
     t := math.tan(fov * (PI / 360))
     m[0][0] = 1.0 / t
     m[1][1] = aspect / t
@@ -85,7 +85,7 @@ lookat :: proc {
     lookat_mat4,
 }
 lookat_mat4 :: proc(eye, center, up: vec3) -> mat4 {
-    m : mat4 = {}
+    m := mat4 {}
     f := norm(center - eye)
     s := norm(cross(f, up))
     u := cross(s, f)
@@ -114,7 +114,7 @@ rotate :: proc{
     rotate_mat4,
 }
 rotate_mat4 :: proc (angle: f32, axis_unorm: vec3) -> mat4 {
-    m: mat4 = identity()
+    m := identity()
 
     axis := norm(axis_unorm)
     sin_theta := math.sin(radians(angle))
@@ -138,7 +138,7 @@ translate :: proc{
     translate_mat4,
 }
 translate_mat4 :: proc (translation: vec3) -> mat4 {
-    m : mat4 = identity()
+    m := identity()
     m[3][0] = translation.x
     m[3][1] = translation.y
     m[3][2] = translation.z
@@ -149,7 +149,7 @@ mul :: proc{
     mul_mat4,
 }
 mul_mat4 :: proc (left, right: mat4) -> mat4 {
-    m : mat4 = {}
+    m := mat4 {}
     for col := 0; col < 4; col += 1 {
         for row := 0; row < 4; row += 1 {
             m[col][row] = left[0][row] * right[col][0] +

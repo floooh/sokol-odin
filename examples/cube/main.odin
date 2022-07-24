@@ -95,23 +95,15 @@ init :: proc "c" () {
 
 frame :: proc "c" () {
     context = runtime.default_context()
-
-    // compute model-view-projection matrix
-    w := sapp.widthf()
-    h := sapp.heightf()
     t := f32(sapp.frame_duration() * 60.0)
-    proj := m.persp(60.0, w / h, 0.01, 10.0)
-    view := m.lookat({0.0, 1.5, 6.0}, {0.0, 0.0, 0.0}, {0.0, 1.0, 0.0})
-    view_proj := m.mul(proj, view)
     state.rx += 1.0 * t
     state.ry += 2.0 * t
-    rxm := m.rotate(state.rx, {1.0, 0.0, 0.0})
-    rym := m.rotate(state.ry, {0.0, 1.0, 0.0})
-    model := m.mul(rxm, rym)
 
-    vs_params : Vs_Params = { mvp = m.mul(view_proj, model) }
-
-    pass_action : sg.Pass_Action = {
+    // vertex shader uniform with model-view-projection matrix
+    vs_params := Vs_Params {
+        mvp = compute_mvp(state.rx, state.ry)
+    }
+    pass_action := sg.Pass_Action {
         colors = {
             0 = { action = .CLEAR, value = { 0.25, 0.5, 0.75, 1.0 } }
         }
@@ -123,6 +115,16 @@ frame :: proc "c" () {
     sg.draw(0, 36, 1)
     sg.end_pass()
     sg.commit()
+}
+
+compute_mvp :: proc (rx, ry: f32) -> m.mat4 {
+    proj := m.persp(fov = 60.0, aspect = sapp.widthf() / sapp.heightf(), near = 0.01, far = 10.0)
+    view := m.lookat(eye = {0.0, 1.5, 6.0}, center = {}, up = {0.0, 1.0, 0.0})
+    view_proj := m.mul(proj, view)
+    rxm := m.rotate(rx, {1.0, 0.0, 0.0})
+    rym := m.rotate(ry, {0.0, 1.0, 0.0})
+    model := m.mul(rxm, rym)
+    return m.mul(view_proj, model)
 }
 
 cleanup :: proc "c" () {
