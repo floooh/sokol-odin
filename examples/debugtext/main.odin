@@ -20,6 +20,12 @@ FONT_ORIC  :: 5
 
 state: struct {
     pass_action: sg.Pass_Action,
+} = {
+    pass_action = {
+        colors = {
+            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } }
+        }
+    }
 }
 
 init :: proc "c" () {
@@ -36,12 +42,6 @@ init :: proc "c" () {
             FONT_ORIC  = sdtx.font_oric()
         }
     })
-
-    state.pass_action = {
-        colors = {
-            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } }
-        }
-    }
 }
 
 print_font :: proc (font_index: int, title: cstring, r, g, b: u8) {
