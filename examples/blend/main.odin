@@ -81,8 +81,8 @@ init :: proc "c" () {
         primitive_type = .TRIANGLE_STRIP,
         blend_color = { 1.0, 0.0, 0.0, 1.0 }
     }
-    for src := 0; src < NUM_BLEND_FACTORS; src += 1 {
-        for dst := 0; dst < NUM_BLEND_FACTORS; dst += 1 {
+    for src in 0..<NUM_BLEND_FACTORS {
+        for dst in 0..<NUM_BLEND_FACTORS {
             pip_desc.colors[0].blend = {
                 enabled = true,
                 src_factor_rgb = sg.Blend_Factor(src + 1),
@@ -118,8 +118,8 @@ frame :: proc "c" () {
 
     // draw the blended quads
     r0 := state.r
-    for src := 0; src < NUM_BLEND_FACTORS; src += 1 {
-        for dst := 0; dst < NUM_BLEND_FACTORS; dst += 1 {
+    for src in 0..<NUM_BLEND_FACTORS {
+        for dst in 0..<NUM_BLEND_FACTORS {
             // compute model-view-proj matrix
             rm := m.rotate(r0, { 0.0, 1.0, 0.0 })
             x := f32(dst - NUM_BLEND_FACTORS/2) * 3.0

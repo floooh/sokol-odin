@@ -43,7 +43,7 @@ Vertex :: struct {
 create_offscreen_pass :: proc (width, height: int) {
     // destroy previous resource (can be called for invalid id)
     sg.destroy_pass(state.offscreen.pass)
-    for i := 0; i < 3; i += 1 {
+    for i in 0..<3 {
         sg.destroy_image(state.offscreen.pass_desc.color_attachments[i].image)
     }
     sg.destroy_image(state.offscreen.pass_desc.depth_stencil_attachment.image)
@@ -74,7 +74,7 @@ create_offscreen_pass :: proc (width, height: int) {
     state.offscreen.pass = sg.make_pass(state.offscreen.pass_desc)
 
     // also need to update the fullscreen-quad texture bindings
-    for i := 0; i < 3; i += 1 {
+    for i in 0..<3 {
         state.fsq.bind.fs_images[i] = state.offscreen.pass_desc.color_attachments[i].image
     }
 }
@@ -270,7 +270,7 @@ frame :: proc "c" () {
     sg.apply_uniforms(.VS, SLOT_fsq_params, { ptr = &fsq_params, size = size_of(fsq_params) })
     sg.draw(0, 4, 1)
     sg.apply_pipeline(state.dbg.pip)
-    for i := 0; i < 3; i += 1 {
+    for i in 0..<3 {
         sg.apply_viewport(i * 100, 0, 100, 100, false)
         state.dbg.bind.fs_images[SLOT_tex] = state.offscreen.pass_desc.color_attachments[i].image
         sg.apply_bindings(state.dbg.bind)

@@ -93,7 +93,7 @@ frame :: proc "c" () {
     frame_time := f32(sapp.frame_duration())
 
     // emit new particles
-    for i := 0; i < NUM_PARTICLES_EMITTED_PER_FRAME; i += 1 {
+    for i in 0..<NUM_PARTICLES_EMITTED_PER_FRAME  {
         if state.cur_num_particles < MAX_PARTICLES {
             state.pos[state.cur_num_particles] = {}
             state.vel[state.cur_num_particles] = { rand(-0.5, 0.5), rand(2.0, 2.5), rand(-0.5, 0.5) }
@@ -105,7 +105,7 @@ frame :: proc "c" () {
     }
 
     // update particle positions
-    for i := 0; i < state.cur_num_particles; i += 1 {
+    for i in 0..<state.cur_num_particles {
         state.vel[i].y -= 1.0 * frame_time
         state.pos[i] += state.vel[i] * frame_time
         // bounce back from ground

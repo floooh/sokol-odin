@@ -169,7 +169,7 @@ frame :: proc "c" () {
         vertex_buffers = { 0 = state.vbuf },
         index_buffer = state.ibuf
     })
-    for i := 0; i < NUM_SHAPES; i += 1 {
+    for i in 0..<NUM_SHAPES {
         // per shape model-view-projection matrix
         model := m.mul(m.translate(state.shapes[i].pos), rm)
         state.vs_params.mvp = m.mul(view_proj, model)
