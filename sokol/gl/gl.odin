@@ -151,10 +151,10 @@ setup :: proc(desc: Desc)  {
 shutdown :: proc()  {
     sgl_shutdown()
 }
-as_radians :: proc(deg: f32) -> f32 {
+rad :: proc(deg: f32) -> f32 {
     return sgl_rad(deg)
 }
-as_degrees :: proc(rad: f32) -> f32 {
+deg :: proc(rad: f32) -> f32 {
     return sgl_deg(rad)
 }
 error :: proc() -> Error {
