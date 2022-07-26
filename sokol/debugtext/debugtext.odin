@@ -3,6 +3,12 @@
 package sokol_debugtext
 import sg "../gfx"
 
+import "core:fmt"
+import "core:strings"
+printf :: proc(s: string, args: ..any) {
+    fstr := fmt.tprintf(s, ..args)
+    putr(strings.unsafe_string_to_cstring(fstr), len(fstr))
+}
 when ODIN_OS == .Windows {
     when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_debug.lib" } }
     else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_release.lib" } }
