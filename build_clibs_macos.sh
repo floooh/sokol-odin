@@ -75,4 +75,47 @@ build_lib_x64_debug sokol_audio         sokol/audio/sokol_audio_macos_x64_metal_
 build_lib_x64_debug sokol_debugtext     sokol/debugtext/sokol_debugtext_macos_x64_metal_debug SOKOL_METAL
 build_lib_x64_debug sokol_shape         sokol/shape/sokol_shape_macos_x64_metal_debug SOKOL_METAL
 build_lib_x64_debug sokol_gl            sokol/gl/sokol_gl_macos_x64_metal_debug SOKOL_METAL
+
+# ARM + GL + Release
+build_lib_arm64_release sokol_gfx         sokol/gfx/sokol_gfx_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_app         sokol/app/sokol_app_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_glue        sokol/glue/sokol_glue_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_time        sokol/time/sokol_time_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_audio       sokol/audio/sokol_audio_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_debugtext   sokol/debugtext/sokol_debugtext_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_shape       sokol/shape/sokol_shape_macos_arm64_gl_release SOKOL_GLCORE33
+build_lib_arm64_release sokol_gl          sokol/gl/sokol_gl_macos_arm64_gl_release SOKOL_GLCORE33
+
+# ARM + GL + Debug
+build_lib_arm64_debug sokol_gfx           sokol/gfx/sokol_gfx_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_app           sokol/app/sokol_app_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_glue          sokol/glue/sokol_glue_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_time          sokol/time/sokol_time_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_audio         sokol/audio/sokol_audio_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_debugtext     sokol/debugtext/sokol_debugtext_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_shape         sokol/shape/sokol_shape_macos_arm64_gl_debug SOKOL_GLCORE33
+build_lib_arm64_debug sokol_gl            sokol/gl/sokol_gl_macos_arm64_gl_debug SOKOL_GLCORE33
+
+# x64 + GL + Release
+build_lib_x64_release sokol_gfx         sokol/gfx/sokol_gfx_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_app         sokol/app/sokol_app_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_glue        sokol/glue/sokol_glue_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_time        sokol/time/sokol_time_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_audio       sokol/audio/sokol_audio_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_debugtext   sokol/debugtext/sokol_debugtext_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_shape       sokol/shape/sokol_shape_macos_x64_gl_release SOKOL_GLCORE33
+build_lib_x64_release sokol_gl          sokol/gl/sokol_gl_macos_x64_gl_release SOKOL_GLCORE33
+
+# x64 + GL + Debug
+build_lib_x64_debug sokol_gfx           sokol/gfx/sokol_gfx_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_app           sokol/app/sokol_app_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_glue          sokol/glue/sokol_glue_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_time          sokol/time/sokol_time_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_audio         sokol/audio/sokol_audio_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_debugtext     sokol/debugtext/sokol_debugtext_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_shape         sokol/shape/sokol_shape_macos_x64_gl_debug SOKOL_GLCORE33
+build_lib_x64_debug sokol_gl            sokol/gl/sokol_gl_macos_x64_gl_debug SOKOL_GLCORE33
+
+
+
 rm *.o

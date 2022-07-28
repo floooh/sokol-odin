@@ -6,6 +6,7 @@
 package main
 
 import "core:runtime"
+import "core:fmt"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -16,6 +17,15 @@ init :: proc "c" () {
     context = runtime.default_context();
     sg.setup({ ctx = sglue.ctx() });
     pass_action.colors[0] = { action = .CLEAR, value = { 1.0, 0.0, 0.0, 1.0 } };
+
+    // just some debug output what backend we're running on
+    switch sg.query_backend() {
+        case .D3D11: fmt.println(">> using D3D11 backend")
+        case .GLCORE33, .GLES2, .GLES3: fmt.println(">> using GL backend")
+        case .METAL_MACOS, .METAL_IOS, .METAL_SIMULATOR: fmt.println(">> using Metal backend")
+        case .WGPU: fmt.println(">> using WebGPU backend")
+        case .DUMMY: fmt.println(">> using dummy backend")
+    }
 }
 
 frame :: proc "c" () {
