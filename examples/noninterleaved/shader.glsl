@@ -1,9 +1,9 @@
 //------------------------------------------------------------------------------
 //  Shader code for noninterleaved-sapp sample.
 //------------------------------------------------------------------------------
-@cimport package main
-@cimport import sg "../../sokol/gfx"
-@cimport import m "../math"
+@header package main
+@header import sg "../../sokol/gfx"
+@header import m "../math"
 @ctype mat4 m.mat4
 
 @vs vs

@@ -1,5 +1,5 @@
-@cimport package main
-@cimport import sg "../../sokol/gfx"
+@header package main
+@header import sg "../../sokol/gfx"
 
 @vs vs
 layout(location=0) in vec4 position;
