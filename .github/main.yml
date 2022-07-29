@@ -1,0 +1,50 @@
+name: Odin
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    strategy:
+      martrix:
+        os: [ubuntu-latest, macos-latest, windows-latest ]
+    runs-on: ${{matrix.os}}
+    steps:
+      - uses: actions/checkout@v2
+      - if: runner.os == 'Linux'
+        name: prepare-linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev
+          echo "FIXME: Install Odin"
+      - if: runner.os == 'macOS'
+        name: prepare-macos
+        run: |
+          brew install odin
+          ./build_clibs_macos.sh
+      - if: runner.os == 'Windows'
+        name: prepare-windows
+        run: |
+          echo "FIXME: Install Odin"
+      - name: build
+        run: |
+          mkdir build
+          cd build
+          odin run ../examples/clear -debug
+          odin run ../examples/triangle -debug
+          odin run ../examples/quad -debug
+          odin run ../examples/bufferoffsets -debug
+          odin run ../examples/cube -debug
+          odin run ../examples/noninterleaved -debug
+          odin run ../examples/texcube -debug
+          odin run ../examples/shapes -debug
+          odin run ../examples/offscreen -debug
+          odin run ../examples/instancing -debug
+          odin run ../examples/mrt -debug
+          odin run ../examples/blend -debug
+          odin run ../examples/debugtext -debug
+          odin run ../examples/debugtext-print -debug
+          odin run ../examples/debugtext-userfont -debug
+          odin run ../examples/saudio -debug
+          odin run ../examples/sgl -debug
+          odin run ../examples/sgl-points -debug
+          odin run ../examples/sgl-context -debug
