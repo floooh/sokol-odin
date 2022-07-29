@@ -116,6 +116,4 @@ build_lib_x64_debug sokol_debugtext     sokol/debugtext/sokol_debugtext_macos_x6
 build_lib_x64_debug sokol_shape         sokol/shape/sokol_shape_macos_x64_gl_debug SOKOL_GLCORE33
 build_lib_x64_debug sokol_gl            sokol/gl/sokol_gl_macos_x64_gl_debug SOKOL_GLCORE33
 
-
-
 rm *.o
