@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     strategy:
-      martrix:
+      matrix:
         os: [ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{matrix.os}}
     steps:
