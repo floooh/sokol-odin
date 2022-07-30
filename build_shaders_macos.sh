@@ -1,6 +1,6 @@
 set -e
 
-sokol_tools_root=../../../sokol-tools-bin
+sokol_tools_root=../sokol-tools-bin
 
 build_shader() {
     name=$1
