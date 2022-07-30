@@ -11,7 +11,6 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
 
 1. First build the required static link libraries:
 
-    On macOS:
     ```
     # on macOS:
     ./build_clibs_macos.sh
