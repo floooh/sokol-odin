@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, ubuntu-latest]
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
@@ -15,7 +15,11 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev
-          echo "FIXME: Install Odin"
+          mkdir build
+          cd build
+          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-ubuntu-amd64-dev-2022-08.zip --output odin.zip
+          unzip odin.zip -D /usr/local/bin/
+          chmod a+x /usr/local/bin/odin
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
