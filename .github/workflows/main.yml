@@ -18,7 +18,7 @@ jobs:
           mkdir build
           cd build
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-ubuntu-amd64-dev-2022-08.zip --output odin.zip
-          unzip odin.zip -D /usr/local/bin/
+          unzip odin.zip -d /usr/local/bin/
           chmod a+x /usr/local/bin/odin
       - if: runner.os == 'macOS'
         name: prepare-macos
