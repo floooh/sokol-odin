@@ -15,11 +15,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev
-          mkdir build
-          cd build
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-ubuntu-amd64-dev-2022-08.zip --output odin.zip
           unzip odin.zip -d /usr/local/bin/
           chmod a+x /usr/local/bin/odin
+          ./build_clibs_linux.sh
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
