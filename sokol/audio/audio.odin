@@ -30,8 +30,8 @@ when ODIN_OS == .Windows {
     }
 }
 else {
-    when ODIN_DEBUG == true { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound" } }
-    else                    { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound" } }
+    when ODIN_DEBUG == true { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
+    else                    { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
 }
 @(default_calling_convention="c")
 foreign sokol_audio_clib {

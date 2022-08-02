@@ -30,8 +30,8 @@ when ODIN_OS == .Windows {
     }
 }
 else {
-    when ODIN_DEBUG == true { foreign import sokol_gfx_clib { "sokol_gfx_linux_x64_gl_debug.a", "system:GL" } }
-    else                    { foreign import sokol_gfx_clib { "sokol_gfx_linux_x64_gl_release.a", "system:GL" } }
+    when ODIN_DEBUG == true { foreign import sokol_gfx_clib { "sokol_gfx_linux_x64_gl_debug.a", "system:GL", "system:dl", "system:pthread" } }
+    else                    { foreign import sokol_gfx_clib { "sokol_gfx_linux_x64_gl_release.a", "system:GL", "system:dl", "system:pthread" } }
 }
 @(default_calling_convention="c")
 foreign sokol_gfx_clib {
