@@ -30,8 +30,8 @@ when ODIN_OS == .Windows {
     }
 }
 else {
-    when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.a" } }
-    else                    { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.a" } }
+    when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL" } }
+    else                    { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL" } }
 }
 @(default_calling_convention="c")
 foreign sokol_app_clib {
