@@ -31,8 +31,8 @@ when ODIN_OS == .Windows {
     }
 }
 else {
-    when ODIN_DEBUG == true { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_debug.lib" } }
-    else                    { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_release.lib" } }
+    when ODIN_DEBUG == true { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_debug.a" } }
+    else                    { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_release.a" } }
 }
 @(default_calling_convention="c")
 foreign sokol_gl_clib {
