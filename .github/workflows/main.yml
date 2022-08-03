@@ -6,10 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        include:
-          - { os: windows-latest, shell: cmd }
-          - { os: macos-latest }
-          - { os: ubuntu-latest }
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
@@ -29,6 +26,7 @@ jobs:
           ./build_clibs_macos.sh
       - if: runner.os == 'Windows'
         name: prepare-windows
+        shell: cmd
         run: |
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-windows-amd64-dev-2022-08.zip --output odin.zip
           unzip odin.zip
