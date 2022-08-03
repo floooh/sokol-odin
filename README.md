@@ -17,7 +17,7 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
     # on Linux:
     ./build_clibs_linux.sh
     # on Windows with MSVC (from a 'Visual Studio Developer Command Prompt')
-    build_clibs_windows_msvc.cmd
+    build_clibs_windows.cmd
     ```
 
 2. Create a build directory and cd into it:

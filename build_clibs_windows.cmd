@@ -4,8 +4,6 @@ set sources=app gfx glue time audio debugtext shape gl
 
 REM D3D11 Debug
 for %%s in (%sources%) do (
-    set libname = 
-    echo %libname%
     cl /c /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_%%s.c
     lib /OUT:sokol\%%s\sokol_%%s_windows_x64_d3d11_debug.lib sokol_%%s.obj
     del sokol_%%s.obj
