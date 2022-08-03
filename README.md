@@ -1,6 +1,6 @@
 # sokol-odin
 
-[WIP] Auto-generated Odin bindings for the [sokol headers](https://github.com/floooh/sokol).
+Auto-generated Odin bindings for the [sokol headers](https://github.com/floooh/sokol).
 
 ## BUILD
 
