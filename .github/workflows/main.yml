@@ -6,7 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
@@ -27,7 +27,9 @@ jobs:
       - if: runner.os == 'Windows'
         name: prepare-windows
         run: |
-          echo "FIXME: Install Odin"
+          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-windows-amd64-dev-2022-08.zip --output odin.zip
+          unzip odin.zip
+          build_clibs_windows.cmd
       - name: build
         run: |
           odin build examples/clear -debug
