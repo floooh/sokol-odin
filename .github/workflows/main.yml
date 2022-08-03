@@ -6,7 +6,10 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        include:
+          - { os: windows-latest, shell: cmd }
+          - { os: macos-latest }
+          - { os: ubuntu-latest }
     runs-on: ${{matrix.os}}
     steps:
       - uses: actions/checkout@v2
