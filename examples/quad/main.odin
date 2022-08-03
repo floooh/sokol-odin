@@ -82,6 +82,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 800,
         height = 600,
-        window_title = "quad"
+        window_title = "quad",
+        icon = { sokol_default = true }
     })
 }

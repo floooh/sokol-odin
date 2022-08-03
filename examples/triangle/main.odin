@@ -75,5 +75,6 @@ main :: proc() {
         width = 640,
         height = 480,
         window_title = "triangle",
+        icon = { sokol_default = true }
     })
 }

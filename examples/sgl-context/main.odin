@@ -176,6 +176,7 @@ main :: proc () {
         width = 800,
         height = 600,
         sample_count = 4,
-        window_title = "sgl-context"
+        window_title = "sgl-context",
+        icon = { sokol_default = true }
     })
 }

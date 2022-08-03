@@ -230,6 +230,7 @@ main :: proc () {
         width = 512,
         height = 512,
         sample_count = 4,
-        window_title = "sgl"
+        window_title = "sgl",
+        icon = { sokol_default = true }
     })
 }

@@ -101,6 +101,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 800,
         height = 600,
-        window_title = "bufferoffsets"
+        window_title = "bufferoffsets",
+        icon = { sokol_default = true }
     })
 }

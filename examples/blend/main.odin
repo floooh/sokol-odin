@@ -150,6 +150,7 @@ main :: proc () {
         width = 800,
         height = 600,
         sample_count = 4,
-        window_title = "blend"
+        window_title = "blend",
+        icon = { sokol_default = true }
     })
 }

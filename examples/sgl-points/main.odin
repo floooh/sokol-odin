@@ -96,6 +96,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 512,
         height = 512,
-        window_title = "sgl-points"
+        window_title = "sgl-points",
+        icon = { sokol_default = true }
     })
 }

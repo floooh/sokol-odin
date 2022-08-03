@@ -207,6 +207,7 @@ main :: proc () {
         width = 800,
         height = 600,
         sample_count = 4,
-        window_title = "shapes"
+        window_title = "shapes",
+        icon = { sokol_default = true }
     })
 }

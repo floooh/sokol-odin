@@ -91,6 +91,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 1024,
         height = 600,
-        window_title = "debugtext"
+        window_title = "debugtext",
+        icon = { sokol_default = true }
     })
 }

@@ -60,6 +60,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 400,
         height = 300,
-        window_title = "saudio"
+        window_title = "saudio",
+        icon = { sokol_default = true }
     })
 }

@@ -141,5 +141,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "cube",
+        icon = { sokol_default = true }
     })
 }

@@ -87,6 +87,7 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 640,
         height = 480,
-        window_title = "debugtext-printf"
+        window_title = "debugtext-printf",
+        icon = { sokol_default = true }
     })
 }

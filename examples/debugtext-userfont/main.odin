@@ -104,7 +104,8 @@ main :: proc () {
         cleanup_cb = cleanup,
         width = 800,
         height = 600,
-        window_title = "debugtext-userfont"
+        window_title = "debugtext-userfont",
+        icon = { sokol_default = true }
     })
 }
 

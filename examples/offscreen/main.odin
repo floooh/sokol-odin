@@ -224,6 +224,7 @@ main :: proc () {
         width = 800,
         height = 600,
         sample_count = 4,
-        window_title = "offscreen"
+        window_title = "offscreen",
+        icon = { sokol_default = true }
     })
 }
