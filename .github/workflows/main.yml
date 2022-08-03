@@ -23,6 +23,7 @@ jobs:
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
+          brew install llvm@11
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2022-08/odin-macos-amd64-dev-2022-08.zip --output odin.zip
           unzip odin.zip
           chmod a+x odin
