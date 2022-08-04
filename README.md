@@ -64,6 +64,13 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
     The ```clear``` sample prints the selected backend to the terminal:
 
     ```
-    build ➤ odin run ../examples/clear -debug -define:SOKOL_USE_GL=true
+    odin run ../examples/clear -debug -define:SOKOL_USE_GL=true
     >> using GL backend
+    ```
+
+    On Windows, you can get rid of the automatically opened terminal window
+    by building with the ```-subsystem:windows``` option:
+
+    ```
+    odin build ../examples/clear -subsystem:windows
     ```
