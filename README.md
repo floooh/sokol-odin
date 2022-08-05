@@ -1,4 +1,4 @@
-# sokol-odin
+[![Odin](https://github.com/floooh/sokol-odin/actions/workflows/main.yml/badge.svg)](https://github.com/floooh/sokol-odin/actions/workflows/main.yml)
 
 Auto-generated Odin bindings for the [sokol headers](https://github.com/floooh/sokol).
 
