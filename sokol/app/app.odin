@@ -70,6 +70,8 @@ foreign sokol_app_clib {
     sapp_get_num_dropped_files :: proc() -> i32 ---
     sapp_get_dropped_file_path :: proc(index: i32) -> cstring ---
     sapp_run :: proc(desc: ^Desc)  ---
+    sapp_egl_get_display :: proc() -> rawptr ---
+    sapp_egl_get_context :: proc() -> rawptr ---
     sapp_gles2 :: proc() -> bool ---
     sapp_html5_ask_leave_site :: proc(ask: bool)  ---
     sapp_html5_get_dropped_file_size :: proc(index: i32) -> u32 ---
@@ -484,6 +486,12 @@ get_dropped_file_path :: proc(index: int) -> cstring {
 run :: proc(desc: Desc)  {
     _desc := desc
     sapp_run(&_desc)
+}
+egl_get_display :: proc() -> rawptr {
+    return sapp_egl_get_display()
+}
+egl_get_context :: proc() -> rawptr {
+    return sapp_egl_get_context()
 }
 gles2 :: proc() -> bool {
     return sapp_gles2()
