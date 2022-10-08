@@ -247,10 +247,17 @@ Keycode :: enum i32 {
     RIGHT_SUPER = 347,
     MENU = 348,
 }
+Android_Tooltype :: enum i32 {
+    UNKNOWN = 0,
+    FINGER = 1,
+    STYLUS = 2,
+    MOUSE = 3,
+}
 Touchpoint :: struct {
     identifier : u64,
     pos_x : f32,
     pos_y : f32,
+    android_tooltype : Android_Tooltype,
     changed : bool,
 }
 Mousebutton :: enum i32 {
