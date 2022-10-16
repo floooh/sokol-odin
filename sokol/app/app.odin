@@ -2,6 +2,7 @@
 
 package sokol_app
 
+import "core:c"
 when ODIN_OS == .Windows {
     when #config(SOKOL_USE_GL,false) {
         when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_windows_x64_gl_debug.lib" } }
@@ -33,65 +34,65 @@ else {
     when ODIN_DEBUG == true { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
     else                    { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
 }
-@(default_calling_convention="c")
+@(default_calling_convention="c", link_prefix="sapp_")
 foreign sokol_app_clib {
-    sapp_isvalid :: proc() -> bool ---
-    sapp_width :: proc() -> i32 ---
-    sapp_widthf :: proc() -> f32 ---
-    sapp_height :: proc() -> i32 ---
-    sapp_heightf :: proc() -> f32 ---
-    sapp_color_format :: proc() -> i32 ---
-    sapp_depth_format :: proc() -> i32 ---
-    sapp_sample_count :: proc() -> i32 ---
-    sapp_high_dpi :: proc() -> bool ---
-    sapp_dpi_scale :: proc() -> f32 ---
-    sapp_show_keyboard :: proc(show: bool)  ---
-    sapp_keyboard_shown :: proc() -> bool ---
-    sapp_is_fullscreen :: proc() -> bool ---
-    sapp_toggle_fullscreen :: proc()  ---
-    sapp_show_mouse :: proc(show: bool)  ---
-    sapp_mouse_shown :: proc() -> bool ---
-    sapp_lock_mouse :: proc(lock: bool)  ---
-    sapp_mouse_locked :: proc() -> bool ---
-    sapp_set_mouse_cursor :: proc(cursor: Mouse_Cursor)  ---
-    sapp_get_mouse_cursor :: proc() -> Mouse_Cursor ---
-    sapp_userdata :: proc() -> rawptr ---
-    sapp_query_desc :: proc() -> Desc ---
-    sapp_request_quit :: proc()  ---
-    sapp_cancel_quit :: proc()  ---
-    sapp_quit :: proc()  ---
-    sapp_consume_event :: proc()  ---
-    sapp_frame_count :: proc() -> u64 ---
-    sapp_frame_duration :: proc() -> f64 ---
-    sapp_set_clipboard_string :: proc(str: cstring)  ---
-    sapp_get_clipboard_string :: proc() -> cstring ---
-    sapp_set_window_title :: proc(str: cstring)  ---
-    sapp_set_icon :: proc(icon_desc: ^Icon_Desc)  ---
-    sapp_get_num_dropped_files :: proc() -> i32 ---
-    sapp_get_dropped_file_path :: proc(index: i32) -> cstring ---
-    sapp_run :: proc(desc: ^Desc)  ---
-    sapp_egl_get_display :: proc() -> rawptr ---
-    sapp_egl_get_context :: proc() -> rawptr ---
-    sapp_gles2 :: proc() -> bool ---
-    sapp_html5_ask_leave_site :: proc(ask: bool)  ---
-    sapp_html5_get_dropped_file_size :: proc(index: i32) -> u32 ---
-    sapp_html5_fetch_dropped_file :: proc(request: ^Html5_Fetch_Request)  ---
-    sapp_metal_get_device :: proc() -> rawptr ---
-    sapp_metal_get_renderpass_descriptor :: proc() -> rawptr ---
-    sapp_metal_get_drawable :: proc() -> rawptr ---
-    sapp_macos_get_window :: proc() -> rawptr ---
-    sapp_ios_get_window :: proc() -> rawptr ---
-    sapp_d3d11_get_device :: proc() -> rawptr ---
-    sapp_d3d11_get_device_context :: proc() -> rawptr ---
-    sapp_d3d11_get_swap_chain :: proc() -> rawptr ---
-    sapp_d3d11_get_render_target_view :: proc() -> rawptr ---
-    sapp_d3d11_get_depth_stencil_view :: proc() -> rawptr ---
-    sapp_win32_get_hwnd :: proc() -> rawptr ---
-    sapp_wgpu_get_device :: proc() -> rawptr ---
-    sapp_wgpu_get_render_view :: proc() -> rawptr ---
-    sapp_wgpu_get_resolve_view :: proc() -> rawptr ---
-    sapp_wgpu_get_depth_stencil_view :: proc() -> rawptr ---
-    sapp_android_get_native_activity :: proc() -> rawptr ---
+    isvalid :: proc() -> bool ---
+    width :: proc() -> c.int ---
+    widthf :: proc() -> f32 ---
+    height :: proc() -> c.int ---
+    heightf :: proc() -> f32 ---
+    color_format :: proc() -> c.int ---
+    depth_format :: proc() -> c.int ---
+    sample_count :: proc() -> c.int ---
+    high_dpi :: proc() -> bool ---
+    dpi_scale :: proc() -> f32 ---
+    show_keyboard :: proc(show: bool)  ---
+    keyboard_shown :: proc() -> bool ---
+    is_fullscreen :: proc() -> bool ---
+    toggle_fullscreen :: proc()  ---
+    show_mouse :: proc(show: bool)  ---
+    mouse_shown :: proc() -> bool ---
+    lock_mouse :: proc(lock: bool)  ---
+    mouse_locked :: proc() -> bool ---
+    set_mouse_cursor :: proc(cursor: Mouse_Cursor)  ---
+    get_mouse_cursor :: proc() -> Mouse_Cursor ---
+    userdata :: proc() -> rawptr ---
+    query_desc :: proc() -> Desc ---
+    request_quit :: proc()  ---
+    cancel_quit :: proc()  ---
+    quit :: proc()  ---
+    consume_event :: proc()  ---
+    frame_count :: proc() -> u64 ---
+    frame_duration :: proc() -> f64 ---
+    set_clipboard_string :: proc(str: cstring)  ---
+    get_clipboard_string :: proc() -> cstring ---
+    set_window_title :: proc(str: cstring)  ---
+    set_icon :: proc(#by_ptr icon_desc: Icon_Desc)  ---
+    get_num_dropped_files :: proc() -> c.int ---
+    get_dropped_file_path :: proc(#any_int index: c.int) -> cstring ---
+    run :: proc(#by_ptr desc: Desc)  ---
+    egl_get_display :: proc() -> rawptr ---
+    egl_get_context :: proc() -> rawptr ---
+    gles2 :: proc() -> bool ---
+    html5_ask_leave_site :: proc(ask: bool)  ---
+    html5_get_dropped_file_size :: proc(#any_int index: c.int) -> u32 ---
+    html5_fetch_dropped_file :: proc(#by_ptr request: Html5_Fetch_Request)  ---
+    metal_get_device :: proc() -> rawptr ---
+    metal_get_renderpass_descriptor :: proc() -> rawptr ---
+    metal_get_drawable :: proc() -> rawptr ---
+    macos_get_window :: proc() -> rawptr ---
+    ios_get_window :: proc() -> rawptr ---
+    d3d11_get_device :: proc() -> rawptr ---
+    d3d11_get_device_context :: proc() -> rawptr ---
+    d3d11_get_swap_chain :: proc() -> rawptr ---
+    d3d11_get_render_target_view :: proc() -> rawptr ---
+    d3d11_get_depth_stencil_view :: proc() -> rawptr ---
+    win32_get_hwnd :: proc() -> rawptr ---
+    wgpu_get_device :: proc() -> rawptr ---
+    wgpu_get_render_view :: proc() -> rawptr ---
+    wgpu_get_resolve_view :: proc() -> rawptr ---
+    wgpu_get_depth_stencil_view :: proc() -> rawptr ---
+    android_get_native_activity :: proc() -> rawptr ---
 }
 MAX_TOUCHPOINTS :: 8
 MAX_MOUSEBUTTONS :: 3
@@ -287,20 +288,20 @@ Event :: struct {
     mouse_dy : f32,
     scroll_x : f32,
     scroll_y : f32,
-    num_touches : i32,
+    num_touches : c.int,
     touches : [8]Touchpoint,
-    window_width : i32,
-    window_height : i32,
-    framebuffer_width : i32,
-    framebuffer_height : i32,
+    window_width : c.int,
+    window_height : c.int,
+    framebuffer_width : c.int,
+    framebuffer_height : c.int,
 }
 Range :: struct {
     ptr : rawptr,
     size : u64,
 }
 Image_Desc :: struct {
-    width : i32,
-    height : i32,
+    width : c.int,
+    height : c.int,
     pixels : Range,
 }
 Icon_Desc :: struct {
@@ -324,24 +325,24 @@ Desc :: struct {
     cleanup_userdata_cb : proc "c" (a0: rawptr),
     event_userdata_cb : proc "c" (a0: ^Event, a1: rawptr),
     fail_userdata_cb : proc "c" (a0: cstring, a1: rawptr),
-    width : i32,
-    height : i32,
-    sample_count : i32,
-    swap_interval : i32,
+    width : c.int,
+    height : c.int,
+    sample_count : c.int,
+    swap_interval : c.int,
     high_dpi : bool,
     fullscreen : bool,
     alpha : bool,
     window_title : cstring,
     enable_clipboard : bool,
-    clipboard_size : i32,
+    clipboard_size : c.int,
     enable_dragndrop : bool,
-    max_dropped_files : i32,
-    max_dropped_file_path_length : i32,
+    max_dropped_files : c.int,
+    max_dropped_file_path_length : c.int,
     icon : Icon_Desc,
     allocator : Allocator,
     gl_force_gles2 : bool,
-    gl_major_version : i32,
-    gl_minor_version : i32,
+    gl_major_version : c.int,
+    gl_minor_version : c.int,
     win32_console_utf8 : bool,
     win32_console_create : bool,
     win32_console_attach : bool,
@@ -360,14 +361,14 @@ Html5_Fetch_Error :: enum i32 {
 Html5_Fetch_Response :: struct {
     succeeded : bool,
     error_code : Html5_Fetch_Error,
-    file_index : i32,
+    file_index : c.int,
     fetched_size : u32,
     buffer_ptr : rawptr,
     buffer_size : u32,
     user_data : rawptr,
 }
 Html5_Fetch_Request :: struct {
-    dropped_file_index : i32,
+    dropped_file_index : c.int,
     callback : proc "c" (a0: ^Html5_Fetch_Response),
     buffer_ptr : rawptr,
     buffer_size : u32,
@@ -386,178 +387,4 @@ Mouse_Cursor :: enum i32 {
     RESIZE_ALL,
     NOT_ALLOWED,
     NUM,
-}
-isvalid :: proc() -> bool {
-    return sapp_isvalid()
-}
-width :: proc() -> int {
-    return cast(int)sapp_width()
-}
-widthf :: proc() -> f32 {
-    return sapp_widthf()
-}
-height :: proc() -> int {
-    return cast(int)sapp_height()
-}
-heightf :: proc() -> f32 {
-    return sapp_heightf()
-}
-color_format :: proc() -> int {
-    return cast(int)sapp_color_format()
-}
-depth_format :: proc() -> int {
-    return cast(int)sapp_depth_format()
-}
-sample_count :: proc() -> int {
-    return cast(int)sapp_sample_count()
-}
-high_dpi :: proc() -> bool {
-    return sapp_high_dpi()
-}
-dpi_scale :: proc() -> f32 {
-    return sapp_dpi_scale()
-}
-show_keyboard :: proc(show: bool)  {
-    sapp_show_keyboard(show)
-}
-keyboard_shown :: proc() -> bool {
-    return sapp_keyboard_shown()
-}
-is_fullscreen :: proc() -> bool {
-    return sapp_is_fullscreen()
-}
-toggle_fullscreen :: proc()  {
-    sapp_toggle_fullscreen()
-}
-show_mouse :: proc(show: bool)  {
-    sapp_show_mouse(show)
-}
-mouse_shown :: proc() -> bool {
-    return sapp_mouse_shown()
-}
-lock_mouse :: proc(lock: bool)  {
-    sapp_lock_mouse(lock)
-}
-mouse_locked :: proc() -> bool {
-    return sapp_mouse_locked()
-}
-set_mouse_cursor :: proc(cursor: Mouse_Cursor)  {
-    sapp_set_mouse_cursor(cursor)
-}
-get_mouse_cursor :: proc() -> Mouse_Cursor {
-    return sapp_get_mouse_cursor()
-}
-userdata :: proc() -> rawptr {
-    return sapp_userdata()
-}
-query_desc :: proc() -> Desc {
-    return sapp_query_desc()
-}
-request_quit :: proc()  {
-    sapp_request_quit()
-}
-cancel_quit :: proc()  {
-    sapp_cancel_quit()
-}
-quit :: proc()  {
-    sapp_quit()
-}
-consume_event :: proc()  {
-    sapp_consume_event()
-}
-frame_count :: proc() -> u64 {
-    return sapp_frame_count()
-}
-frame_duration :: proc() -> f64 {
-    return sapp_frame_duration()
-}
-set_clipboard_string :: proc(str: cstring)  {
-    sapp_set_clipboard_string(str)
-}
-get_clipboard_string :: proc() -> cstring {
-    return sapp_get_clipboard_string()
-}
-set_window_title :: proc(str: cstring)  {
-    sapp_set_window_title(str)
-}
-set_icon :: proc(icon_desc: Icon_Desc)  {
-    _icon_desc := icon_desc
-    sapp_set_icon(&_icon_desc)
-}
-get_num_dropped_files :: proc() -> int {
-    return cast(int)sapp_get_num_dropped_files()
-}
-get_dropped_file_path :: proc(index: int) -> cstring {
-    return sapp_get_dropped_file_path(cast(i32)index)
-}
-run :: proc(desc: Desc)  {
-    _desc := desc
-    sapp_run(&_desc)
-}
-egl_get_display :: proc() -> rawptr {
-    return sapp_egl_get_display()
-}
-egl_get_context :: proc() -> rawptr {
-    return sapp_egl_get_context()
-}
-gles2 :: proc() -> bool {
-    return sapp_gles2()
-}
-html5_ask_leave_site :: proc(ask: bool)  {
-    sapp_html5_ask_leave_site(ask)
-}
-html5_get_dropped_file_size :: proc(index: int) -> int {
-    return cast(int)sapp_html5_get_dropped_file_size(cast(i32)index)
-}
-html5_fetch_dropped_file :: proc(request: Html5_Fetch_Request)  {
-    _request := request
-    sapp_html5_fetch_dropped_file(&_request)
-}
-metal_get_device :: proc() -> rawptr {
-    return sapp_metal_get_device()
-}
-metal_get_renderpass_descriptor :: proc() -> rawptr {
-    return sapp_metal_get_renderpass_descriptor()
-}
-metal_get_drawable :: proc() -> rawptr {
-    return sapp_metal_get_drawable()
-}
-macos_get_window :: proc() -> rawptr {
-    return sapp_macos_get_window()
-}
-ios_get_window :: proc() -> rawptr {
-    return sapp_ios_get_window()
-}
-d3d11_get_device :: proc() -> rawptr {
-    return sapp_d3d11_get_device()
-}
-d3d11_get_device_context :: proc() -> rawptr {
-    return sapp_d3d11_get_device_context()
-}
-d3d11_get_swap_chain :: proc() -> rawptr {
-    return sapp_d3d11_get_swap_chain()
-}
-d3d11_get_render_target_view :: proc() -> rawptr {
-    return sapp_d3d11_get_render_target_view()
-}
-d3d11_get_depth_stencil_view :: proc() -> rawptr {
-    return sapp_d3d11_get_depth_stencil_view()
-}
-win32_get_hwnd :: proc() -> rawptr {
-    return sapp_win32_get_hwnd()
-}
-wgpu_get_device :: proc() -> rawptr {
-    return sapp_wgpu_get_device()
-}
-wgpu_get_render_view :: proc() -> rawptr {
-    return sapp_wgpu_get_render_view()
-}
-wgpu_get_resolve_view :: proc() -> rawptr {
-    return sapp_wgpu_get_resolve_view()
-}
-wgpu_get_depth_stencil_view :: proc() -> rawptr {
-    return sapp_wgpu_get_depth_stencil_view()
-}
-android_get_native_activity :: proc() -> rawptr {
-    return sapp_android_get_native_activity()
 }

@@ -100,7 +100,7 @@ init :: proc "c" () {
     }
 
     // a render pass with 3 color attachment images, and a depth attachment image
-    create_offscreen_pass(sapp.width(), sapp.height())
+    create_offscreen_pass(int(sapp.width()), int(sapp.height()))
 
     // cube vertex buffer
     cube_vertices := [?]Vertex {
