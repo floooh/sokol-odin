@@ -40,7 +40,7 @@ Vertex :: struct {
 }
 
 // called initially and when window size changes
-create_offscreen_pass :: proc (width, height: int) {
+create_offscreen_pass :: proc (width, height: i32) {
     // destroy previous resource (can be called for invalid id)
     sg.destroy_pass(state.offscreen.pass)
     for i in 0..<3 {
@@ -51,8 +51,8 @@ create_offscreen_pass :: proc (width, height: int) {
     // create offscreen rendertarget images and pass
     color_img_desc := sg.Image_Desc {
         render_target = true,
-        width = i32(width),
-        height = i32(height),
+        width = width,
+        height = height,
         min_filter = .LINEAR,
         mag_filter = .LINEAR,
         wrap_u = .CLAMP_TO_EDGE,
@@ -83,7 +83,7 @@ create_offscreen_pass :: proc (width, height: int) {
 event :: proc "c" (ev: ^sapp.Event) {
     context = runtime.default_context()
     if ev.type == .RESIZED {
-        create_offscreen_pass(int(ev.framebuffer_width), int(ev.framebuffer_height))
+        create_offscreen_pass(ev.framebuffer_width, ev.framebuffer_height)
     }
 }
 
@@ -100,7 +100,7 @@ init :: proc "c" () {
     }
 
     // a render pass with 3 color attachment images, and a depth attachment image
-    create_offscreen_pass(int(sapp.width()), int(sapp.height()))
+    create_offscreen_pass(sapp.width(), sapp.height())
 
     // cube vertex buffer
     cube_vertices := [?]Vertex {
