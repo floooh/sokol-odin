@@ -53,6 +53,10 @@ Allocator :: struct {
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+Logger :: struct {
+    log_cb : proc "c" (a0: cstring, a1: rawptr),
+    user_data : rawptr,
+}
 Desc :: struct {
     sample_rate : c.int,
     num_channels : c.int,
@@ -63,4 +67,5 @@ Desc :: struct {
     stream_userdata_cb : proc "c" (a0: ^f32, a1: c.int, a2: c.int, a3: rawptr),
     user_data : rawptr,
     allocator : Allocator,
+    logger : Logger,
 }

@@ -313,6 +313,10 @@ Allocator :: struct {
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+Logger :: struct {
+    log_cb : proc "c" (a0: cstring, a1: rawptr),
+    user_data : rawptr,
+}
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -340,6 +344,7 @@ Desc :: struct {
     max_dropped_file_path_length : c.int,
     icon : Icon_Desc,
     allocator : Allocator,
+    logger : Logger,
     gl_force_gles2 : bool,
     gl_major_version : c.int,
     gl_minor_version : c.int,

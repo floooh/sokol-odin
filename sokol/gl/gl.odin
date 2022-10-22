@@ -148,6 +148,10 @@ Allocator :: struct {
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+Logger :: struct {
+    log_cb : proc "c" (a0: cstring, a1: rawptr),
+    user_data : rawptr,
+}
 Desc :: struct {
     max_vertices : c.int,
     max_commands : c.int,
@@ -158,4 +162,5 @@ Desc :: struct {
     sample_count : c.int,
     face_winding : sg.Face_Winding,
     allocator : Allocator,
+    logger : Logger,
 }

@@ -103,10 +103,15 @@ Allocator :: struct {
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+Logger :: struct {
+    log_cb : proc "c" (a0: cstring, a1: rawptr),
+    user_data : rawptr,
+}
 Desc :: struct {
     context_pool_size : c.int,
     printf_buf_size : c.int,
     fonts : [8]Font_Desc,
     ctx : Context_Desc,
     allocator : Allocator,
+    logger : Logger,
 }

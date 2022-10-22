@@ -757,6 +757,10 @@ Allocator :: struct {
     free : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+Logger :: struct {
+    log_cb : proc "c" (a0: cstring, a1: rawptr),
+    user_data : rawptr,
+}
 Desc :: struct {
     _ : u32,
     buffer_pool_size : c.int,
@@ -769,6 +773,7 @@ Desc :: struct {
     staging_buffer_size : c.int,
     sampler_cache_size : c.int,
     allocator : Allocator,
+    logger : Logger,
     ctx : Context_Desc,
     _ : u32,
 }
