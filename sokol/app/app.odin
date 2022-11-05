@@ -367,16 +367,14 @@ Html5_Fetch_Response :: struct {
     succeeded : bool,
     error_code : Html5_Fetch_Error,
     file_index : c.int,
-    fetched_size : u32,
-    buffer_ptr : rawptr,
-    buffer_size : u32,
+    data : Range,
+    buffer : Range,
     user_data : rawptr,
 }
 Html5_Fetch_Request :: struct {
     dropped_file_index : c.int,
     callback : proc "c" (a0: ^Html5_Fetch_Response),
-    buffer_ptr : rawptr,
-    buffer_size : u32,
+    buffer : Range,
     user_data : rawptr,
 }
 Mouse_Cursor :: enum i32 {
