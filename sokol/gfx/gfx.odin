@@ -42,6 +42,8 @@ foreign sokol_gfx_clib {
     reset_state_cache :: proc()  ---
     push_debug_group :: proc(name: cstring)  ---
     pop_debug_group :: proc()  ---
+    add_commit_listener :: proc(listener: Commit_Listener) -> bool ---
+    remove_commit_listener :: proc(listener: Commit_Listener) -> bool ---
     make_buffer :: proc(#by_ptr desc: Buffer_Desc) -> Buffer ---
     make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
     make_shader :: proc(#by_ptr desc: Shader_Desc) -> Shader ---
@@ -752,6 +754,10 @@ Context_Desc :: struct {
     d3d11 : D3d11_Context_Desc,
     wgpu : Wgpu_Context_Desc,
 }
+Commit_Listener :: struct {
+    func : proc "c" (a0: rawptr),
+    user_data : rawptr,
+}
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
@@ -772,6 +778,7 @@ Desc :: struct {
     uniform_buffer_size : c.int,
     staging_buffer_size : c.int,
     sampler_cache_size : c.int,
+    max_commit_listeners : c.int,
     allocator : Allocator,
     logger : Logger,
     ctx : Context_Desc,
