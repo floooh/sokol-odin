@@ -48,6 +48,10 @@ foreign sokol_gl_clib {
     set_context :: proc(ctx: Context)  ---
     get_context :: proc() -> Context ---
     default_context :: proc() -> Context ---
+    draw :: proc()  ---
+    context_draw :: proc(ctx: Context)  ---
+    draw_layer :: proc(#any_int layer_id: c.int)  ---
+    context_draw_layer :: proc(ctx: Context, #any_int layer_id: c.int)  ---
     make_pipeline :: proc(#by_ptr desc: sg.Pipeline_Desc) -> Pipeline ---
     context_make_pipeline :: proc(ctx: Context, #by_ptr desc: sg.Pipeline_Desc) -> Pipeline ---
     destroy_pipeline :: proc(pip: Pipeline)  ---
@@ -59,6 +63,7 @@ foreign sokol_gl_clib {
     enable_texture :: proc()  ---
     disable_texture :: proc()  ---
     texture :: proc(img: sg.Image)  ---
+    layer :: proc(#any_int layer_id: c.int)  ---
     load_default_pipeline :: proc()  ---
     load_pipeline :: proc(pip: Pipeline)  ---
     push_pipeline :: proc()  ---
@@ -118,8 +123,6 @@ foreign sokol_gl_clib {
     v3f_t2f_c4b :: proc(x: f32, y: f32, z: f32, u: f32, v: f32, r: u8, g: u8, b: u8, a: u8)  ---
     v3f_t2f_c1i :: proc(x: f32, y: f32, z: f32, u: f32, v: f32, rgba: u32)  ---
     end :: proc()  ---
-    draw :: proc()  ---
-    context_draw :: proc(ctx: Context)  ---
 }
 Pipeline :: struct {
     id : u32,
