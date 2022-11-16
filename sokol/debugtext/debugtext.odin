@@ -57,6 +57,10 @@ foreign sokol_debugtext_clib {
     get_context :: proc() -> Context ---
     default_context :: proc() -> Context ---
     draw :: proc()  ---
+    context_draw :: proc(ctx: Context)  ---
+    draw_layer :: proc(#any_int layer_id: c.int)  ---
+    context_draw_layer :: proc(ctx: Context, #any_int layer_id: c.int)  ---
+    layer :: proc(#any_int layer_id: c.int)  ---
     font :: proc(#any_int font_index: c.int)  ---
     canvas :: proc(w: f32, h: f32)  ---
     origin :: proc(x: f32, y: f32)  ---
@@ -90,6 +94,7 @@ Font_Desc :: struct {
     last_char : u8,
 }
 Context_Desc :: struct {
+    max_commands : c.int,
     char_buf_size : c.int,
     canvas_width : f32,
     canvas_height : f32,
