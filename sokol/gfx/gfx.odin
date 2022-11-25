@@ -97,26 +97,26 @@ foreign sokol_gfx_clib {
     alloc_shader :: proc() -> Shader ---
     alloc_pipeline :: proc() -> Pipeline ---
     alloc_pass :: proc() -> Pass ---
-    dealloc_buffer :: proc(buf_id: Buffer)  ---
-    dealloc_image :: proc(img_id: Image)  ---
-    dealloc_shader :: proc(shd_id: Shader)  ---
-    dealloc_pipeline :: proc(pip_id: Pipeline)  ---
-    dealloc_pass :: proc(pass_id: Pass)  ---
-    init_buffer :: proc(buf_id: Buffer, #by_ptr desc: Buffer_Desc)  ---
-    init_image :: proc(img_id: Image, #by_ptr desc: Image_Desc)  ---
-    init_shader :: proc(shd_id: Shader, #by_ptr desc: Shader_Desc)  ---
-    init_pipeline :: proc(pip_id: Pipeline, #by_ptr desc: Pipeline_Desc)  ---
-    init_pass :: proc(pass_id: Pass, #by_ptr desc: Pass_Desc)  ---
-    uninit_buffer :: proc(buf_id: Buffer) -> bool ---
-    uninit_image :: proc(img_id: Image) -> bool ---
-    uninit_shader :: proc(shd_id: Shader) -> bool ---
-    uninit_pipeline :: proc(pip_id: Pipeline) -> bool ---
-    uninit_pass :: proc(pass_id: Pass) -> bool ---
-    fail_buffer :: proc(buf_id: Buffer)  ---
-    fail_image :: proc(img_id: Image)  ---
-    fail_shader :: proc(shd_id: Shader)  ---
-    fail_pipeline :: proc(pip_id: Pipeline)  ---
-    fail_pass :: proc(pass_id: Pass)  ---
+    dealloc_buffer :: proc(buf: Buffer)  ---
+    dealloc_image :: proc(img: Image)  ---
+    dealloc_shader :: proc(shd: Shader)  ---
+    dealloc_pipeline :: proc(pip: Pipeline)  ---
+    dealloc_pass :: proc(pass: Pass)  ---
+    init_buffer :: proc(buf: Buffer, #by_ptr desc: Buffer_Desc)  ---
+    init_image :: proc(img: Image, #by_ptr desc: Image_Desc)  ---
+    init_shader :: proc(shd: Shader, #by_ptr desc: Shader_Desc)  ---
+    init_pipeline :: proc(pip: Pipeline, #by_ptr desc: Pipeline_Desc)  ---
+    init_pass :: proc(pass: Pass, #by_ptr desc: Pass_Desc)  ---
+    uninit_buffer :: proc(buf: Buffer)  ---
+    uninit_image :: proc(img: Image)  ---
+    uninit_shader :: proc(shd: Shader)  ---
+    uninit_pipeline :: proc(pip: Pipeline)  ---
+    uninit_pass :: proc(pass: Pass)  ---
+    fail_buffer :: proc(buf: Buffer)  ---
+    fail_image :: proc(img: Image)  ---
+    fail_shader :: proc(shd: Shader)  ---
+    fail_pipeline :: proc(pip: Pipeline)  ---
+    fail_pass :: proc(pass: Pass)  ---
     setup_context :: proc() -> Context ---
     activate_context :: proc(ctx_id: Context)  ---
     discard_context :: proc(ctx_id: Context)  ---
@@ -779,6 +779,7 @@ Desc :: struct {
     staging_buffer_size : c.int,
     sampler_cache_size : c.int,
     max_commit_listeners : c.int,
+    disable_validation : bool,
     allocator : Allocator,
     logger : Logger,
     ctx : Context_Desc,
