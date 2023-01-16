@@ -375,6 +375,8 @@ Vertex_Format :: enum i32 {
     SHORT4N,
     USHORT4N,
     UINT10_N2,
+    HALF2,
+    HALF4,
     NUM,
 }
 Vertex_Step :: enum i32 {
