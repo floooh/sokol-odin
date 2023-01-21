@@ -15,11 +15,11 @@ import sgl "../../sokol/gl"
 state: struct {
     pass_action: sg.Pass_Action,
     img: sg.Image,
-    pip_3d: sgl.Pipeline
+    pip_3d: sgl.Pipeline,
 } = {
     pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.0, 0.0, 0.0, 1.0 } } }
-    }
+        colors = { 0 = { action = .CLEAR, value = { 0.0, 0.0, 0.0, 1.0 } } },
+    },
 }
 
 init :: proc "c" () {
@@ -38,8 +38,8 @@ init :: proc "c" () {
         width = 8,
         height = 8,
         data = {
-            subimage = { 0 = { 0 = { ptr = &pixels, size = size_of(pixels) } } }
-        }
+            subimage = { 0 = { 0 = { ptr = &pixels, size = size_of(pixels) } } },
+        },
     })
 
     // create a pipeline object for 3d rendering, with less-equal
@@ -50,8 +50,8 @@ init :: proc "c" () {
         cull_mode = .BACK,
         depth = {
             write_enabled = true,
-            compare = .LESS_EQUAL
-        }
+            compare = .LESS_EQUAL,
+        },
     })
 }
 
@@ -231,6 +231,6 @@ main :: proc () {
         height = 512,
         sample_count = 4,
         window_title = "sgl",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

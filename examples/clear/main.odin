@@ -50,6 +50,6 @@ main :: proc() {
         width = 400,
         height = 300,
         window_title = "clear",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     });
 }

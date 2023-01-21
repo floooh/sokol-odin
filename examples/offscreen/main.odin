@@ -40,12 +40,12 @@ init :: proc "c" () {
 
     // default pass action: clear to blue-ish
     state.default.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.45, 0.65, 1.0 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.45, 0.65, 1.0 } } },
     }
 
     // offscreen pass action: clear to grey
     state.offscreen.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.25, 0.25, 1.0 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.25, 0.25, 1.0 } } },
     }
 
     // a render pass with one color- and one depth-attachment image
@@ -65,11 +65,11 @@ init :: proc "c" () {
     depth_img := sg.make_image(img_desc)
     state.offscreen.pass = sg.make_pass({
         color_attachments = {
-            0 = { image = color_img }
+            0 = { image = color_img },
         },
         depth_stencil_attachment = {
-            image = depth_img
-        }
+            image = depth_img,
+        },
     })
 
     // a donut shape which is rendered into the offscreen render target, and
@@ -102,12 +102,12 @@ init :: proc "c" () {
         shader = sg.make_shader(offscreen_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc()
+                0 = sshape.buffer_layout_desc(),
             },
             attrs = {
                 ATTR_vs_offscreen_position = sshape.position_attr_desc(),
-                ATTR_vs_offscreen_normal = sshape.normal_attr_desc()
-            }
+                ATTR_vs_offscreen_normal = sshape.normal_attr_desc(),
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
@@ -118,8 +118,8 @@ init :: proc "c" () {
             write_enabled = true,
         },
         colors = {
-            0 = { pixel_format = .RGBA8 }
-        }
+            0 = { pixel_format = .RGBA8 },
+        },
     })
 
     // and another pipeline-state-object for the default pass
@@ -127,39 +127,39 @@ init :: proc "c" () {
         shader = sg.make_shader(default_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc()
+                0 = sshape.buffer_layout_desc(),
             },
             attrs = {
                 ATTR_vs_default_position = sshape.position_attr_desc(),
                 ATTR_vs_default_normal = sshape.normal_attr_desc(),
-                ATTR_vs_default_texcoord0 = sshape.texcoord_attr_desc()
-            }
+                ATTR_vs_default_texcoord0 = sshape.texcoord_attr_desc(),
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
         depth = {
             compare = .LESS_EQUAL,
             write_enabled = true,
-        }
+        },
     })
 
     // the resource bindings for rendering a non-textured cube into offscreen render target
     state.offscreen.bind = {
         vertex_buffers = {
-            0 = vbuf
+            0 = vbuf,
         },
-        index_buffer = ibuf
+        index_buffer = ibuf,
     }
 
     // resource bindings to render a textured shape, using the offscreen render target as texture
     state.default.bind = {
         vertex_buffers = {
-            0 = vbuf
+            0 = vbuf,
         },
         index_buffer = ibuf,
         fs_images = {
             SLOT_tex = color_img,
-        }
+        },
     }
 }
 
@@ -171,7 +171,7 @@ frame :: proc "c" () {
 
     // the offscreen pass, rendering an rotating, untextured donut into a render target image
     vs_params := Vs_Params {
-        mvp = compute_mvp(rx = state.rx, ry = state.ry, aspect = 1.0, eye_dist = 2.5)
+        mvp = compute_mvp(rx = state.rx, ry = state.ry, aspect = 1.0, eye_dist = 2.5),
     }
     sg.begin_pass(state.offscreen.pass, state.offscreen.pass_action)
     sg.apply_pipeline(state.offscreen.pip)
@@ -187,8 +187,8 @@ frame :: proc "c" () {
             rx = -state.rx * 0.25,
             ry = state.ry * 0.25,
             aspect = sapp.widthf() / sapp.heightf(),
-            eye_dist = 2.0
-        )
+            eye_dist = 2.0,
+        ),
     }
     sg.begin_default_pass(state.default.pass_action, sapp.width(), sapp.height())
     sg.apply_pipeline(state.default.pip)
@@ -225,6 +225,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "offscreen",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

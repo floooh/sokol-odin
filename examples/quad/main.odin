@@ -30,14 +30,14 @@ init :: proc "c" () {
         -0.5, -0.5, 0.5,     1.0, 1.0, 0.0, 1.0,
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices) }
+        data = { ptr = &vertices, size = size_of(vertices) },
     })
 
     // an index buffer
     indices := [?]u16 { 0, 1, 2,  0, 2, 3 }
     state.bind.index_buffer = sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
+        data = { ptr = &indices, size = size_of(indices) },
     })
 
     // a shader and pipeline object
@@ -47,16 +47,16 @@ init :: proc "c" () {
         layout = {
             attrs = {
                 ATTR_vs_position = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .FLOAT4 }
-            }
-        }
+                ATTR_vs_color0 = { format = .FLOAT4 },
+            },
+        },
     })
 
     // default pass action
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0, 0, 0, 1 }}
-        }
+            0 = { action = .CLEAR, value = { 0, 0, 0, 1 }},
+        },
     }
 }
 
@@ -83,6 +83,6 @@ main :: proc () {
         width = 800,
         height = 600,
         window_title = "quad",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

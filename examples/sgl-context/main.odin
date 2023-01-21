@@ -38,21 +38,21 @@ init :: proc "c" () {
     // setup sokol-gl with the default context compatible with the default render pass
     sgl.setup({
         max_vertices = 64,
-        max_commands = 16
+        max_commands = 16,
     })
 
     // pass action and pipeline for the default render pass
     state.display.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.5, 0.7, 1.0, 1.0 } }
-        }
+            0 = { action = .CLEAR, value = { 0.5, 0.7, 1.0, 1.0 } },
+        },
     }
     state.display.sgl_pip = sgl.context_make_pipeline(sgl.default_context(), {
         cull_mode = .BACK,
         depth = {
             write_enabled = true,
             compare = .LESS_EQUAL,
-        }
+        },
     })
 
     // create a sokol-gl context compatible with the offscreen render pass
@@ -75,17 +75,17 @@ init :: proc "c" () {
         wrap_u = .CLAMP_TO_EDGE,
         wrap_v = .CLAMP_TO_EDGE,
         min_filter = .NEAREST,
-        mag_filter = .NEAREST
+        mag_filter = .NEAREST,
     })
     state.offscreen.pass = sg.make_pass({
         color_attachments = {
-            0 = { image = state.offscreen.img }
-        }
+            0 = { image = state.offscreen.img },
+        },
     })
     state.offscreen.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0, 0, 0, 1 } }
-        }
+            0 = { action = .CLEAR, value = { 0, 0, 0, 1 } },
+        },
     }
 }
 
@@ -177,6 +177,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "sgl-context",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

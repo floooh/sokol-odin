@@ -22,7 +22,7 @@ state: struct {
     ry: f32,
     cur_num_particles: int,
     pos: [MAX_PARTICLES]m.vec3,
-    vel: [MAX_PARTICLES]m.vec3
+    vel: [MAX_PARTICLES]m.vec3,
 }
 
 init :: proc "c" () {
@@ -31,7 +31,7 @@ init :: proc "c" () {
 
     // a pass action for the default render pass
     state.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
     }
 
     // vertex buffer for static geometry, goes into vertex-buffer-slot 0
@@ -43,26 +43,26 @@ init :: proc "c" () {
            r, 0.0, -r,      0.0, 0.0, 1.0, 1.0,
           -r, 0.0, -r,      1.0, 1.0, 0.0, 1.0,
           -r, 0.0, r,       0.0, 1.0, 1.0, 1.0,
-        0.0,    r, 0.0,     1.0, 0.0, 1.0, 1.0
+        0.0,    r, 0.0,     1.0, 0.0, 1.0, 1.0,
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices) }
+        data = { ptr = &vertices, size = size_of(vertices) },
     })
 
     // index buffer for static geometry
     indices := [?]u16 {
         0, 1, 2,    0, 2, 3,    0, 3, 4,    0, 4, 1,
-        5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1
+        5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1,
     }
     state.bind.index_buffer = sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
+        data = { ptr = &indices, size = size_of(indices) },
     })
 
     // empty, dynamic instance-data vertex buffer, goes into vertex-buffer-slot 1
     state.bind.vertex_buffers[1] = sg.make_buffer({
         size = MAX_PARTICLES * size_of(m.vec3),
-        usage = .STREAM
+        usage = .STREAM,
     })
 
     // a shader and pipeline object
@@ -71,20 +71,20 @@ init :: proc "c" () {
         layout = {
             buffers = {
                 // vertex buffer at slot 1 must step per instance
-                1 = { step_func = .PER_INSTANCE }
+                1 = { step_func = .PER_INSTANCE },
             },
             attrs = {
                 ATTR_vs_pos      = { format = .FLOAT3, buffer_index = 0 },
                 ATTR_vs_color0   = { format = .FLOAT4, buffer_index = 0 },
-                ATTR_vs_inst_pos = { format = .FLOAT3, buffer_index = 1 }
-            }
+                ATTR_vs_inst_pos = { format = .FLOAT3, buffer_index = 1 },
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
         depth = {
             compare = .LESS_EQUAL,
             write_enabled = true,
-        }
+        },
     })
 }
 
@@ -119,7 +119,7 @@ frame :: proc "c" () {
     // update instance data
     sg.update_buffer(state.bind.vertex_buffers[1], {
         ptr = &state.pos,
-        size = u64(state.cur_num_particles * size_of(m.vec3))
+        size = u64(state.cur_num_particles * size_of(m.vec3)),
     })
 
     // vertex shader uniform data with model-view-projection matrix
@@ -128,7 +128,7 @@ frame :: proc "c" () {
     view_proj := m.mul(proj, view)
     state.ry += 60.0 * frame_time
     vs_params := Vs_Params {
-        mvp = m.mul(view_proj, m.rotate(state.ry, { 0.0, 1.0, 0.0 }))
+        mvp = m.mul(view_proj, m.rotate(state.ry, { 0.0, 1.0, 0.0 })),
     }
 
     // ...and draw
@@ -155,7 +155,7 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "instancing",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }
 

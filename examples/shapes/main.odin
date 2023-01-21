@@ -42,17 +42,17 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx()
+        ctx = sglue.ctx(),
     })
     sdtx.setup({
         fonts = {
-            0 = sdtx.font_oric()
-        }
+            0 = sdtx.font_oric(),
+        },
     })
 
     // clear to black
     state.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
     }
 
     // shader and pipeline object
@@ -60,21 +60,21 @@ init :: proc "c" () {
         shader = sg.make_shader(shapes_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc()
+                0 = sshape.buffer_layout_desc(),
             },
             attrs = {
                 ATTR_vs_position = sshape.position_attr_desc(),
                 ATTR_vs_normal   = sshape.normal_attr_desc(),
                 ATTR_vs_texcoord = sshape.texcoord_attr_desc(),
-                ATTR_vs_color0   = sshape.color_attr_desc()
-            }
+                ATTR_vs_color0   = sshape.color_attr_desc(),
+            },
         },
         index_type = .UINT16,
         cull_mode = .NONE,
         depth = {
             compare = .LESS_EQUAL,
-            write_enabled = true
-        }
+            write_enabled = true,
+        },
     })
 
     // shape positions
@@ -87,7 +87,7 @@ init :: proc "c" () {
     // generate shape geometries
     buf := sshape.Buffer {
         vertices = { buffer = { ptr = &vertices, size = size_of(vertices) } },
-        indices  = { buffer = { ptr = &indices, size = size_of(indices) } }
+        indices  = { buffer = { ptr = &indices, size = size_of(indices) } },
     }
 
     buf = sshape.build_box(buf, {
@@ -95,7 +95,7 @@ init :: proc "c" () {
         height = 1.0,
         depth = 1.0,
         tiles = 10,
-        random_colors = true
+        random_colors = true,
     })
     state.shapes[BOX].draw = sshape.element_range(buf)
 
@@ -120,7 +120,7 @@ init :: proc "c" () {
         height = 1.5,
         slices = 36,
         stacks = 10,
-        random_colors = true
+        random_colors = true,
     })
     state.shapes[CYLINDER].draw = sshape.element_range(buf)
 
@@ -129,7 +129,7 @@ init :: proc "c" () {
         ring_radius = 0.3,
         rings = 36,
         sides = 18,
-        random_colors = true
+        random_colors = true,
     })
     state.shapes[TORUS].draw = sshape.element_range(buf)
 
@@ -167,7 +167,7 @@ frame :: proc "c" () {
     sg.apply_pipeline(state.pip)
     sg.apply_bindings({
         vertex_buffers = { 0 = state.vbuf },
-        index_buffer = state.ibuf
+        index_buffer = state.ibuf,
     })
     for i in 0..<NUM_SHAPES {
         // per shape model-view-projection matrix
@@ -208,6 +208,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "shapes",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

@@ -23,9 +23,9 @@ state: struct {
 } = {
     pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } }
-        }
-    }
+            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } },
+        },
+    },
 }
 
 init :: proc "c" () {
@@ -39,8 +39,8 @@ init :: proc "c" () {
             FONT_Z1013 = sdtx.font_z1013(),
             FONT_CPC   = sdtx.font_cpc(),
             FONT_C64   = sdtx.font_c64(),
-            FONT_ORIC  = sdtx.font_oric()
-        }
+            FONT_ORIC  = sdtx.font_oric(),
+        },
     })
 }
 
@@ -92,6 +92,6 @@ main :: proc () {
         width = 1024,
         height = 600,
         window_title = "debugtext",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }
