@@ -37,18 +37,18 @@ init :: proc "c" () {
         { -0.25, -0.05,  0.0, 0.0, 1.0 },
         {  0.25, -0.05,  0.0, 1.0, 0.0 },
         {  0.25, -0.55,  1.0, 0.0, 0.0 },
-        { -0.25, -0.55,  1.0, 1.0, 0.0 }
+        { -0.25, -0.55,  1.0, 1.0, 0.0 },
     }
     indices := [9]u16 {
         0, 1, 2,
-        0, 1, 2, 0, 2, 3
+        0, 1, 2, 0, 2, 3,
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices ) }
+        data = { ptr = &vertices, size = size_of(vertices ) },
     })
     state.bind.index_buffer = sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
+        data = { ptr = &indices, size = size_of(indices) },
     })
 
     // a shader and pipeline to render 2D shapes
@@ -59,15 +59,15 @@ init :: proc "c" () {
             attrs = {
                 ATTR_vs_position = { format = .FLOAT2 },
                 ATTR_vs_color0 = { format = .FLOAT3 },
-            }
-        }
+            },
+        },
     })
 
     // pass action for clearing to blue-ish
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.5, 0.5, 1.0, 1.0 } }
-        }
+            0 = { action = .CLEAR, value = { 0.5, 0.5, 1.0, 1.0 } },
+        },
     }
 }
 
@@ -102,6 +102,6 @@ main :: proc () {
         width = 800,
         height = 600,
         window_title = "bufferoffsets",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

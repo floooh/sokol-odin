@@ -21,8 +21,8 @@ state: struct {
 } = {
     pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } }
-        }
+            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } },
+        },
     },
     color_palette = {
         { 0xf4, 0x43, 0x36 },
@@ -40,8 +40,8 @@ state: struct {
         { 0xff, 0xeb, 0x3b },
         { 0xff, 0xc1, 0x07 },
         { 0xff, 0x98, 0x00 },
-        { 0xff, 0x57, 0x22 }
-    }
+        { 0xff, 0x57, 0x22 },
+    },
 }
 
 // use font slot 1 for our user font (can be anything between 0 and SDTX_MAX_FONTS)
@@ -60,8 +60,8 @@ init :: proc "c" () {
                 data = { ptr = &user_font, size = size_of(user_font) },
                 first_char = 0x20,
                 last_char = 0x9F,
-            }
-        }
+            },
+        },
     })
 }
 
@@ -105,7 +105,7 @@ main :: proc () {
         width = 800,
         height = 600,
         window_title = "debugtext-userfont",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }
 

@@ -50,7 +50,7 @@ cross_vec3 :: proc(v0, v1: vec3) -> vec3 {
     return {
         (v0.y * v1.z) - (v0.z * v1.y),
         (v0.z * v1.x) - (v0.x * v1.z),
-        (v0.x * v1.y) - (v0.y * v1.x)
+        (v0.x * v1.y) - (v0.y * v1.x),
     }
 }
 

@@ -28,13 +28,13 @@ state: struct {
     palette: [NUM_FONTS]Color,
 } = {
     pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } } },
     },
     palette = {
         { 0xf4, 0x43, 0x36 },
         { 0x21, 0x96, 0xf3 },
         { 0x4c, 0xaf, 0x50 },
-    }
+    },
 }
 
 init :: proc "c" () {
@@ -44,8 +44,8 @@ init :: proc "c" () {
         fonts = {
             FONT_KC854 = sdtx.font_kc854(),
             FONT_C64 = sdtx.font_c64(),
-            FONT_ORIC = sdtx.font_oric()
-        }
+            FONT_ORIC = sdtx.font_oric(),
+        },
     })
 }
 
@@ -88,6 +88,6 @@ main :: proc () {
         width = 640,
         height = 480,
         window_title = "debugtext-printf",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

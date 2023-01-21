@@ -65,11 +65,11 @@ create_offscreen_pass :: proc (width, height: i32) {
         color_attachments = {
             0 = { image = sg.make_image(color_img_desc) },
             1 = { image = sg.make_image(color_img_desc) },
-            2 = { image = sg.make_image(color_img_desc) }
+            2 = { image = sg.make_image(color_img_desc) },
         },
         depth_stencil_attachment = {
-            image = sg.make_image(depth_img_desc)
-        }
+            image = sg.make_image(depth_img_desc),
+        },
     }
     state.offscreen.pass = sg.make_pass(state.offscreen.pass_desc)
 
@@ -96,7 +96,7 @@ init :: proc "c" () {
     state.pass_action = {
         colors = { 0 = { action = .DONTCARE} },
         depth = { action = .DONTCARE },
-        stencil = { action = .DONTCARE }
+        stencil = { action = .DONTCARE },
     }
 
     // a render pass with 3 color attachment images, and a depth attachment image
@@ -136,7 +136,7 @@ init :: proc "c" () {
         {  1.0,  1.0, -1.0,   0.7 },
     }
     cube_vbuf := sg.make_buffer({
-        data = { ptr = &cube_vertices, size = size_of(cube_vertices) }
+        data = { ptr = &cube_vertices, size = size_of(cube_vertices) },
     })
 
     // index buffer for the cube
@@ -146,11 +146,11 @@ init :: proc "c" () {
         8, 9, 10,  8, 10, 11,
         14, 13, 12,  15, 14, 12,
         16, 17, 18,  16, 18, 19,
-        22, 21, 20,  23, 22, 20
+        22, 21, 20,  23, 22, 20,
     }
     cube_ibuf := sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &cube_indices, size = size_of(cube_indices) }
+        data = { ptr = &cube_indices, size = size_of(cube_indices) },
     })
 
     // pass action for offscreen pass
@@ -158,7 +158,7 @@ init :: proc "c" () {
         colors = {
             0 = { action = .CLEAR, value = { 0.25, 0.0, 0.0, 1.0 } },
             1 = { action = .CLEAR, value = { 0.0, 0.25, 0.0, 1.0 } },
-            2 = { action = .CLEAR, value = { 0.0, 0.0, 0.25, 1.0 } }
+            2 = { action = .CLEAR, value = { 0.0, 0.0, 0.25, 1.0 } },
         },
     }
 
@@ -169,8 +169,8 @@ init :: proc "c" () {
             buffers = { 0 = { stride = size_of(Vertex) } },
             attrs = {
                 ATTR_vs_offscreen_pos     = { offset = i32(offset_of(Vertex, x)), format = .FLOAT3 },
-                ATTR_vs_offscreen_bright0 = { offset = i32(offset_of(Vertex, b)), format = .FLOAT }
-            }
+                ATTR_vs_offscreen_bright0 = { offset = i32(offset_of(Vertex, b)), format = .FLOAT },
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
@@ -180,13 +180,13 @@ init :: proc "c" () {
             compare = .LESS_EQUAL,
             write_enabled = true,
         },
-        color_count = 3
+        color_count = 3,
     })
 
     // resource bindings for offscreen rendering
     state.offscreen.bind = {
         vertex_buffers = {
-            0 = cube_vbuf
+            0 = cube_vbuf,
         },
         index_buffer = cube_ibuf,
     }
@@ -194,7 +194,7 @@ init :: proc "c" () {
     // a vertex buffer to render a fullscreen rectangle
     quad_vertices := [?]f32 { 0.0, 0.0,  1.0, 0.0,  0.0, 1.0,  1.0, 1.0 }
     quad_vbuf := sg.make_buffer({
-        data = { ptr = &quad_vertices, size = size_of(quad_vertices) }
+        data = { ptr = &quad_vertices, size = size_of(quad_vertices) },
     })
 
     // shader and pipeline object to render the fullscreen quad
@@ -202,8 +202,8 @@ init :: proc "c" () {
         shader = sg.make_shader(fsq_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_fsq_pos = { format = .FLOAT2 }
-            }
+                ATTR_vs_fsq_pos = { format = .FLOAT2 },
+            },
         },
         primitive_type = .TRIANGLE_STRIP,
     })
@@ -217,7 +217,7 @@ init :: proc "c" () {
             SLOT_tex0 = state.offscreen.pass_desc.color_attachments[0].image,
             SLOT_tex1 = state.offscreen.pass_desc.color_attachments[1].image,
             SLOT_tex2 = state.offscreen.pass_desc.color_attachments[2].image,
-        }
+        },
     }
 
     // pipeline and resource bindings to render debug-visualization quads
@@ -225,8 +225,8 @@ init :: proc "c" () {
         shader = sg.make_shader(dbg_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_dbg_pos = { format = .FLOAT2 }
-            }
+                ATTR_vs_dbg_pos = { format = .FLOAT2 },
+            },
         },
         primitive_type = .TRIANGLE_STRIP,
     })
@@ -246,13 +246,13 @@ frame :: proc "c" () {
     state.rx += 1.0 * t;
     state.ry += 2.0 * t;
     fsq_params := Fsq_Params {
-        offset = { math.sin(state.rx * 0.01) * 0.1, math.sin(state.ry * 0.01) * 0.1 }
+        offset = { math.sin(state.rx * 0.01) * 0.1, math.sin(state.ry * 0.01) * 0.1 },
     }
     rxm := m.rotate(state.rx, { 1.0, 0.0, 0.0 })
     rym := m.rotate(state.ry, { 0.0, 1.0, 0.0 })
     model := m.mul(rxm, rym)
     offscreen_params := Offscreen_Params {
-        mvp = m.mul(view_proj, model)
+        mvp = m.mul(view_proj, model),
     }
 
     // render cube into MRT offscreen render targets
@@ -296,6 +296,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "mrt",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

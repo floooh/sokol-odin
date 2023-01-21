@@ -27,14 +27,14 @@ init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
         pipeline_pool_size = NUM_BLEND_FACTORS * NUM_BLEND_FACTORS + 1,
-        ctx = sglue.ctx()
+        ctx = sglue.ctx(),
     })
 
     // a default pass action which does not clear, since the entire screen is overwritten anyway
     state.pass_action = {
         colors = { 0 = { action = .DONTCARE } },
         depth = { action = .DONTCARE },
-        stencil = { action = .DONTCARE }
+        stencil = { action = .DONTCARE },
     }
 
     // a quad vertex buffer
@@ -43,10 +43,10 @@ init :: proc "c" () {
         -1.0, -1.0, 0.0,  1.0, 0.0, 0.0, 0.5,
         +1.0, -1.0, 0.0,  0.0, 1.0, 0.0, 0.5,
         -1.0, +1.0, 0.0,  0.0, 0.0, 1.0, 0.5,
-        +1.0, +1.0, 0.0,  1.0, 1.0, 0.0, 0.5
+        +1.0, +1.0, 0.0,  1.0, 1.0, 0.0, 0.5,
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices) }
+        data = { ptr = &vertices, size = size_of(vertices) },
     })
 
     // shader and pipeline object for rendering the background quad
@@ -57,13 +57,13 @@ init :: proc "c" () {
         // provide a stride to skip the gap to the next vertex
         layout = {
             buffers = {
-                0 = { stride = 28 }
+                0 = { stride = 28 },
             },
             attrs = {
-                ATTR_vs_bg_position = { format = .FLOAT2 }
+                ATTR_vs_bg_position = { format = .FLOAT2 },
             },
         },
-        primitive_type = .TRIANGLE_STRIP
+        primitive_type = .TRIANGLE_STRIP,
     })
 
     // a shader for the blended quads
@@ -74,12 +74,12 @@ init :: proc "c" () {
         layout = {
             attrs = {
                 ATTR_vs_quad_position = { format = .FLOAT3 },
-                ATTR_vs_quad_color0   = { format = .FLOAT4 }
-            }
+                ATTR_vs_quad_color0   = { format = .FLOAT4 },
+            },
         },
         shader = quad_shd,
         primitive_type = .TRIANGLE_STRIP,
-        blend_color = { 1.0, 0.0, 0.0, 1.0 }
+        blend_color = { 1.0, 0.0, 0.0, 1.0 },
     }
     for src in 0..<NUM_BLEND_FACTORS {
         for dst in 0..<NUM_BLEND_FACTORS {
@@ -151,6 +151,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "blend",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

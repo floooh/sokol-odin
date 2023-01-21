@@ -19,8 +19,8 @@ state: struct {
     samples: [NUM_SAMPLES]f32,
 } = {
     pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 1.0, 0.5, 0.0, 1.0 } } }
-    }
+        colors = { 0 = { action = .CLEAR, value = { 1.0, 0.5, 0.0, 1.0 }, } },
+    },
 }
 
 init :: proc "c" () {
@@ -61,6 +61,6 @@ main :: proc () {
         width = 400,
         height = 300,
         window_title = "saudio",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

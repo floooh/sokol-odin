@@ -44,7 +44,7 @@ init :: proc "c" () {
          1.0, 1.0, 0.5, 1.0,  1.0, 1.0, 0.5, 1.0,  1.0, 1.0, 0.5, 1.0,  1.0, 1.0, 0.5, 1.0,
     }
     vbuf := sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices) }
+        data = { ptr = &vertices, size = size_of(vertices) },
     })
 
     // create an index buffer for the cube
@@ -54,11 +54,11 @@ init :: proc "c" () {
         8, 9, 10,  8, 10, 11,
         14, 13, 12,  15, 14, 12,
         16, 17, 18,  16, 18, 19,
-        22, 21, 20,  23, 22, 20
+        22, 21, 20,  23, 22, 20,
     }
     ibuf := sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
+        data = { ptr = &indices, size = size_of(indices) },
     })
 
     // shader and pipeline object
@@ -71,14 +71,14 @@ init :: proc "c" () {
                 ATTR_vs_position = { format = .FLOAT3, buffer_index = 0 },
                 // colors come from vertex buffer slot 1
                 ATTR_vs_color0 = { format = .FLOAT4, buffer_index = 1 },
-            }
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
         depth = {
             compare = .LESS_EQUAL,
-            write_enabled = true
-        }
+            write_enabled = true,
+        },
     })
 
     // fill the resource bindings, note how the same vertex
@@ -93,7 +93,7 @@ init :: proc "c" () {
             // position components are at start of buffer
             0 = 0,
             // byte offset of color components in buffer
-            1 = 24 * 3 * size_of(f32)
+            1 = 24 * 3 * size_of(f32),
         },
         index_buffer = ibuf,
     }
@@ -107,7 +107,7 @@ frame :: proc "c" () {
 
     // vertex shader uniform with model-view-projection matrix
     vs_params := Vs_Params {
-        mvp = compute_mvp(state.rx, state.ry)
+        mvp = compute_mvp(state.rx, state.ry),
     }
 
     // default pass-action clears to grey
@@ -144,6 +144,6 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "noninterleaved",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }

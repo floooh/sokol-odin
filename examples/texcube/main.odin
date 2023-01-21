@@ -20,7 +20,7 @@ state: struct {
 Vertex :: struct {
     x, y, z: f32,
     color: u32,
-    u, v: u16
+    u, v: u16,
 }
 
 init :: proc "c" () {
@@ -70,7 +70,7 @@ init :: proc "c" () {
         {  1.0,  1.0, -1.0,  0xFF007FFF,     0, 32767 },
     }
     state.bind.vertex_buffers[0] = sg.make_buffer({
-        data = { ptr = &vertices, size = size_of(vertices) }
+        data = { ptr = &vertices, size = size_of(vertices) },
     })
 
     // create an index buffer for the cube
@@ -80,11 +80,11 @@ init :: proc "c" () {
         8, 9, 10,  8, 10, 11,
         14, 13, 12,  15, 14, 12,
         16, 17, 18,  16, 18, 19,
-        22, 21, 20,  23, 22, 20
+        22, 21, 20,  23, 22, 20,
     }
     state.bind.index_buffer = sg.make_buffer({
         type = .INDEXBUFFER,
-        data = { ptr = &indices, size = size_of(indices) }
+        data = { ptr = &indices, size = size_of(indices) },
     })
 
     // create a checkerboard texture
@@ -101,10 +101,10 @@ init :: proc "c" () {
         data = {
             subimage = {
                 0 = {
-                    0 = { ptr = &pixels, size = size_of(pixels) }
-                }
-            }
-        }
+                    0 = { ptr = &pixels, size = size_of(pixels) },
+                },
+            },
+        },
     })
 
     // shader and pipeline object
@@ -115,21 +115,21 @@ init :: proc "c" () {
                 ATTR_vs_pos = { format = .FLOAT3 },
                 ATTR_vs_color0 = { format = .UBYTE4N },
                 ATTR_vs_texcoord0 = { format = .SHORT2N },
-            }
+            },
         },
         index_type = .UINT16,
         cull_mode = .BACK,
         depth = {
             compare = .LESS_EQUAL,
             write_enabled = true,
-        }
+        },
     })
 
     // default pass action, clear to blue-ish
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.25, 0.5, 0.75, 1.0 } }
-        }
+            0 = { action = .CLEAR, value = { 0.25, 0.5, 0.75, 1.0 } },
+        },
     }
 }
 
@@ -141,7 +141,7 @@ frame :: proc "c" () {
 
     // vertex shader uniform with model-view-projection matrix
     vs_params := Vs_Params {
-        mvp = compute_mvp(state.rx, state.ry)
+        mvp = compute_mvp(state.rx, state.ry),
     }
 
     sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
@@ -177,7 +177,7 @@ main :: proc () {
         height = 600,
         sample_count = 4,
         window_title = "texcube",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }
 

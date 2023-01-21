@@ -75,7 +75,7 @@ frame :: proc "c" () {
     sgl.end()
 
     pass_action := sg.Pass_Action {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } }
+        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
     }
     sg.begin_default_pass(pass_action, sapp.width(), sapp.height())
     sgl.draw()
@@ -97,6 +97,6 @@ main :: proc () {
         width = 512,
         height = 512,
         window_title = "sgl-points",
-        icon = { sokol_default = true }
+        icon = { sokol_default = true },
     })
 }
