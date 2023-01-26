@@ -199,6 +199,7 @@ Pixel_Format :: enum i32 {
     RG16SI,
     RG16F,
     RGBA8,
+    SRGB8A8,
     RGBA8SN,
     RGBA8UI,
     RGBA8SI,
