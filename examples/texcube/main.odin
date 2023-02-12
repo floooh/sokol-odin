@@ -5,6 +5,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -25,7 +26,10 @@ Vertex :: struct {
 
 init :: proc "c" () {
     context = runtime.default_context();
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
 
     /*
         Cube vertex buffer with packed vertex formats for color and texture coords.
@@ -178,6 +182,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "texcube",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }
-

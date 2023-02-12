@@ -5,6 +5,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -25,8 +26,13 @@ state: struct {
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
-    saudio.setup({})
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+     })
+    saudio.setup({
+        logger = { func = slog.func },
+    })
 }
 
 frame :: proc "c" () {
@@ -62,5 +68,6 @@ main :: proc () {
         height = 300,
         window_title = "saudio",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

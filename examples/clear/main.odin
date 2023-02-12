@@ -7,6 +7,7 @@ package main
 
 import "core:runtime"
 import "core:fmt"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -15,7 +16,10 @@ pass_action: sg.Pass_Action;
 
 init :: proc "c" () {
     context = runtime.default_context();
-    sg.setup({ ctx = sglue.ctx() });
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    });
     pass_action.colors[0] = { action = .CLEAR, value = { 1.0, 0.0, 0.0, 1.0 } };
 
     // just some debug output what backend we're running on
@@ -51,5 +55,6 @@ main :: proc() {
         height = 300,
         window_title = "clear",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     });
 }

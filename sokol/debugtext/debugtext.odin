@@ -81,6 +81,18 @@ foreign sokol_debugtext_clib {
     puts :: proc(str: cstring)  ---
     putr :: proc(str: cstring, #any_int len: c.int)  ---
 }
+Log_Item :: enum i32 {
+    OK,
+    MALLOC_FAILED,
+    ADD_COMMIT_LISTENER_FAILED,
+    COMMAND_BUFFER_FULL,
+    CONTEXT_POOL_EXHAUSTED,
+    CANNOT_DESTROY_DEFAULT_CONTEXT,
+}
+Logger :: struct {
+    func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
+    user_data : rawptr,
+}
 Context :: struct {
     id : u32,
 }
@@ -106,10 +118,6 @@ Context_Desc :: struct {
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
-    user_data : rawptr,
-}
-Logger :: struct {
-    log_cb : proc "c" (a0: cstring, a1: rawptr),
     user_data : rawptr,
 }
 Desc :: struct {

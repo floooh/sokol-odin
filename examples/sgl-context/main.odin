@@ -8,6 +8,7 @@ package main
 
 import "core:runtime"
 import "core:math"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -33,12 +34,16 @@ OFFSCREEN_HEIGHT :: 32
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
 
     // setup sokol-gl with the default context compatible with the default render pass
     sgl.setup({
         max_vertices = 64,
         max_commands = 16,
+        logger = { func = slog.func },
     })
 
     // pass action and pipeline for the default render pass
@@ -178,5 +183,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "sgl-context",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

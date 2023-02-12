@@ -6,6 +6,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -19,7 +20,10 @@ state: struct {
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
 
     // cube vertex buffer
     vertices := [?]f32 {
@@ -142,5 +146,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "cube",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

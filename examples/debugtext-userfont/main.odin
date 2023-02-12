@@ -6,6 +6,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -49,7 +50,10 @@ USER_FONT :: 1
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
 
     // setup sokol-debugtext with the user font as the only font,
     // NOTE that the user font only provides pixel data for the
@@ -62,6 +66,7 @@ init :: proc "c" () {
                 last_char = 0x9F,
             },
         },
+        logger = { func = slog.func },
     })
 }
 
@@ -106,6 +111,7 @@ main :: proc () {
         height = 600,
         window_title = "debugtext-userfont",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }
 

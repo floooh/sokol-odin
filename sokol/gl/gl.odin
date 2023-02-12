@@ -124,6 +124,19 @@ foreign sokol_gl_clib {
     v3f_t2f_c1i :: proc(x: f32, y: f32, z: f32, u: f32, v: f32, rgba: u32)  ---
     end :: proc()  ---
 }
+Log_Item :: enum i32 {
+    OK,
+    MALLOC_FAILED,
+    MAKE_PIPELINE_FAILED,
+    PIPELINE_POOL_EXHAUSTED,
+    ADD_COMMIT_LISTENER_FAILED,
+    CONTEXT_POOL_EXHAUSTED,
+    CANNOT_DESTROY_DEFAULT_CONTEXT,
+}
+Logger :: struct {
+    func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
+    user_data : rawptr,
+}
 Pipeline :: struct {
     id : u32,
 }
@@ -149,10 +162,6 @@ Context_Desc :: struct {
 Allocator :: struct {
     alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free : proc "c" (a0: rawptr, a1: rawptr),
-    user_data : rawptr,
-}
-Logger :: struct {
-    log_cb : proc "c" (a0: cstring, a1: rawptr),
     user_data : rawptr,
 }
 Desc :: struct {

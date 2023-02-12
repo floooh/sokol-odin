@@ -1,6 +1,6 @@
 @echo off
 
-set sources=app gfx glue time audio debugtext shape gl
+set sources=log app gfx glue time audio debugtext shape gl
 
 REM D3D11 Debug
 for %%s in (%sources%) do (
@@ -29,4 +29,3 @@ for %%s in (%sources%) do (
     lib /OUT:sokol\%%s\sokol_%%s_windows_x64_gl_release.lib sokol_%%s.obj
     del sokol_%%s.obj
 )
-

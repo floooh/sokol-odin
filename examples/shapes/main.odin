@@ -5,6 +5,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -43,11 +44,11 @@ init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
         ctx = sglue.ctx(),
+        logger = { func = slog.func },
     })
     sdtx.setup({
-        fonts = {
-            0 = sdtx.font_oric(),
-        },
+        fonts = { 0 = sdtx.font_oric() },
+        logger = { func = slog.func },
     })
 
     // clear to black
@@ -209,5 +210,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "shapes",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

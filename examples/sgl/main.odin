@@ -7,6 +7,7 @@ package main
 
 import "core:runtime"
 import "core:math"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -24,8 +25,13 @@ state: struct {
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
-    sgl.setup({})
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
+    sgl.setup({
+        logger = { func = slog.func },
+    })
 
     // a checkerboard texture
     pixels: [8][8]u32
@@ -232,5 +238,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "sgl",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

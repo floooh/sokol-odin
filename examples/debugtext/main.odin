@@ -6,6 +6,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -31,7 +32,10 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
 
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
     sdtx.setup({
         fonts = {
             FONT_KC853 = sdtx.font_kc853(),
@@ -41,6 +45,7 @@ init :: proc "c" () {
             FONT_C64   = sdtx.font_c64(),
             FONT_ORIC  = sdtx.font_oric(),
         },
+        logger = { func = slog.func },
     })
 }
 
@@ -93,5 +98,6 @@ main :: proc () {
         height = 600,
         window_title = "debugtext",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

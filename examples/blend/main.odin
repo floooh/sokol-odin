@@ -6,6 +6,7 @@
 package main
 
 import "core:runtime"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -28,6 +29,7 @@ init :: proc "c" () {
     sg.setup({
         pipeline_pool_size = NUM_BLEND_FACTORS * NUM_BLEND_FACTORS + 1,
         ctx = sglue.ctx(),
+        logger = { func = slog.func },
     })
 
     // a default pass action which does not clear, since the entire screen is overwritten anyway
@@ -152,5 +154,6 @@ main :: proc () {
         sample_count = 4,
         window_title = "blend",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }

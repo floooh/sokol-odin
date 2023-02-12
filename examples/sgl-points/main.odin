@@ -7,6 +7,7 @@ package main
 
 import "core:runtime"
 import "core:math"
+import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
@@ -37,8 +38,13 @@ palette : [16]Rgb = {
 
 init :: proc "c" () {
     context = runtime.default_context()
-    sg.setup({ ctx = sglue.ctx() })
-    sgl.setup({})
+    sg.setup({
+        ctx = sglue.ctx(),
+        logger = { func = slog.func },
+    })
+    sgl.setup({
+        logger = { func = slog.func },
+    })
 }
 
 compute_color :: proc (t: f32) -> Rgb {
@@ -98,5 +104,6 @@ main :: proc () {
         height = 512,
         window_title = "sgl-points",
         icon = { sokol_default = true },
+        logger = { func = slog.func },
     })
 }
