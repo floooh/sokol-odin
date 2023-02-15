@@ -270,6 +270,7 @@ Limits :: struct {
     max_image_array_layers : c.int,
     max_vertex_attrs : c.int,
     gl_max_vertex_uniform_vectors : c.int,
+    gl_max_combined_texture_image_units : c.int,
 }
 Resource_State :: enum i32 {
     INITIAL,
