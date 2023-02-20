@@ -87,6 +87,11 @@ foreign sokol_gfx_clib {
     query_shader_info :: proc(shd: Shader) -> Shader_Info ---
     query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info ---
     query_pass_info :: proc(pass: Pass) -> Pass_Info ---
+    query_buffer_desc :: proc(buf: Buffer) -> Buffer_Desc ---
+    query_image_desc :: proc(img: Image) -> Image_Desc ---
+    query_shader_desc :: proc(shd: Shader) -> Shader_Desc ---
+    query_pipeline_desc :: proc(pip: Pipeline) -> Pipeline_Desc ---
+    query_pass_desc :: proc(pass: Pass) -> Pass_Desc ---
     query_buffer_defaults :: proc(#by_ptr desc: Buffer_Desc) -> Buffer_Desc ---
     query_image_defaults :: proc(#by_ptr desc: Image_Desc) -> Image_Desc ---
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
@@ -707,8 +712,6 @@ Image_Info :: struct {
     upd_frame_index : u32,
     num_slots : c.int,
     active_slot : c.int,
-    width : c.int,
-    height : c.int,
 }
 Shader_Info :: struct {
     slot : Slot_Info,
