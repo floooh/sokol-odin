@@ -18,16 +18,18 @@ jobs:
           sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev llvm-11
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-03/odin-ubuntu-amd64-dev-2023-03.zip --output odin.zip
           unzip odin.zip
-          chmod a+x odin
+          chmod a+x ubuntu_artifacts/odin
           ./build_clibs_linux.sh
+          echo $(pwd)/ubuntu_artifacts >> $GITHUB_PATH
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
           brew install llvm@11
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-03/odin-macos-amd64-dev-2023-03.zip --output odin.zip
           unzip odin.zip
-          chmod a+x odin
+          chmod a+x macos_artifacts/odin
           ./build_clibs_macos.sh
+          echo $(pwd)/macos_artifacts >> $GITHUB_PATH
       - if: runner.os == 'Windows'
         name: prepare-windows
         shell: cmd
@@ -35,6 +37,7 @@ jobs:
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-03/odin-windows-amd64-dev-2023-03.zip --output odin.zip
           unzip odin.zip
           build_clibs_windows.cmd
+          echo %cd%/windows_artifacts >> $GITHUB_PATH
       - name: build
         run: |
           ./odin build examples/clear -debug
