@@ -58,7 +58,7 @@ create_offscreen_pass :: proc (width, height: i32) {
         mag_filter = .LINEAR,
         wrap_u = .CLAMP_TO_EDGE,
         wrap_v = .CLAMP_TO_EDGE,
-        sample_count = sg.query_features().msaa_render_targets ? OFFSCREEN_SAMPLE_COUNT : 1,
+        sample_count = OFFSCREEN_SAMPLE_COUNT,
     }
     depth_img_desc := color_img_desc
     depth_img_desc.pixel_format = .DEPTH;
@@ -178,7 +178,7 @@ init :: proc "c" () {
         },
         index_type = .UINT16,
         cull_mode = .BACK,
-        sample_count = sg.query_features().msaa_render_targets ? OFFSCREEN_SAMPLE_COUNT : 1,
+        sample_count = OFFSCREEN_SAMPLE_COUNT,
         depth = {
             pixel_format = .DEPTH,
             compare = .LESS_EQUAL,
