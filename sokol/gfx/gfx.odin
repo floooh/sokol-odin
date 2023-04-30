@@ -170,7 +170,6 @@ Color :: struct {
 }
 Backend :: enum i32 {
     GLCORE33,
-    GLES2,
     GLES3,
     D3D11,
     METAL_IOS,
@@ -256,12 +255,7 @@ Pixelformat_Info :: struct {
     _ : [3]u32,
 }
 Features :: struct {
-    instancing : bool,
     origin_top_left : bool,
-    multiple_render_targets : bool,
-    msaa_render_targets : bool,
-    imagetype_3d : bool,
-    imagetype_array : bool,
     image_clamp_to_border : bool,
     mrt_independent_blend_state : bool,
     mrt_independent_write_mask : bool,
@@ -837,14 +831,12 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_UB_STD140_ARRAY_TYPE,
     VALIDATE_SHADERDESC_NO_CONT_IMGS,
     VALIDATE_SHADERDESC_IMG_NAME,
-    VALIDATE_SHADERDESC_ATTR_NAMES,
     VALIDATE_SHADERDESC_ATTR_SEMANTICS,
     VALIDATE_SHADERDESC_ATTR_STRING_TOO_LONG,
     VALIDATE_PIPELINEDESC_CANARY,
     VALIDATE_PIPELINEDESC_SHADER,
     VALIDATE_PIPELINEDESC_NO_ATTRS,
     VALIDATE_PIPELINEDESC_LAYOUT_STRIDE4,
-    VALIDATE_PIPELINEDESC_ATTR_NAME,
     VALIDATE_PIPELINEDESC_ATTR_SEMANTICS,
     VALIDATE_PASSDESC_CANARY,
     VALIDATE_PASSDESC_NO_COLOR_ATTS,
@@ -902,9 +894,6 @@ Log_Item :: enum i32 {
     VALIDATE_UPDIMG_ONCE,
     VALIDATION_FAILED,
 }
-Gl_Context_Desc :: struct {
-    force_gles2 : bool,
-}
 Metal_Context_Desc :: struct {
     device : rawptr,
     renderpass_descriptor_cb : proc "c" () -> rawptr,
@@ -936,7 +925,6 @@ Context_Desc :: struct {
     color_format : c.int,
     depth_format : c.int,
     sample_count : c.int,
-    gl : Gl_Context_Desc,
     metal : Metal_Context_Desc,
     d3d11 : D3d11_Context_Desc,
     wgpu : Wgpu_Context_Desc,

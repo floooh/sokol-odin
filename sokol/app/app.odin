@@ -73,7 +73,6 @@ foreign sokol_app_clib {
     run :: proc(#by_ptr desc: Desc)  ---
     egl_get_display :: proc() -> rawptr ---
     egl_get_context :: proc() -> rawptr ---
-    gles2 :: proc() -> bool ---
     html5_ask_leave_site :: proc(ask: bool)  ---
     html5_get_dropped_file_size :: proc(#any_int index: c.int) -> u32 ---
     html5_fetch_dropped_file :: proc(#by_ptr request: Html5_Fetch_Request)  ---
@@ -431,7 +430,6 @@ Desc :: struct {
     icon : Icon_Desc,
     allocator : Allocator,
     logger : Logger,
-    gl_force_gles2 : bool,
     gl_major_version : c.int,
     gl_minor_version : c.int,
     win32_console_utf8 : bool,

@@ -37,9 +37,6 @@ init :: proc "c" () {
         backends must only use the normalized integer formats
         (BYTE4N, UBYTE4N, SHORT2N, SHORT4N), which can be converted
         to floating point formats in the vertex shader inputs.
-        The reason is that D3D11 cannot convert from non-normalized
-        formats to floating point inputs (only to integer inputs),
-        and WebGL2 / GLES2 don't support integer vertex shader inputs.
     */
     vertices := [?]Vertex {
         // pos               color       uvs
