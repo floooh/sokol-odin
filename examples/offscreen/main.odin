@@ -14,7 +14,7 @@ import sglue "../../sokol/glue"
 import sshape "../../sokol/shape"
 import m "../math"
 
-OFFSCREEN_SAMPLE_COUNT :: 4
+OFFSCREEN_SAMPLE_COUNT :: 1
 
 state: struct {
     offscreen: struct {
@@ -44,12 +44,12 @@ init :: proc "c" () {
 
     // default pass action: clear to blue-ish
     state.default.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.45, 0.65, 1.0 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0.25, 0.45, 0.65, 1.0 } } },
     }
 
     // offscreen pass action: clear to grey
     state.offscreen.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.25, 0.25, 0.25, 1.0 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0.25, 0.25, 0.25, 1.0 } } },
     }
 
     // a render pass with one color- and one depth-attachment image

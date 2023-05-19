@@ -49,7 +49,7 @@ init :: proc "c" () {
     // pass action and pipeline for the default render pass
     state.display.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.5, 0.7, 1.0, 1.0 } },
+            0 = { load_action = .CLEAR, clear_value = { 0.5, 0.7, 1.0, 1.0 } },
         },
     }
     state.display.sgl_pip = sgl.context_make_pipeline(sgl.default_context(), {
@@ -89,7 +89,7 @@ init :: proc "c" () {
     })
     state.offscreen.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0, 0, 0, 1 } },
+            0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } },
         },
     }
 }

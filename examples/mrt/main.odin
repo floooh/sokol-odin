@@ -14,7 +14,7 @@ import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
 import m "../math"
 
-OFFSCREEN_SAMPLE_COUNT :: 4
+OFFSCREEN_SAMPLE_COUNT :: 1
 
 state: struct {
     offscreen: struct {
@@ -98,9 +98,9 @@ init :: proc "c" () {
     // a pass action for the default render pass (don't clear the frame buffer
     // since it will be completely overwritten anyway)
     state.pass_action = {
-        colors = { 0 = { action = .DONTCARE} },
-        depth = { action = .DONTCARE },
-        stencil = { action = .DONTCARE },
+        colors = { 0 = { load_action = .DONTCARE} },
+        depth = { load_action = .DONTCARE },
+        stencil = { load_action = .DONTCARE },
     }
 
     // a render pass with 3 color attachment images, and a depth attachment image
@@ -160,9 +160,9 @@ init :: proc "c" () {
     // pass action for offscreen pass
     state.offscreen.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.25, 0.0, 0.0, 1.0 } },
-            1 = { action = .CLEAR, value = { 0.0, 0.25, 0.0, 1.0 } },
-            2 = { action = .CLEAR, value = { 0.0, 0.0, 0.25, 1.0 } },
+            0 = { load_action = .CLEAR, clear_value = { 0.25, 0.0, 0.0, 1.0 } },
+            1 = { load_action = .CLEAR, clear_value = { 0.0, 0.25, 0.0, 1.0 } },
+            2 = { load_action = .CLEAR, clear_value = { 0.0, 0.0, 0.25, 1.0 } },
         },
     }
 

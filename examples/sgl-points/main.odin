@@ -81,7 +81,7 @@ frame :: proc "c" () {
     sgl.end()
 
     pass_action := sg.Pass_Action {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } } },
     }
     sg.begin_default_pass(pass_action, sapp.width(), sapp.height())
     sgl.draw()

@@ -129,7 +129,7 @@ init :: proc "c" () {
     // default pass action, clear to blue-ish
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.25, 0.5, 0.75, 1.0 } },
+            0 = { load_action = .CLEAR, clear_value = { 0.25, 0.5, 0.75, 1.0 } },
         },
     }
 }

@@ -50,7 +50,7 @@ init :: proc "c" () {
     // a pass action to clear framebuffer to black
     state.pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { r = 0, g = 0, b = 0, a = 1 }},
+            0 = { load_action = .CLEAR, clear_value = { r = 0, g = 0, b = 0, a = 1 }},
         },
     }
 }

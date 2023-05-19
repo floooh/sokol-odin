@@ -19,7 +19,7 @@ state: struct {
     pip_3d: sgl.Pipeline,
 } = {
     pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0.0, 0.0, 0.0, 1.0 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0.0, 0.0, 0.0, 1.0 } } },
     },
 }
 

@@ -53,7 +53,7 @@ init :: proc "c" () {
 
     // clear to black
     state.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } } },
     }
 
     // shader and pipeline object

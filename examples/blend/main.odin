@@ -34,9 +34,9 @@ init :: proc "c" () {
 
     // a default pass action which does not clear, since the entire screen is overwritten anyway
     state.pass_action = {
-        colors = { 0 = { action = .DONTCARE } },
-        depth = { action = .DONTCARE },
-        stencil = { action = .DONTCARE },
+        colors = { 0 = { load_action = .DONTCARE } },
+        depth = { load_action = .DONTCARE },
+        stencil = { load_action = .DONTCARE },
     }
 
     // a quad vertex buffer

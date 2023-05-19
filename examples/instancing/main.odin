@@ -35,7 +35,7 @@ init :: proc "c" () {
 
     // a pass action for the default render pass
     state.pass_action = {
-        colors = { 0 = { action = .CLEAR, value = { 0, 0, 0, 1 } } },
+        colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } } },
     }
 
     // vertex buffer for static geometry, goes into vertex-buffer-slot 0

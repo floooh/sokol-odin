@@ -109,7 +109,7 @@ frame :: proc "c" () {
     }
     pass_action := sg.Pass_Action {
         colors = {
-            0 = { action = .CLEAR, value = { 0.25, 0.5, 0.75, 1.0 } },
+            0 = { load_action = .CLEAR, clear_value = { 0.25, 0.5, 0.75, 1.0 } },
         },
     }
     sg.begin_default_pass(pass_action, sapp.width(), sapp.height())

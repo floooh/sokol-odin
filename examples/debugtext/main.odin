@@ -24,7 +24,7 @@ state: struct {
 } = {
     pass_action = {
         colors = {
-            0 = { action = .CLEAR, value = { 0.0, 0.125, 0.25, 1.0 } },
+            0 = { load_action = .CLEAR, clear_value = { 0.0, 0.125, 0.25, 1.0 } },
         },
     },
 }
