@@ -96,7 +96,7 @@ init :: proc "c" () {
         0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
     }
     /* NOTE: SLOT_tex is provided by shader code generation */
-    state.bind.fs_images[SLOT_tex] = sg.make_image({
+    state.bind.fs.images[SLOT_tex] = sg.make_image({
         width = 4,
         height = 4,
         data = {
@@ -107,6 +107,9 @@ init :: proc "c" () {
             },
         },
     })
+
+    // a sampler with default options to sample the above image as texture
+    state.bind.fs.samplers[SLOT_smp] = sg.make_sampler({})
 
     // shader and pipeline object
     state.pip = sg.make_pipeline({

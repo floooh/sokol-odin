@@ -16,6 +16,7 @@ import sgl "../../sokol/gl"
 state: struct {
     pass_action: sg.Pass_Action,
     img: sg.Image,
+    smp: sg.Sampler,
     pip_3d: sgl.Pipeline,
 } = {
     pass_action = {
@@ -46,6 +47,12 @@ init :: proc "c" () {
         data = {
             subimage = { 0 = { 0 = { ptr = &pixels, size = size_of(pixels) } } },
         },
+    })
+
+    // a sampler to sample the above texture
+    state.smp = sg.make_sampler({
+        min_filter = .NEAREST,
+        mag_filter = .NEAREST,
     })
 
     // create a pipeline object for 3d rendering, with less-equal
@@ -171,7 +178,7 @@ draw_tex_cube :: proc (t: f32) {
     sgl.load_pipeline(state.pip_3d)
 
     sgl.enable_texture()
-    sgl.texture(state.img)
+    sgl.texture(state.img, state.smp)
 
     sgl.matrix_mode_projection()
     sgl.perspective(sgl.rad(45.0), 1.0, 0.1, 100.0)

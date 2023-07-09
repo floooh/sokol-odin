@@ -50,11 +50,11 @@ foreign sokol_shape_clib {
     element_range :: proc(#by_ptr buf: Buffer) -> Element_Range ---
     vertex_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
     index_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
-    buffer_layout_desc :: proc() -> sg.Buffer_Layout_Desc ---
-    position_attr_desc :: proc() -> sg.Vertex_Attr_Desc ---
-    normal_attr_desc :: proc() -> sg.Vertex_Attr_Desc ---
-    texcoord_attr_desc :: proc() -> sg.Vertex_Attr_Desc ---
-    color_attr_desc :: proc() -> sg.Vertex_Attr_Desc ---
+    vertex_buffer_layout_state :: proc() -> sg.Vertex_Buffer_Layout_State ---
+    position_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    normal_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    texcoord_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    color_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
     color_4f :: proc(r: f32, g: f32, b: f32, a: f32) -> u32 ---
     color_3f :: proc(r: f32, g: f32, b: f32) -> u32 ---
     color_4b :: proc(r: u8, g: u8, b: u8, a: u8) -> u32 ---
