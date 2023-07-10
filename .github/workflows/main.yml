@@ -18,7 +18,7 @@ jobs:
           sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev llvm-11
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-07/odin-ubuntu-amd64-dev-2023-07.zip --output odin.zip
           unzip odin.zip
-          chmod a+x ubuntu_artifacts/odin
+          chmod a+x ./odin
           ./build_clibs_linux.sh
           ./odin build examples/clear -debug
           ./odin build examples/triangle -debug
@@ -45,7 +45,7 @@ jobs:
           brew install llvm@11
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-07/odin-macos-amd64-dev-2023-07.zip --output odin.zip
           unzip odin.zip
-          chmod a+x macos_artifacts/odin
+          chmod a+x ./odin
           ./build_clibs_macos.sh
           ./odin build examples/clear -debug
           ./odin build examples/triangle -debug
