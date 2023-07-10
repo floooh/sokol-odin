@@ -167,7 +167,7 @@ init :: proc "c" () {
         index_buffer = ibuf,
         fs = {
             images = { SLOT_tex = color_img },
-            samplers = { SLOT_smp = smp }
+            samplers = { SLOT_smp = smp },
         },
     }
 }
