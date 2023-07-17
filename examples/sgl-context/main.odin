@@ -23,6 +23,7 @@ state: struct {
     },
     display: struct {
         pass_action: sg.Pass_Action,
+        smp: sg.Sampler,
         sgl_pip: sgl.Pipeline,
     },
 }
@@ -77,10 +78,6 @@ init :: proc "c" () {
         height = OFFSCREEN_HEIGHT,
         pixel_format = OFFSCREEN_PIXELFORMAT,
         sample_count = OFFSCREEN_SAMPLECOUNT,
-        wrap_u = .CLAMP_TO_EDGE,
-        wrap_v = .CLAMP_TO_EDGE,
-        min_filter = .NEAREST,
-        mag_filter = .NEAREST,
     })
     state.offscreen.pass = sg.make_pass({
         color_attachments = {
@@ -92,6 +89,14 @@ init :: proc "c" () {
             0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } },
         },
     }
+
+    // a sampler for sampling the offscreen render target as texture
+    state.display.smp = sg.make_sampler({
+        min_filter = .NEAREST,
+        mag_filter = .NEAREST,
+        wrap_u = .CLAMP_TO_EDGE,
+        wrap_v = .CLAMP_TO_EDGE,
+    })
 }
 
 frame :: proc "c" () {
@@ -110,7 +115,7 @@ frame :: proc "c" () {
     sgl.set_context(sgl.default_context())
     sgl.defaults()
     sgl.enable_texture()
-    sgl.texture(state.offscreen.img)
+    sgl.texture(state.offscreen.img, state.display.smp)
     sgl.load_pipeline(state.display.sgl_pip)
     sgl.matrix_mode_projection()
     sgl.perspective(sgl.rad(45.0), sapp.widthf()/sapp.heightf(), 0.1, 100.0)

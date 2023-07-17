@@ -61,13 +61,13 @@ init :: proc "c" () {
         shader = sg.make_shader(shapes_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc(),
+                0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_position = sshape.position_attr_desc(),
-                ATTR_vs_normal   = sshape.normal_attr_desc(),
-                ATTR_vs_texcoord = sshape.texcoord_attr_desc(),
-                ATTR_vs_color0   = sshape.color_attr_desc(),
+                ATTR_vs_position = sshape.position_vertex_attr_state(),
+                ATTR_vs_normal   = sshape.normal_vertex_attr_state(),
+                ATTR_vs_texcoord = sshape.texcoord_vertex_attr_state(),
+                ATTR_vs_color0   = sshape.color_vertex_attr_state(),
             },
         },
         index_type = .UINT16,

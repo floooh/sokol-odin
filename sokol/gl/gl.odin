@@ -62,7 +62,7 @@ foreign sokol_gl_clib {
     scissor_rectf :: proc(x: f32, y: f32, w: f32, h: f32, origin_top_left: bool)  ---
     enable_texture :: proc()  ---
     disable_texture :: proc()  ---
-    texture :: proc(img: sg.Image)  ---
+    texture :: proc(img: sg.Image, smp: sg.Sampler)  ---
     layer :: proc(#any_int layer_id: c.int)  ---
     load_default_pipeline :: proc()  ---
     load_pipeline :: proc(pip: Pipeline)  ---

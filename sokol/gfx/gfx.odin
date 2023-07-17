@@ -46,11 +46,13 @@ foreign sokol_gfx_clib {
     remove_commit_listener :: proc(listener: Commit_Listener) -> bool ---
     make_buffer :: proc(#by_ptr desc: Buffer_Desc) -> Buffer ---
     make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
+    make_sampler :: proc(#by_ptr desc: Sampler_Desc) -> Sampler ---
     make_shader :: proc(#by_ptr desc: Shader_Desc) -> Shader ---
     make_pipeline :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline ---
     make_pass :: proc(#by_ptr desc: Pass_Desc) -> Pass ---
     destroy_buffer :: proc(buf: Buffer)  ---
     destroy_image :: proc(img: Image)  ---
+    destroy_sampler :: proc(smp: Sampler)  ---
     destroy_shader :: proc(shd: Shader)  ---
     destroy_pipeline :: proc(pip: Pipeline)  ---
     destroy_pass :: proc(pass: Pass)  ---
@@ -79,46 +81,55 @@ foreign sokol_gfx_clib {
     query_pixelformat :: proc(fmt: Pixel_Format) -> Pixelformat_Info ---
     query_buffer_state :: proc(buf: Buffer) -> Resource_State ---
     query_image_state :: proc(img: Image) -> Resource_State ---
+    query_sampler_state :: proc(smp: Sampler) -> Resource_State ---
     query_shader_state :: proc(shd: Shader) -> Resource_State ---
     query_pipeline_state :: proc(pip: Pipeline) -> Resource_State ---
     query_pass_state :: proc(pass: Pass) -> Resource_State ---
     query_buffer_info :: proc(buf: Buffer) -> Buffer_Info ---
     query_image_info :: proc(img: Image) -> Image_Info ---
+    query_sampler_info :: proc(smp: Sampler) -> Sampler_Info ---
     query_shader_info :: proc(shd: Shader) -> Shader_Info ---
     query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info ---
     query_pass_info :: proc(pass: Pass) -> Pass_Info ---
     query_buffer_desc :: proc(buf: Buffer) -> Buffer_Desc ---
     query_image_desc :: proc(img: Image) -> Image_Desc ---
+    query_sampler_desc :: proc(smp: Sampler) -> Sampler_Desc ---
     query_shader_desc :: proc(shd: Shader) -> Shader_Desc ---
     query_pipeline_desc :: proc(pip: Pipeline) -> Pipeline_Desc ---
     query_pass_desc :: proc(pass: Pass) -> Pass_Desc ---
     query_buffer_defaults :: proc(#by_ptr desc: Buffer_Desc) -> Buffer_Desc ---
     query_image_defaults :: proc(#by_ptr desc: Image_Desc) -> Image_Desc ---
+    query_sampler_defaults :: proc(#by_ptr desc: Sampler_Desc) -> Sampler_Desc ---
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
     query_pipeline_defaults :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline_Desc ---
     query_pass_defaults :: proc(#by_ptr desc: Pass_Desc) -> Pass_Desc ---
     alloc_buffer :: proc() -> Buffer ---
     alloc_image :: proc() -> Image ---
+    alloc_sampler :: proc() -> Sampler ---
     alloc_shader :: proc() -> Shader ---
     alloc_pipeline :: proc() -> Pipeline ---
     alloc_pass :: proc() -> Pass ---
     dealloc_buffer :: proc(buf: Buffer)  ---
     dealloc_image :: proc(img: Image)  ---
+    dealloc_sampler :: proc(smp: Sampler)  ---
     dealloc_shader :: proc(shd: Shader)  ---
     dealloc_pipeline :: proc(pip: Pipeline)  ---
     dealloc_pass :: proc(pass: Pass)  ---
     init_buffer :: proc(buf: Buffer, #by_ptr desc: Buffer_Desc)  ---
     init_image :: proc(img: Image, #by_ptr desc: Image_Desc)  ---
+    init_sampler :: proc(smg: Sampler, #by_ptr desc: Sampler_Desc)  ---
     init_shader :: proc(shd: Shader, #by_ptr desc: Shader_Desc)  ---
     init_pipeline :: proc(pip: Pipeline, #by_ptr desc: Pipeline_Desc)  ---
     init_pass :: proc(pass: Pass, #by_ptr desc: Pass_Desc)  ---
     uninit_buffer :: proc(buf: Buffer)  ---
     uninit_image :: proc(img: Image)  ---
+    uninit_sampler :: proc(smp: Sampler)  ---
     uninit_shader :: proc(shd: Shader)  ---
     uninit_pipeline :: proc(pip: Pipeline)  ---
     uninit_pass :: proc(pass: Pass)  ---
     fail_buffer :: proc(buf: Buffer)  ---
     fail_image :: proc(img: Image)  ---
+    fail_sampler :: proc(smp: Sampler)  ---
     fail_shader :: proc(shd: Shader)  ---
     fail_pipeline :: proc(pip: Pipeline)  ---
     fail_pass :: proc(pass: Pass)  ---
@@ -133,6 +144,9 @@ Buffer :: struct {
     id : u32,
 }
 Image :: struct {
+    id : u32,
+}
+Sampler :: struct {
     id : u32,
 }
 Shader :: struct {
@@ -155,8 +169,10 @@ INVALID_ID :: 0
 NUM_SHADER_STAGES :: 2
 NUM_INFLIGHT_FRAMES :: 2
 MAX_COLOR_ATTACHMENTS :: 4
-MAX_SHADERSTAGE_BUFFERS :: 8
+MAX_VERTEX_BUFFERS :: 8
 MAX_SHADERSTAGE_IMAGES :: 12
+MAX_SHADERSTAGE_SAMPLERS :: 8
+MAX_SHADERSTAGE_IMAGESAMPLERPAIRS :: 12
 MAX_SHADERSTAGE_UBS :: 4
 MAX_UB_MEMBERS :: 16
 MAX_VERTEX_ATTRIBUTES :: 16
@@ -306,11 +322,19 @@ Image_Type :: enum i32 {
     ARRAY,
     NUM,
 }
-Sampler_Type :: enum i32 {
+Image_Sample_Type :: enum i32 {
     DEFAULT,
     FLOAT,
+    DEPTH,
     SINT,
     UINT,
+    NUM,
+}
+Sampler_Type :: enum i32 {
+    DEFAULT,
+    SAMPLE,
+    COMPARE,
+    NUM,
 }
 Cube_Face :: enum i32 {
     POS_X,
@@ -336,12 +360,9 @@ Primitive_Type :: enum i32 {
 }
 Filter :: enum i32 {
     DEFAULT,
+    NONE,
     NEAREST,
     LINEAR,
-    NEAREST_MIPMAP_NEAREST,
-    NEAREST_MIPMAP_LINEAR,
-    LINEAR_MIPMAP_NEAREST,
-    LINEAR_MIPMAP_LINEAR,
     NUM,
 }
 Wrap :: enum i32 {
@@ -520,14 +541,18 @@ Pass_Action :: struct {
     stencil : Stencil_Attachment_Action,
     _ : u32,
 }
+Stage_Bindings :: struct {
+    images : [12]Image,
+    samplers : [8]Sampler,
+}
 Bindings :: struct {
     _ : u32,
     vertex_buffers : [8]Buffer,
     vertex_buffer_offsets : [8]c.int,
     index_buffer : Buffer,
     index_buffer_offset : c.int,
-    vs_images : [12]Image,
-    fs_images : [12]Image,
+    vs : Stage_Bindings,
+    fs : Stage_Bindings,
     _ : u32,
 }
 Buffer_Desc :: struct {
@@ -557,15 +582,6 @@ Image_Desc :: struct {
     usage : Usage,
     pixel_format : Pixel_Format,
     sample_count : c.int,
-    min_filter : Filter,
-    mag_filter : Filter,
-    wrap_u : Wrap,
-    wrap_v : Wrap,
-    wrap_w : Wrap,
-    border_color : Border_Color,
-    max_anisotropy : u32,
-    min_lod : f32,
-    max_lod : f32,
     data : Image_Data,
     label : cstring,
     gl_textures : [2]u32,
@@ -574,6 +590,26 @@ Image_Desc :: struct {
     d3d11_texture : rawptr,
     d3d11_shader_resource_view : rawptr,
     wgpu_texture : rawptr,
+    _ : u32,
+}
+Sampler_Desc :: struct {
+    _ : u32,
+    min_filter : Filter,
+    mag_filter : Filter,
+    mipmap_filter : Filter,
+    wrap_u : Wrap,
+    wrap_v : Wrap,
+    wrap_w : Wrap,
+    min_lod : f32,
+    max_lod : f32,
+    border_color : Border_Color,
+    compare : Compare_Func,
+    max_anisotropy : u32,
+    label : cstring,
+    gl_sampler : u32,
+    mtl_sampler : rawptr,
+    d3d11_sampler : rawptr,
+    wgpu_sampler : rawptr,
     _ : u32,
 }
 Shader_Attr_Desc :: struct {
@@ -592,9 +628,20 @@ Shader_Uniform_Block_Desc :: struct {
     uniforms : [16]Shader_Uniform_Desc,
 }
 Shader_Image_Desc :: struct {
-    name : cstring,
+    used : bool,
+    multisampled : bool,
     image_type : Image_Type,
+    sample_type : Image_Sample_Type,
+}
+Shader_Sampler_Desc :: struct {
+    used : bool,
     sampler_type : Sampler_Type,
+}
+Shader_Image_Sampler_Pair_Desc :: struct {
+    used : bool,
+    image_slot : c.int,
+    sampler_slot : c.int,
+    glsl_name : cstring,
 }
 Shader_Stage_Desc :: struct {
     source : cstring,
@@ -603,6 +650,8 @@ Shader_Stage_Desc :: struct {
     d3d11_target : cstring,
     uniform_blocks : [4]Shader_Uniform_Block_Desc,
     images : [12]Shader_Image_Desc,
+    samplers : [8]Shader_Sampler_Desc,
+    image_sampler_pairs : [12]Shader_Image_Sampler_Pair_Desc,
 }
 Shader_Desc :: struct {
     _ : u32,
@@ -612,21 +661,21 @@ Shader_Desc :: struct {
     label : cstring,
     _ : u32,
 }
-Buffer_Layout_Desc :: struct {
+Vertex_Buffer_Layout_State :: struct {
     stride : c.int,
     step_func : Vertex_Step,
     step_rate : c.int,
     _ : [2]u32,
 }
-Vertex_Attr_Desc :: struct {
+Vertex_Attr_State :: struct {
     buffer_index : c.int,
     offset : c.int,
     format : Vertex_Format,
     _ : [2]u32,
 }
-Layout_Desc :: struct {
-    buffers : [8]Buffer_Layout_Desc,
-    attrs : [16]Vertex_Attr_Desc,
+Vertex_Layout_State :: struct {
+    buffers : [8]Vertex_Buffer_Layout_State,
+    attrs : [16]Vertex_Attr_State,
 }
 Stencil_Face_State :: struct {
     compare : Compare_Func,
@@ -659,7 +708,7 @@ Blend_State :: struct {
     dst_factor_alpha : Blend_Factor,
     op_alpha : Blend_Op,
 }
-Color_State :: struct {
+Color_Target_State :: struct {
     pixel_format : Pixel_Format,
     write_mask : Color_Mask,
     blend : Blend_State,
@@ -667,11 +716,11 @@ Color_State :: struct {
 Pipeline_Desc :: struct {
     _ : u32,
     shader : Shader,
-    layout : Layout_Desc,
+    layout : Vertex_Layout_State,
     depth : Depth_State,
     stencil : Stencil_State,
     color_count : c.int,
-    colors : [4]Color_State,
+    colors : [4]Color_Target_State,
     primitive_type : Primitive_Type,
     index_type : Index_Type,
     cull_mode : Cull_Mode,
@@ -714,6 +763,9 @@ Image_Info :: struct {
     upd_frame_index : u32,
     num_slots : c.int,
     active_slot : c.int,
+}
+Sampler_Info :: struct {
+    slot : Slot_Info,
 }
 Shader_Info :: struct {
     slot : Slot_Info,
@@ -775,6 +827,7 @@ Log_Item :: enum i32 {
     WGPU_ACTIVATE_CONTEXT_FIXME,
     UNINIT_BUFFER_ACTIVE_CONTEXT_MISMATCH,
     UNINIT_IMAGE_ACTIVE_CONTEXT_MISMATCH,
+    UNINIT_SAMPLER_ACTIVE_CONTEXT_MISMATCH,
     UNINIT_SHADER_ACTIVE_CONTEXT_MISMATCH,
     UNINIT_PIPELINE_ACTIVE_CONTEXT_MISMATCH,
     UNINIT_PASS_ACTIVE_CONTEXT_MISMATCH,
@@ -783,26 +836,31 @@ Log_Item :: enum i32 {
     TRACE_HOOKS_NOT_ENABLED,
     DEALLOC_BUFFER_INVALID_STATE,
     DEALLOC_IMAGE_INVALID_STATE,
+    DEALLOC_SAMPLER_INVALID_STATE,
     DEALLOC_SHADER_INVALID_STATE,
     DEALLOC_PIPELINE_INVALID_STATE,
     DEALLOC_PASS_INVALID_STATE,
     INIT_BUFFER_INVALID_STATE,
     INIT_IMAGE_INVALID_STATE,
+    INIT_SAMPLER_INVALID_STATE,
     INIT_SHADER_INVALID_STATE,
     INIT_PIPELINE_INVALID_STATE,
     INIT_PASS_INVALID_STATE,
     UNINIT_BUFFER_INVALID_STATE,
     UNINIT_IMAGE_INVALID_STATE,
+    UNINIT_SAMPLER_INVALID_STATE,
     UNINIT_SHADER_INVALID_STATE,
     UNINIT_PIPELINE_INVALID_STATE,
     UNINIT_PASS_INVALID_STATE,
     FAIL_BUFFER_INVALID_STATE,
     FAIL_IMAGE_INVALID_STATE,
+    FAIL_SAMPLER_INVALID_STATE,
     FAIL_SHADER_INVALID_STATE,
     FAIL_PIPELINE_INVALID_STATE,
     FAIL_PASS_INVALID_STATE,
     BUFFER_POOL_EXHAUSTED,
     IMAGE_POOL_EXHAUSTED,
+    SAMPLER_POOL_EXHAUSTED,
     SHADER_POOL_EXHAUSTED,
     PIPELINE_POOL_EXHAUSTED,
     PASS_POOL_EXHAUSTED,
@@ -829,6 +887,9 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDESC_INJECTED_NO_DATA,
     VALIDATE_IMAGEDESC_DYNAMIC_NO_DATA,
     VALIDATE_IMAGEDESC_COMPRESSED_IMMUTABLE,
+    VALIDATE_SAMPLERDESC_CANARY,
+    VALIDATE_SAMPLERDESC_MINFILTER_NONE,
+    VALIDATE_SAMPLERDESC_MAGFILTER_NONE,
     VALIDATE_SHADERDESC_CANARY,
     VALIDATE_SHADERDESC_SOURCE,
     VALIDATE_SHADERDESC_BYTECODE,
@@ -841,8 +902,17 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_UB_SIZE_MISMATCH,
     VALIDATE_SHADERDESC_UB_ARRAY_COUNT,
     VALIDATE_SHADERDESC_UB_STD140_ARRAY_TYPE,
-    VALIDATE_SHADERDESC_NO_CONT_IMGS,
-    VALIDATE_SHADERDESC_IMG_NAME,
+    VALIDATE_SHADERDESC_NO_CONT_IMAGES,
+    VALIDATE_SHADERDESC_NO_CONT_SAMPLERS,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_IMAGE_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_SAMPLER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_NAME_REQUIRED_FOR_GL,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_NAME_BUT_NOT_USED,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_IMAGE_BUT_NOT_USED,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_SAMPLER_BUT_NOT_USED,
+    VALIDATE_SHADERDESC_IMAGE_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
+    VALIDATE_SHADERDESC_SAMPLER_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
+    VALIDATE_SHADERDESC_NO_CONT_IMAGE_SAMPLER_PAIRS,
     VALIDATE_SHADERDESC_ATTR_SEMANTICS,
     VALIDATE_SHADERDESC_ATTR_STRING_TOO_LONG,
     VALIDATE_PIPELINEDESC_CANARY,
@@ -851,7 +921,7 @@ Log_Item :: enum i32 {
     VALIDATE_PIPELINEDESC_LAYOUT_STRIDE4,
     VALIDATE_PIPELINEDESC_ATTR_SEMANTICS,
     VALIDATE_PASSDESC_CANARY,
-    VALIDATE_PASSDESC_NO_COLOR_ATTS,
+    VALIDATE_PASSDESC_NO_ATTACHMENTS,
     VALIDATE_PASSDESC_NO_CONT_COLOR_ATTS,
     VALIDATE_PASSDESC_IMAGE,
     VALIDATE_PASSDESC_MIPLEVEL,
@@ -906,16 +976,28 @@ Log_Item :: enum i32 {
     VALIDATE_ABND_IB_EXISTS,
     VALIDATE_ABND_IB_TYPE,
     VALIDATE_ABND_IB_OVERFLOW,
-    VALIDATE_ABND_VS_IMGS,
+    VALIDATE_ABND_VS_EXPECTED_IMAGE_BINDING,
     VALIDATE_ABND_VS_IMG_EXISTS,
-    VALIDATE_ABND_VS_IMG_TYPES,
-    VALIDATE_ABND_VS_IMG_MSAA,
-    VALIDATE_ABND_VS_IMG_DEPTH,
-    VALIDATE_ABND_FS_IMGS,
+    VALIDATE_ABND_VS_IMAGE_TYPE_MISMATCH,
+    VALIDATE_ABND_VS_IMAGE_MSAA,
+    VALIDATE_ABND_VS_UNEXPECTED_IMAGE_BINDING,
+    VALIDATE_ABND_VS_EXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_VS_UNEXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_VS_EXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_VS_UNEXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_VS_SMP_EXISTS,
+    VALIDATE_ABND_VS_IMG_SMP_MIPMAPS,
+    VALIDATE_ABND_FS_EXPECTED_IMAGE_BINDING,
     VALIDATE_ABND_FS_IMG_EXISTS,
-    VALIDATE_ABND_FS_IMG_TYPES,
-    VALIDATE_ABND_FS_IMG_MSAA,
-    VALIDATE_ABND_FS_IMG_DEPTH,
+    VALIDATE_ABND_FS_IMAGE_TYPE_MISMATCH,
+    VALIDATE_ABND_FS_IMAGE_MSAA,
+    VALIDATE_ABND_FS_UNEXPECTED_IMAGE_BINDING,
+    VALIDATE_ABND_FS_EXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_FS_UNEXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_FS_EXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_FS_UNEXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_FS_SMP_EXISTS,
+    VALIDATE_ABND_FS_IMG_SMP_MIPMAPS,
     VALIDATE_AUB_NO_PIPELINE,
     VALIDATE_AUB_NO_UB_AT_SLOT,
     VALIDATE_AUB_SIZE,
@@ -982,15 +1064,16 @@ Desc :: struct {
     _ : u32,
     buffer_pool_size : c.int,
     image_pool_size : c.int,
+    sampler_pool_size : c.int,
     shader_pool_size : c.int,
     pipeline_pool_size : c.int,
     pass_pool_size : c.int,
     context_pool_size : c.int,
     uniform_buffer_size : c.int,
     staging_buffer_size : c.int,
-    sampler_cache_size : c.int,
     max_commit_listeners : c.int,
     disable_validation : bool,
+    mtl_force_managed_storage_mode : bool,
     allocator : Allocator,
     logger : Logger,
     ctx : Context_Desc,

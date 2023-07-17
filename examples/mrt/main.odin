@@ -54,10 +54,6 @@ create_offscreen_pass :: proc (width, height: i32) {
         render_target = true,
         width = width,
         height = height,
-        min_filter = .LINEAR,
-        mag_filter = .LINEAR,
-        wrap_u = .CLAMP_TO_EDGE,
-        wrap_v = .CLAMP_TO_EDGE,
         sample_count = OFFSCREEN_SAMPLE_COUNT,
     }
     depth_img_desc := color_img_desc
@@ -76,7 +72,7 @@ create_offscreen_pass :: proc (width, height: i32) {
 
     // also need to update the fullscreen-quad texture bindings
     for i in 0..<3 {
-        state.fsq.bind.fs_images[i] = state.offscreen.pass_desc.color_attachments[i].image
+        state.fsq.bind.fs.images[i] = state.offscreen.pass_desc.color_attachments[i].image
     }
 }
 
@@ -212,16 +208,29 @@ init :: proc "c" () {
         primitive_type = .TRIANGLE_STRIP,
     })
 
+    // a sampler object to sample the offscreen render target as texture
+    smp := sg.make_sampler({
+        min_filter = .LINEAR,
+        mag_filter = .LINEAR,
+        wrap_u = .CLAMP_TO_EDGE,
+        wrap_v = .CLAMP_TO_EDGE,
+    })
+
     // resource bindings to render the fullscreen quad
     state.fsq.bind = {
         vertex_buffers = {
             0 = quad_vbuf,
         },
-        fs_images = {
-            SLOT_tex0 = state.offscreen.pass_desc.color_attachments[0].image,
-            SLOT_tex1 = state.offscreen.pass_desc.color_attachments[1].image,
-            SLOT_tex2 = state.offscreen.pass_desc.color_attachments[2].image,
-        },
+        fs = {
+            images = {
+                SLOT_tex0 = state.offscreen.pass_desc.color_attachments[0].image,
+                SLOT_tex1 = state.offscreen.pass_desc.color_attachments[1].image,
+                SLOT_tex2 = state.offscreen.pass_desc.color_attachments[2].image,
+            },
+            samplers = {
+                SLOT_smp = smp,
+            }
+        }
     }
 
     // pipeline and resource bindings to render debug-visualization quads
@@ -235,6 +244,7 @@ init :: proc "c" () {
         primitive_type = .TRIANGLE_STRIP,
     })
     state.dbg.bind.vertex_buffers[0] = quad_vbuf
+    state.dbg.bind.fs.samplers[SLOT_smp] = smp
 }
 
 frame :: proc "c" () {
@@ -276,7 +286,7 @@ frame :: proc "c" () {
     sg.apply_pipeline(state.dbg.pip)
     for i in 0..<3 {
         sg.apply_viewport(i * 100, 0, 100, 100, false)
-        state.dbg.bind.fs_images[SLOT_tex] = state.offscreen.pass_desc.color_attachments[i].image
+        state.dbg.bind.fs.images[SLOT_tex] = state.offscreen.pass_desc.color_attachments[i].image
         sg.apply_bindings(state.dbg.bind)
         sg.draw(0, 4, 1)
     }

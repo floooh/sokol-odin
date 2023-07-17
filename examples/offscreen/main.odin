@@ -58,10 +58,6 @@ init :: proc "c" () {
         width = 256,
         height = 256,
         pixel_format = .RGBA8,
-        min_filter = .LINEAR,
-        mag_filter = .LINEAR,
-        wrap_u = .REPEAT,
-        wrap_v = .REPEAT,
         sample_count = OFFSCREEN_SAMPLE_COUNT,
     }
     color_img := sg.make_image(img_desc)
@@ -106,11 +102,11 @@ init :: proc "c" () {
         shader = sg.make_shader(offscreen_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc(),
+                0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_offscreen_position = sshape.position_attr_desc(),
-                ATTR_vs_offscreen_normal = sshape.normal_attr_desc(),
+                ATTR_vs_offscreen_position = sshape.position_vertex_attr_state(),
+                ATTR_vs_offscreen_normal = sshape.normal_vertex_attr_state(),
             },
         },
         index_type = .UINT16,
@@ -131,12 +127,12 @@ init :: proc "c" () {
         shader = sg.make_shader(default_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.buffer_layout_desc(),
+                0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_default_position = sshape.position_attr_desc(),
-                ATTR_vs_default_normal = sshape.normal_attr_desc(),
-                ATTR_vs_default_texcoord0 = sshape.texcoord_attr_desc(),
+                ATTR_vs_default_position = sshape.position_vertex_attr_state(),
+                ATTR_vs_default_normal = sshape.normal_vertex_attr_state(),
+                ATTR_vs_default_texcoord0 = sshape.texcoord_vertex_attr_state(),
             },
         },
         index_type = .UINT16,
@@ -145,6 +141,14 @@ init :: proc "c" () {
             compare = .LESS_EQUAL,
             write_enabled = true,
         },
+    })
+
+    // a sampler object for sampling the render target as texture
+    smp := sg.make_sampler({
+        min_filter = .LINEAR,
+        mag_filter = .LINEAR,
+        wrap_u = .REPEAT,
+        wrap_v = .REPEAT,
     })
 
     // the resource bindings for rendering a non-textured cube into offscreen render target
@@ -161,8 +165,9 @@ init :: proc "c" () {
             0 = vbuf,
         },
         index_buffer = ibuf,
-        fs_images = {
-            SLOT_tex = color_img,
+        fs = {
+            images = { SLOT_tex = color_img },
+            samplers = { SLOT_smp = smp },
         },
     }
 }
