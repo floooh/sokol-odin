@@ -81,12 +81,10 @@ Vertex :: struct {
 Element_Range :: struct {
     base_element : c.int,
     num_elements : c.int,
-    _ : [3]u32,
 }
 Sizes_Item :: struct {
     num : u32,
     size : u32,
-    _ : [3]u32,
 }
 Sizes :: struct {
     vertices : Sizes_Item,

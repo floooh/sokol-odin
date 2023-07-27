@@ -268,14 +268,12 @@ Pixelformat_Info :: struct {
     blend : bool,
     msaa : bool,
     depth : bool,
-    _ : [3]u32,
 }
 Features :: struct {
     origin_top_left : bool,
     image_clamp_to_border : bool,
     mrt_independent_blend_state : bool,
     mrt_independent_write_mask : bool,
-    _ : [3]u32,
 }
 Limits :: struct {
     max_image_size_2d : c.int,
@@ -665,13 +663,11 @@ Vertex_Buffer_Layout_State :: struct {
     stride : c.int,
     step_func : Vertex_Step,
     step_rate : c.int,
-    _ : [2]u32,
 }
 Vertex_Attr_State :: struct {
     buffer_index : c.int,
     offset : c.int,
     format : Vertex_Format,
-    _ : [2]u32,
 }
 Vertex_Layout_State :: struct {
     buffers : [8]Vertex_Buffer_Layout_State,
