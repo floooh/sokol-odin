@@ -1039,6 +1039,11 @@ Wgpu_Context_Desc :: struct {
     depth_stencil_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
     user_data : rawptr,
 }
+Gl_Context_Desc :: struct {
+    default_framebuffer_cb : proc "c" () -> u32,
+    default_framebuffer_userdata_cb : proc "c" (a0: rawptr) -> u32,
+    user_data : rawptr,
+}
 Context_Desc :: struct {
     color_format : c.int,
     depth_format : c.int,
@@ -1046,6 +1051,7 @@ Context_Desc :: struct {
     metal : Metal_Context_Desc,
     d3d11 : D3d11_Context_Desc,
     wgpu : Wgpu_Context_Desc,
+    gl : Gl_Context_Desc,
 }
 Commit_Listener :: struct {
     func : proc "c" (a0: rawptr),
