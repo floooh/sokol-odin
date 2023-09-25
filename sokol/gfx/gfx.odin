@@ -1058,8 +1058,8 @@ Commit_Listener :: struct {
     user_data : rawptr,
 }
 Allocator :: struct {
-    alloc : proc "c" (a0: u64, a1: rawptr) -> rawptr,
-    free : proc "c" (a0: rawptr, a1: rawptr),
+    alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
+    free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
 Logger :: struct {
