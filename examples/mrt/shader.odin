@@ -19,7 +19,7 @@
                     Multisampled: false
                     Bind slot: SLOT_tex = 0
                 Sampler 'smp':
-                    Type: .SAMPLE
+                    Type: .FILTERING
                     Bind slot: SLOT_smp = 0
                 Image Sampler Pair 'tex_smp':
                     Image: tex
@@ -50,7 +50,7 @@
                     Multisampled: false
                     Bind slot: SLOT_tex2 = 2
                 Sampler 'smp':
-                    Type: .SAMPLE
+                    Type: .FILTERING
                     Bind slot: SLOT_smp = 0
                 Image Sampler Pair 'tex0_smp':
                     Image: tex0
@@ -1231,7 +1231,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[0].image_type = ._2D
             desc.fs.images[0].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
@@ -1252,7 +1252,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[0].image_type = ._2D
             desc.fs.images[0].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
@@ -1268,7 +1268,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[0].image_type = ._2D
             desc.fs.images[0].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
@@ -1304,7 +1304,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[2].image_type = ._2D
             desc.fs.images[2].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
@@ -1343,7 +1343,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[2].image_type = ._2D
             desc.fs.images[2].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
@@ -1375,7 +1375,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
             desc.fs.images[2].image_type = ._2D
             desc.fs.images[2].sample_type = .FLOAT
             desc.fs.samplers[0].used = true
-            desc.fs.samplers[0].sampler_type = .SAMPLE
+            desc.fs.samplers[0].sampler_type = .FILTERING
             desc.fs.image_sampler_pairs[0].used = true
             desc.fs.image_sampler_pairs[0].image_slot = 0
             desc.fs.image_sampler_pairs[0].sampler_slot = 0
