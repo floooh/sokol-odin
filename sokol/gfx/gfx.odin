@@ -141,12 +141,35 @@ foreign sokol_gfx_clib {
     activate_context :: proc(ctx_id: Context)  ---
     discard_context :: proc(ctx_id: Context)  ---
     d3d11_device :: proc() -> rawptr ---
+    d3d11_device_context :: proc() -> rawptr ---
+    d3d11_query_buffer_info :: proc(buf: Buffer) -> D3d11_Buffer_Info ---
+    d3d11_query_image_info :: proc(img: Image) -> D3d11_Image_Info ---
+    d3d11_query_sampler_info :: proc(smp: Sampler) -> D3d11_Sampler_Info ---
+    d3d11_query_shader_info :: proc(shd: Shader) -> D3d11_Shader_Info ---
+    d3d11_query_pipeline_info :: proc(pip: Pipeline) -> D3d11_Pipeline_Info ---
+    d3d11_query_pass_info :: proc(pass: Pass) -> D3d11_Pass_Info ---
     mtl_device :: proc() -> rawptr ---
     mtl_render_command_encoder :: proc() -> rawptr ---
+    mtl_query_buffer_info :: proc(buf: Buffer) -> Mtl_Buffer_Info ---
+    mtl_query_image_info :: proc(img: Image) -> Mtl_Image_Info ---
+    mtl_query_sampler_info :: proc(smp: Sampler) -> Mtl_Sampler_Info ---
+    mtl_query_shader_info :: proc(shd: Shader) -> Mtl_Shader_Info ---
+    mtl_query_pipeline_info :: proc(pip: Pipeline) -> Mtl_Pipeline_Info ---
     wgpu_device :: proc() -> rawptr ---
     wgpu_queue :: proc() -> rawptr ---
     wgpu_command_encoder :: proc() -> rawptr ---
     wgpu_render_pass_encoder :: proc() -> rawptr ---
+    wgpu_query_buffer_info :: proc(buf: Buffer) -> Wgpu_Buffer_Info ---
+    wgpu_query_image_info :: proc(img: Image) -> Wgpu_Image_Info ---
+    wgpu_query_sampler_info :: proc(smp: Sampler) -> Wgpu_Sampler_Info ---
+    wgpu_query_shader_info :: proc(shd: Shader) -> Wgpu_Shader_Info ---
+    wgpu_query_pipeline_info :: proc(pip: Pipeline) -> Wgpu_Pipeline_Info ---
+    wgpu_query_pass_info :: proc(pass: Pass) -> Wgpu_Pass_Info ---
+    gl_query_buffer_info :: proc(buf: Buffer) -> Gl_Buffer_Info ---
+    gl_query_image_info :: proc(img: Image) -> Gl_Image_Info ---
+    gl_query_sampler_info :: proc(smp: Sampler) -> Gl_Sampler_Info ---
+    gl_query_shader_info :: proc(shd: Shader) -> Gl_Shader_Info ---
+    gl_query_pass_info :: proc(pass: Pass) -> Gl_Pass_Info ---
 }
 Buffer :: struct {
     id : u32,
@@ -598,6 +621,7 @@ Image_Desc :: struct {
     d3d11_texture : rawptr,
     d3d11_shader_resource_view : rawptr,
     wgpu_texture : rawptr,
+    wgpu_texture_view : rawptr,
     _ : u32,
 }
 Sampler_Desc :: struct {
@@ -1246,4 +1270,97 @@ Desc :: struct {
     logger : Logger,
     ctx : Context_Desc,
     _ : u32,
+}
+D3d11_Buffer_Info :: struct {
+    buf : rawptr,
+}
+D3d11_Image_Info :: struct {
+    tex2d : rawptr,
+    tex3d : rawptr,
+    res : rawptr,
+    srv : rawptr,
+}
+D3d11_Sampler_Info :: struct {
+    smp : rawptr,
+}
+D3d11_Shader_Info :: struct {
+    vs_cbufs : [4]rawptr,
+    fs_cbufs : [4]rawptr,
+    vs : rawptr,
+    fs : rawptr,
+}
+D3d11_Pipeline_Info :: struct {
+    il : rawptr,
+    rs : rawptr,
+    dss : rawptr,
+    bs : rawptr,
+}
+D3d11_Pass_Info :: struct {
+    color_rtv : [4]rawptr,
+    resolve_rtv : [4]rawptr,
+    dsv : rawptr,
+}
+Mtl_Buffer_Info :: struct {
+    buf : [2]rawptr,
+    active_slot : c.int,
+}
+Mtl_Image_Info :: struct {
+    tex : [2]rawptr,
+    active_slot : c.int,
+}
+Mtl_Sampler_Info :: struct {
+    smp : rawptr,
+}
+Mtl_Shader_Info :: struct {
+    vs_lib : rawptr,
+    fs_lib : rawptr,
+    vs_func : rawptr,
+    fs_func : rawptr,
+}
+Mtl_Pipeline_Info :: struct {
+    rps : rawptr,
+    dss : rawptr,
+}
+Wgpu_Buffer_Info :: struct {
+    buf : rawptr,
+}
+Wgpu_Image_Info :: struct {
+    tex : rawptr,
+    view : rawptr,
+}
+Wgpu_Sampler_Info :: struct {
+    smp : rawptr,
+}
+Wgpu_Shader_Info :: struct {
+    vs_mod : rawptr,
+    fs_mod : rawptr,
+    bgl : rawptr,
+}
+Wgpu_Pipeline_Info :: struct {
+    pip : rawptr,
+}
+Wgpu_Pass_Info :: struct {
+    color_view : [4]rawptr,
+    resolve_view : [4]rawptr,
+    ds_view : rawptr,
+}
+Gl_Buffer_Info :: struct {
+    buf : [2]u32,
+    active_slot : c.int,
+}
+Gl_Image_Info :: struct {
+    tex : [2]u32,
+    tex_target : u32,
+    msaa_render_buffer : u32,
+    active_slot : c.int,
+}
+Gl_Sampler_Info :: struct {
+    smp : u32,
+}
+Gl_Shader_Info :: struct {
+    prog : u32,
+}
+Gl_Pass_Info :: struct {
+    frame_buffer : u32,
+    msaa_resolve_framebuffer : [4]u32,
 }
