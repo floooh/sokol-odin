@@ -79,6 +79,8 @@ foreign sokol_gfx_clib {
     query_features :: proc() -> Features ---
     query_limits :: proc() -> Limits ---
     query_pixelformat :: proc(fmt: Pixel_Format) -> Pixelformat_Info ---
+    query_row_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int row_align_bytes: c.int) -> c.int ---
+    query_surface_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int height: c.int, #any_int row_align_bytes: c.int) -> c.int ---
     query_buffer_state :: proc(buf: Buffer) -> Resource_State ---
     query_image_state :: proc(img: Image) -> Resource_State ---
     query_sampler_state :: proc(smp: Sampler) -> Resource_State ---
@@ -257,6 +259,7 @@ Pixel_Format :: enum i32 {
     BGRA8,
     RGB10A2,
     RG11B10F,
+    RGB9E5,
     RG32UI,
     RG32SI,
     RG32F,
@@ -289,7 +292,6 @@ Pixel_Format :: enum i32 {
     ETC2_RGBA8,
     ETC2_RG11,
     ETC2_RG11SN,
-    RGB9E5,
     NUM,
 }
 Pixelformat_Info :: struct {
@@ -299,6 +301,8 @@ Pixelformat_Info :: struct {
     blend : bool,
     msaa : bool,
     depth : bool,
+    compressed : bool,
+    bytes_per_pixel : c.int,
 }
 Features :: struct {
     origin_top_left : bool,
