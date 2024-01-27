@@ -452,6 +452,11 @@ Desc :: struct {
     html5_preserve_drawing_buffer : bool,
     html5_premultiplied_alpha : bool,
     html5_ask_leave_site : bool,
+    html5_bubble_mouse_events : bool,
+    html5_bubble_touch_events : bool,
+    html5_bubble_wheel_events : bool,
+    html5_bubble_key_events : bool,
+    html5_bubble_char_events : bool,
     ios_keyboard_resizes_canvas : bool,
 }
 Html5_Fetch_Error :: enum i32 {
