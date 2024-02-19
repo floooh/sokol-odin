@@ -2,7 +2,6 @@
 
 package sokol_glue
 import sg "../gfx"
-import sapp "../app"
 
 import "core:c"
 when ODIN_OS == .Windows {
