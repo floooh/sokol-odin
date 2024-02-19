@@ -19,8 +19,8 @@ OFFSCREEN_SAMPLE_COUNT :: 1
 state: struct {
     offscreen: struct {
         pass_action: sg.Pass_Action,
-        pass_desc: sg.Pass_Desc,
-        pass: sg.Pass,
+        attachments_desc: sg.Attachments_Desc,
+        attachments: sg.Attachments,
         pip: sg.Pipeline,
         bind: sg.Bindings,
     },
@@ -41,13 +41,13 @@ Vertex :: struct {
 }
 
 // called initially and when window size changes
-create_offscreen_pass :: proc (width, height: i32) {
+create_offscreen_attachments :: proc (width, height: i32) {
     // destroy previous resource (can be called for invalid id)
-    sg.destroy_pass(state.offscreen.pass)
+    sg.destroy_attachments(state.offscreen.attachments)
     for i in 0..<3 {
-        sg.destroy_image(state.offscreen.pass_desc.color_attachments[i].image)
+        sg.destroy_image(state.offscreen.attachments_desc.colors[i].image)
     }
-    sg.destroy_image(state.offscreen.pass_desc.depth_stencil_attachment.image)
+    sg.destroy_image(state.offscreen.attachments_desc.depth_stencil.image)
 
     // create offscreen rendertarget images and pass
     color_img_desc := sg.Image_Desc {
@@ -58,21 +58,21 @@ create_offscreen_pass :: proc (width, height: i32) {
     }
     depth_img_desc := color_img_desc
     depth_img_desc.pixel_format = .DEPTH;
-    state.offscreen.pass_desc = {
-        color_attachments = {
+    state.offscreen.attachments_desc = {
+        colors = {
             0 = { image = sg.make_image(color_img_desc) },
             1 = { image = sg.make_image(color_img_desc) },
             2 = { image = sg.make_image(color_img_desc) },
         },
-        depth_stencil_attachment = {
+        depth_stencil = {
             image = sg.make_image(depth_img_desc),
         },
     }
-    state.offscreen.pass = sg.make_pass(state.offscreen.pass_desc)
+    state.offscreen.attachments = sg.make_attachments(state.offscreen.attachments_desc)
 
     // also need to update the fullscreen-quad texture bindings
     for i in 0..<3 {
-        state.fsq.bind.fs.images[i] = state.offscreen.pass_desc.color_attachments[i].image
+        state.fsq.bind.fs.images[i] = state.offscreen.attachments_desc.colors[i].image
     }
 }
 
@@ -80,14 +80,14 @@ create_offscreen_pass :: proc (width, height: i32) {
 event :: proc "c" (ev: ^sapp.Event) {
     context = runtime.default_context()
     if ev.type == .RESIZED {
-        create_offscreen_pass(ev.framebuffer_width, ev.framebuffer_height)
+        create_offscreen_attachments(ev.framebuffer_width, ev.framebuffer_height)
     }
 }
 
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -100,7 +100,7 @@ init :: proc "c" () {
     }
 
     // a render pass with 3 color attachment images, and a depth attachment image
-    create_offscreen_pass(sapp.width(), sapp.height())
+    create_offscreen_attachments(sapp.width(), sapp.height())
 
     // cube vertex buffer
     cube_vertices := [?]Vertex {
@@ -223,9 +223,9 @@ init :: proc "c" () {
         },
         fs = {
             images = {
-                SLOT_tex0 = state.offscreen.pass_desc.color_attachments[0].image,
-                SLOT_tex1 = state.offscreen.pass_desc.color_attachments[1].image,
-                SLOT_tex2 = state.offscreen.pass_desc.color_attachments[2].image,
+                SLOT_tex0 = state.offscreen.attachments_desc.colors[0].image,
+                SLOT_tex1 = state.offscreen.attachments_desc.colors[1].image,
+                SLOT_tex2 = state.offscreen.attachments_desc.colors[2].image,
             },
             samplers = {
                 SLOT_smp = smp,
@@ -270,7 +270,7 @@ frame :: proc "c" () {
     }
 
     // render cube into MRT offscreen render targets
-    sg.begin_pass(state.offscreen.pass, state.offscreen.pass_action)
+    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
     sg.apply_uniforms(.VS, SLOT_offscreen_params, { ptr = &offscreen_params, size = size_of(offscreen_params) })
@@ -278,7 +278,7 @@ frame :: proc "c" () {
     sg.end_pass()
 
     // render fullscreen quad with the 'composed image', plus 3 small debug-view quads
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.fsq.pip)
     sg.apply_bindings(state.fsq.bind)
     sg.apply_uniforms(.VS, SLOT_fsq_params, { ptr = &fsq_params, size = size_of(fsq_params) })
@@ -286,7 +286,7 @@ frame :: proc "c" () {
     sg.apply_pipeline(state.dbg.pip)
     for i in 0..<3 {
         sg.apply_viewport(i * 100, 0, 100, 100, false)
-        state.dbg.bind.fs.images[SLOT_tex] = state.offscreen.pass_desc.color_attachments[i].image
+        state.dbg.bind.fs.images[SLOT_tex] = state.offscreen.attachments_desc.colors[i].image
         sg.apply_bindings(state.dbg.bind)
         sg.draw(0, 4, 1)
     }

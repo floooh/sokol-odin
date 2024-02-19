@@ -39,7 +39,7 @@ palette : [16]Rgb = {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
     sgl.setup({
@@ -83,7 +83,7 @@ frame :: proc "c" () {
     pass_action := sg.Pass_Action {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } } },
     }
-    sg.begin_default_pass(pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = pass_action, swapchain = sglue.swapchain() })
     sgl.draw()
     sg.end_pass()
     sg.commit()

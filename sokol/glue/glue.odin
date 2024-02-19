@@ -2,6 +2,7 @@
 
 package sokol_glue
 import sg "../gfx"
+import sapp "../app"
 
 import "core:c"
 when ODIN_OS == .Windows {
@@ -35,8 +36,8 @@ else {
     when ODIN_DEBUG == true { foreign import sokol_glue_clib { "sokol_glue_linux_x64_gl_debug.a" } }
     else                    { foreign import sokol_glue_clib { "sokol_glue_linux_x64_gl_release.a" } }
 }
-@(default_calling_convention="c")
+@(default_calling_convention="c", link_prefix="sglue_")
 foreign sokol_glue_clib {
-    @(link_name="sapp_sgcontext")
-    ctx :: proc() -> sg.Context_Desc ---
+    environment :: proc() -> sg.Environment ---
+    swapchain :: proc() -> sg.Swapchain ---
 }

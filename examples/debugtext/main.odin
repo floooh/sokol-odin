@@ -33,7 +33,7 @@ init :: proc "c" () {
     context = runtime.default_context()
 
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
     sdtx.setup({
@@ -77,7 +77,7 @@ frame :: proc "c" () {
     print_font(FONT_C64,   "C64:\n",         0x79, 0x86, 0xcb)
     print_font(FONT_ORIC,  "Oric Atmos:\n",  0xff, 0x98, 0x00)
 
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sdtx.draw()
     sg.end_pass()
     sg.commit()

@@ -24,7 +24,7 @@ Vertex :: struct {
 init :: proc "c" () {
     context = runtime.default_context()
 
-    sg.setup({ ctx = sglue.ctx() })
+    sg.setup({ environment = sglue.environment() })
 
     // a 2D triangle and quad in 1 vertex buffer and 1 index buffer
     vertices := [7]Vertex {
@@ -73,7 +73,7 @@ init :: proc "c" () {
 
 frame :: proc "c" () {
     context = runtime.default_context()
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     // render the triangle
     state.bind.vertex_buffer_offsets[0] = 0

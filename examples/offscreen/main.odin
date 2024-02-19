@@ -19,7 +19,7 @@ OFFSCREEN_SAMPLE_COUNT :: 1
 state: struct {
     offscreen: struct {
         pass_action: sg.Pass_Action,
-        pass: sg.Pass,
+        attachments: sg.Attachments,
         pip: sg.Pipeline,
         bind: sg.Bindings,
     },
@@ -38,7 +38,7 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -63,11 +63,11 @@ init :: proc "c" () {
     color_img := sg.make_image(img_desc)
     img_desc.pixel_format = .DEPTH
     depth_img := sg.make_image(img_desc)
-    state.offscreen.pass = sg.make_pass({
-        color_attachments = {
+    state.offscreen.attachments = sg.make_attachments({
+        colors = {
             0 = { image = color_img },
         },
-        depth_stencil_attachment = {
+        depth_stencil = {
             image = depth_img,
         },
     })
@@ -182,7 +182,7 @@ frame :: proc "c" () {
     vs_params := Vs_Params {
         mvp = compute_mvp(rx = state.rx, ry = state.ry, aspect = 1.0, eye_dist = 2.5),
     }
-    sg.begin_pass(state.offscreen.pass, state.offscreen.pass_action)
+    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
     sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
@@ -199,7 +199,7 @@ frame :: proc "c" () {
             eye_dist = 2.0,
         ),
     }
-    sg.begin_default_pass(state.default.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.default.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.default.pip)
     sg.apply_bindings(state.default.bind)
     sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })

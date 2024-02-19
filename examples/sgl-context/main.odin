@@ -17,7 +17,7 @@ import sgl "../../sokol/gl"
 state: struct {
     offscreen: struct {
         pass_action: sg.Pass_Action,
-        pass: sg.Pass,
+        attachments: sg.Attachments,
         img: sg.Image,
         sgl_ctx: sgl.Context,
     },
@@ -36,7 +36,7 @@ OFFSCREEN_HEIGHT :: 32
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -79,8 +79,8 @@ init :: proc "c" () {
         pixel_format = OFFSCREEN_PIXELFORMAT,
         sample_count = OFFSCREEN_SAMPLECOUNT,
     })
-    state.offscreen.pass = sg.make_pass({
-        color_attachments = {
+    state.offscreen.attachments = sg.make_attachments({
+        colors = {
             0 = { image = state.offscreen.img },
         },
     })
@@ -125,10 +125,10 @@ frame :: proc "c" () {
     draw_cube()
 
     // do the actual offscreen and display rendering in sokol-gfx passes
-    sg.begin_pass(state.offscreen.pass, state.offscreen.pass_action)
+    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
     sgl.context_draw(state.offscreen.sgl_ctx)
     sg.end_pass()
-    sg.begin_default_pass(state.display.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.display.pass_action, swapchain = sglue.swapchain() })
     sgl.context_draw(sgl.default_context())
     sg.end_pass()
     sg.commit()

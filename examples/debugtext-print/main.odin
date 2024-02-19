@@ -41,7 +41,7 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
     sdtx.setup({
@@ -73,7 +73,7 @@ frame :: proc "c" () {
         sdtx.move_y(2)
     }
 
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sdtx.draw()
     sg.end_pass()
     sg.commit()
