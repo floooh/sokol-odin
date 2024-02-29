@@ -28,7 +28,7 @@ init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
         pipeline_pool_size = NUM_BLEND_FACTORS * NUM_BLEND_FACTORS + 1,
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -110,7 +110,7 @@ frame :: proc "c" () {
     view_proj := m.mul(proj, view)
 
     // start rendering
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
 
     // draw a background quad
     sg.apply_pipeline(state.bg_pip)

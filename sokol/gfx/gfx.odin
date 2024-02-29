@@ -49,21 +49,19 @@ foreign sokol_gfx_clib {
     make_sampler :: proc(#by_ptr desc: Sampler_Desc) -> Sampler ---
     make_shader :: proc(#by_ptr desc: Shader_Desc) -> Shader ---
     make_pipeline :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline ---
-    make_pass :: proc(#by_ptr desc: Pass_Desc) -> Pass ---
+    make_attachments :: proc(#by_ptr desc: Attachments_Desc) -> Attachments ---
     destroy_buffer :: proc(buf: Buffer)  ---
     destroy_image :: proc(img: Image)  ---
     destroy_sampler :: proc(smp: Sampler)  ---
     destroy_shader :: proc(shd: Shader)  ---
     destroy_pipeline :: proc(pip: Pipeline)  ---
-    destroy_pass :: proc(pass: Pass)  ---
+    destroy_attachments :: proc(atts: Attachments)  ---
     update_buffer :: proc(buf: Buffer, #by_ptr data: Range)  ---
     update_image :: proc(img: Image, #by_ptr data: Image_Data)  ---
     append_buffer :: proc(buf: Buffer, #by_ptr data: Range) -> c.int ---
     query_buffer_overflow :: proc(buf: Buffer) -> bool ---
     query_buffer_will_overflow :: proc(buf: Buffer, size: u64) -> bool ---
-    begin_default_pass :: proc(#by_ptr pass_action: Pass_Action, #any_int width: c.int, #any_int height: c.int)  ---
-    begin_default_passf :: proc(#by_ptr pass_action: Pass_Action, width: f32, height: f32)  ---
-    begin_pass :: proc(pass: Pass, #by_ptr pass_action: Pass_Action)  ---
+    begin_pass :: proc(#by_ptr pass: Pass)  ---
     apply_viewport :: proc(#any_int x: c.int, #any_int y: c.int, #any_int width: c.int, #any_int height: c.int, origin_top_left: bool)  ---
     apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
     apply_scissor_rect :: proc(#any_int x: c.int, #any_int y: c.int, #any_int width: c.int, #any_int height: c.int, origin_top_left: bool)  ---
@@ -86,62 +84,59 @@ foreign sokol_gfx_clib {
     query_sampler_state :: proc(smp: Sampler) -> Resource_State ---
     query_shader_state :: proc(shd: Shader) -> Resource_State ---
     query_pipeline_state :: proc(pip: Pipeline) -> Resource_State ---
-    query_pass_state :: proc(pass: Pass) -> Resource_State ---
+    query_attachments_state :: proc(atts: Attachments) -> Resource_State ---
     query_buffer_info :: proc(buf: Buffer) -> Buffer_Info ---
     query_image_info :: proc(img: Image) -> Image_Info ---
     query_sampler_info :: proc(smp: Sampler) -> Sampler_Info ---
     query_shader_info :: proc(shd: Shader) -> Shader_Info ---
     query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info ---
-    query_pass_info :: proc(pass: Pass) -> Pass_Info ---
+    query_attachments_info :: proc(atts: Attachments) -> Attachments_Info ---
     query_buffer_desc :: proc(buf: Buffer) -> Buffer_Desc ---
     query_image_desc :: proc(img: Image) -> Image_Desc ---
     query_sampler_desc :: proc(smp: Sampler) -> Sampler_Desc ---
     query_shader_desc :: proc(shd: Shader) -> Shader_Desc ---
     query_pipeline_desc :: proc(pip: Pipeline) -> Pipeline_Desc ---
-    query_pass_desc :: proc(pass: Pass) -> Pass_Desc ---
+    query_attachments_desc :: proc(atts: Attachments) -> Attachments_Desc ---
     query_buffer_defaults :: proc(#by_ptr desc: Buffer_Desc) -> Buffer_Desc ---
     query_image_defaults :: proc(#by_ptr desc: Image_Desc) -> Image_Desc ---
     query_sampler_defaults :: proc(#by_ptr desc: Sampler_Desc) -> Sampler_Desc ---
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
     query_pipeline_defaults :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline_Desc ---
-    query_pass_defaults :: proc(#by_ptr desc: Pass_Desc) -> Pass_Desc ---
+    query_attachments_defaults :: proc(#by_ptr desc: Attachments_Desc) -> Attachments_Desc ---
     alloc_buffer :: proc() -> Buffer ---
     alloc_image :: proc() -> Image ---
     alloc_sampler :: proc() -> Sampler ---
     alloc_shader :: proc() -> Shader ---
     alloc_pipeline :: proc() -> Pipeline ---
-    alloc_pass :: proc() -> Pass ---
+    alloc_attachments :: proc() -> Attachments ---
     dealloc_buffer :: proc(buf: Buffer)  ---
     dealloc_image :: proc(img: Image)  ---
     dealloc_sampler :: proc(smp: Sampler)  ---
     dealloc_shader :: proc(shd: Shader)  ---
     dealloc_pipeline :: proc(pip: Pipeline)  ---
-    dealloc_pass :: proc(pass: Pass)  ---
+    dealloc_attachments :: proc(attachments: Attachments)  ---
     init_buffer :: proc(buf: Buffer, #by_ptr desc: Buffer_Desc)  ---
     init_image :: proc(img: Image, #by_ptr desc: Image_Desc)  ---
     init_sampler :: proc(smg: Sampler, #by_ptr desc: Sampler_Desc)  ---
     init_shader :: proc(shd: Shader, #by_ptr desc: Shader_Desc)  ---
     init_pipeline :: proc(pip: Pipeline, #by_ptr desc: Pipeline_Desc)  ---
-    init_pass :: proc(pass: Pass, #by_ptr desc: Pass_Desc)  ---
+    init_attachments :: proc(attachments: Attachments, #by_ptr desc: Attachments_Desc)  ---
     uninit_buffer :: proc(buf: Buffer)  ---
     uninit_image :: proc(img: Image)  ---
     uninit_sampler :: proc(smp: Sampler)  ---
     uninit_shader :: proc(shd: Shader)  ---
     uninit_pipeline :: proc(pip: Pipeline)  ---
-    uninit_pass :: proc(pass: Pass)  ---
+    uninit_attachments :: proc(atts: Attachments)  ---
     fail_buffer :: proc(buf: Buffer)  ---
     fail_image :: proc(img: Image)  ---
     fail_sampler :: proc(smp: Sampler)  ---
     fail_shader :: proc(shd: Shader)  ---
     fail_pipeline :: proc(pip: Pipeline)  ---
-    fail_pass :: proc(pass: Pass)  ---
+    fail_attachments :: proc(atts: Attachments)  ---
     enable_frame_stats :: proc()  ---
     disable_frame_stats :: proc()  ---
     frame_stats_enabled :: proc() -> bool ---
     query_frame_stats :: proc() -> Frame_Stats ---
-    setup_context :: proc() -> Context ---
-    activate_context :: proc(ctx_id: Context)  ---
-    discard_context :: proc(ctx_id: Context)  ---
     d3d11_device :: proc() -> rawptr ---
     d3d11_device_context :: proc() -> rawptr ---
     d3d11_query_buffer_info :: proc(buf: Buffer) -> D3d11_Buffer_Info ---
@@ -149,7 +144,7 @@ foreign sokol_gfx_clib {
     d3d11_query_sampler_info :: proc(smp: Sampler) -> D3d11_Sampler_Info ---
     d3d11_query_shader_info :: proc(shd: Shader) -> D3d11_Shader_Info ---
     d3d11_query_pipeline_info :: proc(pip: Pipeline) -> D3d11_Pipeline_Info ---
-    d3d11_query_pass_info :: proc(pass: Pass) -> D3d11_Pass_Info ---
+    d3d11_query_attachments_info :: proc(atts: Attachments) -> D3d11_Attachments_Info ---
     mtl_device :: proc() -> rawptr ---
     mtl_render_command_encoder :: proc() -> rawptr ---
     mtl_query_buffer_info :: proc(buf: Buffer) -> Mtl_Buffer_Info ---
@@ -166,12 +161,12 @@ foreign sokol_gfx_clib {
     wgpu_query_sampler_info :: proc(smp: Sampler) -> Wgpu_Sampler_Info ---
     wgpu_query_shader_info :: proc(shd: Shader) -> Wgpu_Shader_Info ---
     wgpu_query_pipeline_info :: proc(pip: Pipeline) -> Wgpu_Pipeline_Info ---
-    wgpu_query_pass_info :: proc(pass: Pass) -> Wgpu_Pass_Info ---
+    wgpu_query_attachments_info :: proc(atts: Attachments) -> Wgpu_Attachments_Info ---
     gl_query_buffer_info :: proc(buf: Buffer) -> Gl_Buffer_Info ---
     gl_query_image_info :: proc(img: Image) -> Gl_Image_Info ---
     gl_query_sampler_info :: proc(smp: Sampler) -> Gl_Sampler_Info ---
     gl_query_shader_info :: proc(shd: Shader) -> Gl_Shader_Info ---
-    gl_query_pass_info :: proc(pass: Pass) -> Gl_Pass_Info ---
+    gl_query_attachments_info :: proc(atts: Attachments) -> Gl_Attachments_Info ---
 }
 Buffer :: struct {
     id : u32,
@@ -188,10 +183,7 @@ Shader :: struct {
 Pipeline :: struct {
     id : u32,
 }
-Pass :: struct {
-    id : u32,
-}
-Context :: struct {
+Attachments :: struct {
     id : u32,
 }
 Range :: struct {
@@ -323,7 +315,7 @@ Limits :: struct {
     max_image_size_array : c.int,
     max_image_array_layers : c.int,
     max_vertex_attrs : c.int,
-    gl_max_vertex_uniform_vectors : c.int,
+    gl_max_vertex_uniform_components : c.int,
     gl_max_combined_texture_image_units : c.int,
 }
 Resource_State :: enum i32 {
@@ -576,10 +568,45 @@ Stencil_Attachment_Action :: struct {
     clear_value : u8,
 }
 Pass_Action :: struct {
-    _ : u32,
     colors : [4]Color_Attachment_Action,
     depth : Depth_Attachment_Action,
     stencil : Stencil_Attachment_Action,
+}
+Metal_Swapchain :: struct {
+    current_drawable : rawptr,
+    depth_stencil_texture : rawptr,
+    msaa_color_texture : rawptr,
+}
+D3d11_Swapchain :: struct {
+    render_view : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_view : rawptr,
+}
+Wgpu_Swapchain :: struct {
+    render_view : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_view : rawptr,
+}
+Gl_Swapchain :: struct {
+    framebuffer : u32,
+}
+Swapchain :: struct {
+    width : c.int,
+    height : c.int,
+    sample_count : c.int,
+    color_format : Pixel_Format,
+    depth_format : Pixel_Format,
+    metal : Metal_Swapchain,
+    d3d11 : D3d11_Swapchain,
+    wgpu : Wgpu_Swapchain,
+    gl : Gl_Swapchain,
+}
+Pass :: struct {
+    _ : u32,
+    action : Pass_Action,
+    attachments : Attachments,
+    swapchain : Swapchain,
+    label : cstring,
     _ : u32,
 }
 Stage_Bindings :: struct {
@@ -771,23 +798,22 @@ Pipeline_Desc :: struct {
     label : cstring,
     _ : u32,
 }
-Pass_Attachment_Desc :: struct {
+Attachment_Desc :: struct {
     image : Image,
     mip_level : c.int,
     slice : c.int,
 }
-Pass_Desc :: struct {
+Attachments_Desc :: struct {
     _ : u32,
-    color_attachments : [4]Pass_Attachment_Desc,
-    resolve_attachments : [4]Pass_Attachment_Desc,
-    depth_stencil_attachment : Pass_Attachment_Desc,
+    colors : [4]Attachment_Desc,
+    resolves : [4]Attachment_Desc,
+    depth_stencil : Attachment_Desc,
     label : cstring,
     _ : u32,
 }
 Slot_Info :: struct {
     state : Resource_State,
     res_id : u32,
-    ctx_id : u32,
 }
 Buffer_Info :: struct {
     slot : Slot_Info,
@@ -813,7 +839,7 @@ Shader_Info :: struct {
 Pipeline_Info :: struct {
     slot : Slot_Info,
 }
-Pass_Info :: struct {
+Attachments_Info :: struct {
     slot : Slot_Info,
 }
 Frame_Stats_Gl :: struct {
@@ -1012,13 +1038,7 @@ Log_Item :: enum i32 {
     WGPU_SHADER_CREATE_BINDGROUP_LAYOUT_FAILED,
     WGPU_CREATE_PIPELINE_LAYOUT_FAILED,
     WGPU_CREATE_RENDER_PIPELINE_FAILED,
-    WGPU_PASS_CREATE_TEXTURE_VIEW_FAILED,
-    UNINIT_BUFFER_ACTIVE_CONTEXT_MISMATCH,
-    UNINIT_IMAGE_ACTIVE_CONTEXT_MISMATCH,
-    UNINIT_SAMPLER_ACTIVE_CONTEXT_MISMATCH,
-    UNINIT_SHADER_ACTIVE_CONTEXT_MISMATCH,
-    UNINIT_PIPELINE_ACTIVE_CONTEXT_MISMATCH,
-    UNINIT_PASS_ACTIVE_CONTEXT_MISMATCH,
+    WGPU_ATTACHMENTS_CREATE_TEXTURE_VIEW_FAILED,
     IDENTICAL_COMMIT_LISTENER,
     COMMIT_LISTENER_ARRAY_FULL,
     TRACE_HOOKS_NOT_ENABLED,
@@ -1027,31 +1047,32 @@ Log_Item :: enum i32 {
     DEALLOC_SAMPLER_INVALID_STATE,
     DEALLOC_SHADER_INVALID_STATE,
     DEALLOC_PIPELINE_INVALID_STATE,
-    DEALLOC_PASS_INVALID_STATE,
+    DEALLOC_ATTACHMENTS_INVALID_STATE,
     INIT_BUFFER_INVALID_STATE,
     INIT_IMAGE_INVALID_STATE,
     INIT_SAMPLER_INVALID_STATE,
     INIT_SHADER_INVALID_STATE,
     INIT_PIPELINE_INVALID_STATE,
-    INIT_PASS_INVALID_STATE,
+    INIT_ATTACHMENTS_INVALID_STATE,
     UNINIT_BUFFER_INVALID_STATE,
     UNINIT_IMAGE_INVALID_STATE,
     UNINIT_SAMPLER_INVALID_STATE,
     UNINIT_SHADER_INVALID_STATE,
     UNINIT_PIPELINE_INVALID_STATE,
-    UNINIT_PASS_INVALID_STATE,
+    UNINIT_ATTACHMENTS_INVALID_STATE,
     FAIL_BUFFER_INVALID_STATE,
     FAIL_IMAGE_INVALID_STATE,
     FAIL_SAMPLER_INVALID_STATE,
     FAIL_SHADER_INVALID_STATE,
     FAIL_PIPELINE_INVALID_STATE,
-    FAIL_PASS_INVALID_STATE,
+    FAIL_ATTACHMENTS_INVALID_STATE,
     BUFFER_POOL_EXHAUSTED,
     IMAGE_POOL_EXHAUSTED,
     SAMPLER_POOL_EXHAUSTED,
     SHADER_POOL_EXHAUSTED,
     PIPELINE_POOL_EXHAUSTED,
     PASS_POOL_EXHAUSTED,
+    BEGINPASS_ATTACHMENT_INVALID,
     DRAW_WITHOUT_BINDINGS,
     VALIDATE_BUFFERDESC_CANARY,
     VALIDATE_BUFFERDESC_SIZE,
@@ -1111,46 +1132,78 @@ Log_Item :: enum i32 {
     VALIDATE_PIPELINEDESC_NO_ATTRS,
     VALIDATE_PIPELINEDESC_LAYOUT_STRIDE4,
     VALIDATE_PIPELINEDESC_ATTR_SEMANTICS,
-    VALIDATE_PASSDESC_CANARY,
-    VALIDATE_PASSDESC_NO_ATTACHMENTS,
-    VALIDATE_PASSDESC_NO_CONT_COLOR_ATTS,
-    VALIDATE_PASSDESC_IMAGE,
-    VALIDATE_PASSDESC_MIPLEVEL,
-    VALIDATE_PASSDESC_FACE,
-    VALIDATE_PASSDESC_LAYER,
-    VALIDATE_PASSDESC_SLICE,
-    VALIDATE_PASSDESC_IMAGE_NO_RT,
-    VALIDATE_PASSDESC_COLOR_INV_PIXELFORMAT,
-    VALIDATE_PASSDESC_DEPTH_INV_PIXELFORMAT,
-    VALIDATE_PASSDESC_IMAGE_SIZES,
-    VALIDATE_PASSDESC_IMAGE_SAMPLE_COUNTS,
-    VALIDATE_PASSDESC_RESOLVE_COLOR_IMAGE_MSAA,
-    VALIDATE_PASSDESC_RESOLVE_IMAGE,
-    VALIDATE_PASSDESC_RESOLVE_SAMPLE_COUNT,
-    VALIDATE_PASSDESC_RESOLVE_MIPLEVEL,
-    VALIDATE_PASSDESC_RESOLVE_FACE,
-    VALIDATE_PASSDESC_RESOLVE_LAYER,
-    VALIDATE_PASSDESC_RESOLVE_SLICE,
-    VALIDATE_PASSDESC_RESOLVE_IMAGE_NO_RT,
-    VALIDATE_PASSDESC_RESOLVE_IMAGE_SIZES,
-    VALIDATE_PASSDESC_RESOLVE_IMAGE_FORMAT,
-    VALIDATE_PASSDESC_DEPTH_IMAGE,
-    VALIDATE_PASSDESC_DEPTH_MIPLEVEL,
-    VALIDATE_PASSDESC_DEPTH_FACE,
-    VALIDATE_PASSDESC_DEPTH_LAYER,
-    VALIDATE_PASSDESC_DEPTH_SLICE,
-    VALIDATE_PASSDESC_DEPTH_IMAGE_NO_RT,
-    VALIDATE_PASSDESC_DEPTH_IMAGE_SIZES,
-    VALIDATE_PASSDESC_DEPTH_IMAGE_SAMPLE_COUNT,
-    VALIDATE_BEGINPASS_PASS,
+    VALIDATE_ATTACHMENTSDESC_CANARY,
+    VALIDATE_ATTACHMENTSDESC_NO_ATTACHMENTS,
+    VALIDATE_ATTACHMENTSDESC_NO_CONT_COLOR_ATTS,
+    VALIDATE_ATTACHMENTSDESC_IMAGE,
+    VALIDATE_ATTACHMENTSDESC_MIPLEVEL,
+    VALIDATE_ATTACHMENTSDESC_FACE,
+    VALIDATE_ATTACHMENTSDESC_LAYER,
+    VALIDATE_ATTACHMENTSDESC_SLICE,
+    VALIDATE_ATTACHMENTSDESC_IMAGE_NO_RT,
+    VALIDATE_ATTACHMENTSDESC_COLOR_INV_PIXELFORMAT,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_INV_PIXELFORMAT,
+    VALIDATE_ATTACHMENTSDESC_IMAGE_SIZES,
+    VALIDATE_ATTACHMENTSDESC_IMAGE_SAMPLE_COUNTS,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_COLOR_IMAGE_MSAA,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_SAMPLE_COUNT,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_MIPLEVEL,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_FACE,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_LAYER,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_SLICE,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_NO_RT,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_SIZES,
+    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_FORMAT,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_MIPLEVEL,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_FACE,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_LAYER,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_SLICE,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_NO_RT,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_SIZES,
+    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_SAMPLE_COUNT,
+    VALIDATE_BEGINPASS_CANARY,
+    VALIDATE_BEGINPASS_ATTACHMENTS_EXISTS,
+    VALIDATE_BEGINPASS_ATTACHMENTS_VALID,
     VALIDATE_BEGINPASS_COLOR_ATTACHMENT_IMAGE,
     VALIDATE_BEGINPASS_RESOLVE_ATTACHMENT_IMAGE,
     VALIDATE_BEGINPASS_DEPTHSTENCIL_ATTACHMENT_IMAGE,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_WIDTH,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_WIDTH_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_HEIGHT,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_HEIGHT_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_SAMPLECOUNT,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_SAMPLECOUNT_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_COLORFORMAT,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_COLORFORMAT_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_DEPTHFORMAT_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_CURRENTDRAWABLE,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_CURRENTDRAWABLE_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_DEPTHSTENCILTEXTURE,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_DEPTHSTENCILTEXTURE_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_MSAACOLORTEXTURE,
+    VALIDATE_BEGINPASS_SWAPCHAIN_METAL_EXPECT_MSAACOLORTEXTURE_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_RENDERVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_RENDERVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_RESOLVEVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_RESOLVEVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_DEPTHSTENCILVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_D3D11_EXPECT_DEPTHSTENCILVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_RENDERVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_RENDERVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_RESOLVEVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_RESOLVEVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_DEPTHSTENCILVIEW,
+    VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_DEPTHSTENCILVIEW_NOTSET,
+    VALIDATE_BEGINPASS_SWAPCHAIN_GL_EXPECT_FRAMEBUFFER_NOTSET,
     VALIDATE_APIP_PIPELINE_VALID_ID,
     VALIDATE_APIP_PIPELINE_EXISTS,
     VALIDATE_APIP_PIPELINE_VALID,
     VALIDATE_APIP_SHADER_EXISTS,
     VALIDATE_APIP_SHADER_VALID,
+    VALIDATE_APIP_CURPASS_ATTACHMENTS_EXISTS,
+    VALIDATE_APIP_CURPASS_ATTACHMENTS_VALID,
     VALIDATE_APIP_ATT_COUNT,
     VALIDATE_APIP_COLOR_FORMAT,
     VALIDATE_APIP_DEPTH_FORMAT,
@@ -1207,46 +1260,26 @@ Log_Item :: enum i32 {
     VALIDATE_UPDIMG_ONCE,
     VALIDATION_FAILED,
 }
-Metal_Context_Desc :: struct {
-    device : rawptr,
-    renderpass_descriptor_cb : proc "c" () -> rawptr,
-    renderpass_descriptor_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    drawable_cb : proc "c" () -> rawptr,
-    drawable_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    user_data : rawptr,
+Environment_Defaults :: struct {
+    color_format : Pixel_Format,
+    depth_format : Pixel_Format,
+    sample_count : c.int,
 }
-D3d11_Context_Desc :: struct {
+Metal_Environment :: struct {
+    device : rawptr,
+}
+D3d11_Environment :: struct {
     device : rawptr,
     device_context : rawptr,
-    render_target_view_cb : proc "c" () -> rawptr,
-    render_target_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    depth_stencil_view_cb : proc "c" () -> rawptr,
-    depth_stencil_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    user_data : rawptr,
 }
-Wgpu_Context_Desc :: struct {
+Wgpu_Environment :: struct {
     device : rawptr,
-    render_view_cb : proc "c" () -> rawptr,
-    render_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    resolve_view_cb : proc "c" () -> rawptr,
-    resolve_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    depth_stencil_view_cb : proc "c" () -> rawptr,
-    depth_stencil_view_userdata_cb : proc "c" (a0: rawptr) -> rawptr,
-    user_data : rawptr,
 }
-Gl_Context_Desc :: struct {
-    default_framebuffer_cb : proc "c" () -> u32,
-    default_framebuffer_userdata_cb : proc "c" (a0: rawptr) -> u32,
-    user_data : rawptr,
-}
-Context_Desc :: struct {
-    color_format : c.int,
-    depth_format : c.int,
-    sample_count : c.int,
-    metal : Metal_Context_Desc,
-    d3d11 : D3d11_Context_Desc,
-    wgpu : Wgpu_Context_Desc,
-    gl : Gl_Context_Desc,
+Environment :: struct {
+    defaults : Environment_Defaults,
+    metal : Metal_Environment,
+    d3d11 : D3d11_Environment,
+    wgpu : Wgpu_Environment,
 }
 Commit_Listener :: struct {
     func : proc "c" (a0: rawptr),
@@ -1268,17 +1301,17 @@ Desc :: struct {
     sampler_pool_size : c.int,
     shader_pool_size : c.int,
     pipeline_pool_size : c.int,
-    pass_pool_size : c.int,
-    context_pool_size : c.int,
+    attachments_pool_size : c.int,
     uniform_buffer_size : c.int,
     max_commit_listeners : c.int,
     disable_validation : bool,
     mtl_force_managed_storage_mode : bool,
+    mtl_use_command_buffer_with_retained_references : bool,
     wgpu_disable_bindgroups_cache : bool,
     wgpu_bindgroups_cache_size : c.int,
     allocator : Allocator,
     logger : Logger,
-    ctx : Context_Desc,
+    environment : Environment,
     _ : u32,
 }
 D3d11_Buffer_Info :: struct {
@@ -1305,7 +1338,7 @@ D3d11_Pipeline_Info :: struct {
     dss : rawptr,
     bs : rawptr,
 }
-D3d11_Pass_Info :: struct {
+D3d11_Attachments_Info :: struct {
     color_rtv : [4]rawptr,
     resolve_rtv : [4]rawptr,
     dsv : rawptr,
@@ -1349,7 +1382,7 @@ Wgpu_Shader_Info :: struct {
 Wgpu_Pipeline_Info :: struct {
     pip : rawptr,
 }
-Wgpu_Pass_Info :: struct {
+Wgpu_Attachments_Info :: struct {
     color_view : [4]rawptr,
     resolve_view : [4]rawptr,
     ds_view : rawptr,
@@ -1370,7 +1403,7 @@ Gl_Sampler_Info :: struct {
 Gl_Shader_Info :: struct {
     prog : u32,
 }
-Gl_Pass_Info :: struct {
-    frame_buffer : u32,
+Gl_Attachments_Info :: struct {
+    framebuffer : u32,
     msaa_resolve_framebuffer : [4]u32,
 }

@@ -77,20 +77,23 @@ foreign sokol_app_clib {
     html5_get_dropped_file_size :: proc(#any_int index: c.int) -> u32 ---
     html5_fetch_dropped_file :: proc(#by_ptr request: Html5_Fetch_Request)  ---
     metal_get_device :: proc() -> rawptr ---
-    metal_get_renderpass_descriptor :: proc() -> rawptr ---
-    metal_get_drawable :: proc() -> rawptr ---
+    metal_get_current_drawable :: proc() -> rawptr ---
+    metal_get_depth_stencil_texture :: proc() -> rawptr ---
+    metal_get_msaa_color_texture :: proc() -> rawptr ---
     macos_get_window :: proc() -> rawptr ---
     ios_get_window :: proc() -> rawptr ---
     d3d11_get_device :: proc() -> rawptr ---
     d3d11_get_device_context :: proc() -> rawptr ---
     d3d11_get_swap_chain :: proc() -> rawptr ---
-    d3d11_get_render_target_view :: proc() -> rawptr ---
+    d3d11_get_render_view :: proc() -> rawptr ---
+    d3d11_get_resolve_view :: proc() -> rawptr ---
     d3d11_get_depth_stencil_view :: proc() -> rawptr ---
     win32_get_hwnd :: proc() -> rawptr ---
     wgpu_get_device :: proc() -> rawptr ---
     wgpu_get_render_view :: proc() -> rawptr ---
     wgpu_get_resolve_view :: proc() -> rawptr ---
     wgpu_get_depth_stencil_view :: proc() -> rawptr ---
+    gl_get_framebuffer :: proc() -> u32 ---
     android_get_native_activity :: proc() -> rawptr ---
 }
 MAX_TOUCHPOINTS :: 8

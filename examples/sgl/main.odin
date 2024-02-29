@@ -27,7 +27,7 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
     sgl.setup({
@@ -223,7 +223,7 @@ frame :: proc "c" () {
     // is the only sokol/gl function that must be called inside
     // a sokol/gfx begin/end pass pair.
     // sgl.draw() also 'rewinds' sokol-gl for the next frame.
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sgl.draw()
     sg.end_pass()
     sg.commit()

@@ -27,7 +27,7 @@ Vertex :: struct {
 init :: proc "c" () {
     context = runtime.default_context();
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -148,7 +148,7 @@ frame :: proc "c" () {
         mvp = compute_mvp(state.rx, state.ry),
     }
 
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
     sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })

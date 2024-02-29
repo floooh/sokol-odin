@@ -25,7 +25,7 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
 
@@ -115,7 +115,7 @@ frame :: proc "c" () {
     }
 
     // default pass-action clears to grey
-    sg.begin_default_pass({}, sapp.width(), sapp.height())
+    sg.begin_pass({ swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
     sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })

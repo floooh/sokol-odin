@@ -43,7 +43,7 @@ state: struct {
 init :: proc "c" () {
     context = runtime.default_context()
     sg.setup({
-        ctx = sglue.ctx(),
+        environment = sglue.environment(),
         logger = { func = slog.func },
     })
     sdtx.setup({
@@ -164,7 +164,7 @@ frame :: proc "c" () {
     rm := m.mul(rxm ,rym)
 
     // render shapes
-    sg.begin_default_pass(state.pass_action, sapp.width(), sapp.height())
+    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings({
         vertex_buffers = { 0 = state.vbuf },
