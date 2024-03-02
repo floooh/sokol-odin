@@ -460,6 +460,8 @@ Desc :: struct {
     html5_bubble_wheel_events : bool,
     html5_bubble_key_events : bool,
     html5_bubble_char_events : bool,
+    html5_use_emsc_set_main_loop : bool,
+    html5_emsc_set_main_loop_simulate_infinite_loop : bool,
     ios_keyboard_resizes_canvas : bool,
 }
 Html5_Fetch_Error :: enum i32 {
