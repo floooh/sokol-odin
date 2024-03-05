@@ -1,11 +1,11 @@
-package main 
+package main
 
-import "core:fmt"
-import "core:runtime"
-import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
+import sg "../../sokol/gfx"
 import sgl "../../sokol/gl"
 import sglue "../../sokol/glue"
+import "core:fmt"
+import "core:runtime"
 import mu "vendor:microui"
 
 state := struct {
@@ -16,6 +16,7 @@ state := struct {
 	log_buf_updated: bool,
 	bg:              mu.Color,
 	atlas_img:       sg.Image,
+	atlas_smp:       sg.Sampler,
 } {
 	bg = {90, 95, 100, 255},
 }
@@ -28,15 +29,13 @@ r_init :: proc() {
 	}
 
 	state.atlas_img = sg.make_image(
-		sg.Image_Desc{
+		sg.Image_Desc {
 			width = mu.DEFAULT_ATLAS_WIDTH,
 			height = mu.DEFAULT_ATLAS_HEIGHT,
-			min_filter = .NEAREST,
-			mag_filter = .NEAREST,
-			data = {
-				subimage = {
-					0 = {
-						0 = {
+			data =  {
+				subimage =  {
+					0 =  {
+						0 =  {
 							ptr = raw_data(pixels),
 							size = mu.DEFAULT_ATLAS_WIDTH * mu.DEFAULT_ATLAS_HEIGHT * 4,
 						},
@@ -46,11 +45,16 @@ r_init :: proc() {
 		},
 	)
 
+	state.atlas_smp = sg.make_sampler(
+		sg.Sampler_Desc{min_filter = .NEAREST, mag_filter = .NEAREST},
+	)
+
+
 	state.pip = sgl.make_pipeline(
-		sg.Pipeline_Desc{
-			colors = {
-				0 = {
-					blend = {
+		sg.Pipeline_Desc {
+			colors =  {
+				0 =  {
+					blend =  {
 						enabled = true,
 						src_factor_rgb = .SRC_ALPHA,
 						dst_factor_rgb = .ONE_MINUS_SRC_ALPHA,
@@ -66,7 +70,7 @@ r_init :: proc() {
 init :: proc "c" () {
 	context = runtime.default_context()
 
-	sg.setup(sg.Desc{ctx = sglue.ctx()})
+	sg.setup(sg.Desc{environment = sglue.environment()})
 	sgl.setup({})
 
 	r_init()
@@ -83,7 +87,7 @@ r_begin :: proc(disp_width, disp_height: i32) {
 	sgl.push_pipeline()
 	sgl.load_pipeline(state.pip)
 	sgl.enable_texture()
-	sgl.texture(state.atlas_img)
+	sgl.texture(state.atlas_img, state.atlas_smp)
 	sgl.matrix_mode_projection()
 	sgl.push_matrix()
 	sgl.ortho(0.0, f32(disp_width), f32(disp_height), 0.0, -1.0, +1.0)
@@ -172,22 +176,23 @@ frame :: proc "c" () {
 	}
 	r_end()
 
-	sg.begin_default_pass(
-		sg.Pass_Action{
-			colors = {
-				0 = {
-					action = .CLEAR,
-					value = {
-						f32(state.bg.r) / 255.0,
-						f32(state.bg.g) / 255.0,
-						f32(state.bg.b) / 255.0,
-						1.0,
+	sg.begin_pass(
+		sg.Pass {
+			action =  {
+				colors =  {
+					0 =  {
+						load_action = .CLEAR,
+						clear_value =  {
+							f32(state.bg.r) / 255.0,
+							f32(state.bg.g) / 255.0,
+							f32(state.bg.b) / 255.0,
+							1.0,
+						},
 					},
 				},
 			},
+		swapchain = sglue.swapchain()
 		},
-		sapp.width(),
-		sapp.height(),
 	)
 
 	r_draw()
@@ -239,7 +244,7 @@ cleanup :: proc "c" () {
 
 main :: proc() {
 	sapp.run(
-		{
+		 {
 			init_cb = init,
 			frame_cb = frame,
 			cleanup_cb = cleanup,
