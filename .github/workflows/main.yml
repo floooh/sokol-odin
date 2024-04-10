@@ -25,6 +25,7 @@ jobs:
           unzip odin.zip
           # HACK: odin releases are zipped twice
           unzip dist.zip
+          rm -r ./dist/examples # Sokol already has an examples folder
           mv ./dist/* ./
           chmod a+x ./odin
           ./build_clibs_linux.sh
