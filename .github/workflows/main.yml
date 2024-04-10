@@ -6,35 +6,44 @@ jobs:
   build:
     strategy:
       matrix:
-        # NOTE: disable macOS because llvm@11 is no longer supported in Homebrew
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{matrix.os}}
+    # NOTE: odin macos and ubuntu releases are zipped twice, so this is bit of a hack.
+    # The examples folder also conflicts with the sokol examples, so we just remove it.
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
       - if: runner.os == 'Linux'
         name: prepare-linux
         run: |
           sudo apt-get update
-          sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev llvm-11
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-07/odin-ubuntu-amd64-dev-2023-07.zip --output odin.zip
+          sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libasound-dev
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
+          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-ubuntu-amd64-dev-2024-04.zip --output odin.zip
           unzip odin.zip
+          unzip dist.zip
+          rm -r ./dist/examples
+          mv ./dist/* ./
           chmod a+x ./odin
           ./build_clibs_linux.sh
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
-          brew install llvm@11
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-07/odin-macos-amd64-dev-2023-07.zip --output odin.zip
+          brew install llvm@17
+          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-macos-amd64-dev-2024-04.zip --output odin.zip
           unzip odin.zip
+          unzip dist.zip
+          rm -r ./dist/examples
+          mv ./dist/* ./
           chmod a+x ./odin
           ./build_clibs_macos.sh
       - if: runner.os == 'Windows'
         name: prepare-windows
         shell: cmd
         run: |
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2023-07/odin-windows-amd64-dev-2023-07.zip --output odin.zip
+          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-windows-amd64-dev-2024-04.zip --output odin.zip
           unzip odin.zip
           build_clibs_windows.cmd
       - name: build
