@@ -8,6 +8,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{matrix.os}}
+    # NOTE: odin macos and ubuntu releases are zipped twice, so this is bit of a hack.
+    # The examples folder also conflicts with the sokol examples, so we just remove it.
     steps:
       - uses: actions/checkout@v3
       - uses: ilammy/msvc-dev-cmd@v1
@@ -21,9 +23,8 @@ jobs:
           echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-ubuntu-amd64-dev-2024-04.zip --output odin.zip
           unzip odin.zip
-          # HACK: odin releases are zipped twice
           unzip dist.zip
-          rm -r ./dist/examples # Sokol already has an examples folder
+          rm -r ./dist/examples
           mv ./dist/* ./
           chmod a+x ./odin
           ./build_clibs_linux.sh
@@ -33,6 +34,9 @@ jobs:
           brew install llvm@17
           curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-macos-amd64-dev-2024-04.zip --output odin.zip
           unzip odin.zip
+          unzip dist.zip
+          rm -r ./dist/examples
+          mv ./dist/* ./
           chmod a+x ./odin
           ./build_clibs_macos.sh
       - if: runner.os == 'Windows'
