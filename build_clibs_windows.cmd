@@ -1,31 +1,31 @@
 @echo off
 
-set sources=log app gfx glue time audio debugtext shape gl
+echo === D3D11 Debug ===
+cl /c /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol.c /Z7
+lib /OUT:sokol\sokol_windows_x64_d3d11_debug.lib sokol.obj
 
-REM D3D11 Debug
-for %%s in (%sources%) do (
-    cl /c /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_%%s.c
-    lib /OUT:sokol\%%s\sokol_%%s_windows_x64_d3d11_debug.lib sokol_%%s.obj
-    del sokol_%%s.obj
-)
+echo === D3D11 Release ===
+cl /c /O2 /DNDEBUG /DIMPL /DSOKOL_D3D11 c\sokol.c
+lib /OUT:sokol\sokol_windows_x64_d3d11_release.lib sokol.obj
 
-REM D3D11 Release
-for %%s in (%sources%) do (
-    cl /c /O2 /DNDEBUG /DIMPL /DSOKOL_D3D11 c\sokol_%%s.c
-    lib /OUT:sokol\%%s\sokol_%%s_windows_x64_d3d11_release.lib sokol_%%s.obj
-    del sokol_%%s.obj
-)
+echo === GL Debug ===
+cl /c /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol.c /Z7
+lib /OUT:sokol\sokol_windows_x64_gl_debug.lib sokol.obj
 
-REM GL Debug
-for %%s in (%sources%) do (
-    cl /c /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_%%s.c
-    lib /OUT:sokol\%%s\sokol_%%s_windows_x64_gl_debug.lib sokol_%%s.obj
-    del sokol_%%s.obj
-)
+echo === GL Release ===
+cl /c /O2 /DNDEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol.c
+lib /OUT:sokol\sokol_windows_x64_gl_release.lib sokol.obj
 
-REM GL Release
-for %%s in (%sources%) do (
-    cl /c /O2 /DNDEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_%%s.c
-    lib /OUT:sokol\%%s\sokol_%%s_windows_x64_gl_release.lib sokol_%%s.obj
-    del sokol_%%s.obj
-)
+del sokol.obj
+
+echo === D3D11 Debug DLL ===
+cl /OUT:sokol\sokol_windows_x64_d3d11_debug.dll /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_dll.c /Z7 /LDd /MDd /DLL
+
+echo === D3D11 Release DLL ===
+cl /OUT:sokol\sokol_windows_x64_d3d11_release.dll /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_dll.c /LD /MD /DLL
+
+echo === GL Debug DLL ===
+cl /OUT:sokol\sokol_windows_x64_gl_debug.dll /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_dll.c /Z7 /LDd /MDd /DLL
+
+echo === GL Release DLL ===
+cl /OUT:sokol\sokol_windows_x64_gl_release.dll /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_dll.c /LD /MD /DLL
