@@ -28,6 +28,7 @@ jobs:
           mv ./dist/* ./
           chmod a+x ./odin
           cd sokol
+          chmod a+x ./build_clibs_linux.sh
           ./build_clibs_linux.sh
           cd ..
       - if: runner.os == 'macOS'
@@ -41,6 +42,7 @@ jobs:
           mv ./dist/* ./
           chmod a+x ./odin
           cd sokol
+          chmod a+x ./build_clibs_macos.sh
           ./build_clibs_macos.sh
           cd ..
       - if: runner.os == 'Windows'
