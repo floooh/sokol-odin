@@ -5,48 +5,50 @@ package sokol_app
 import "core:c"
 
 SOKOL_DEBUG :: #config(SOKOL_DEBUG, ODIN_DEBUG)
-SOKOL_USE_GL :: #config(SOKOL_USE_GL, false)
-SOKOL_DLL :: #config(SOKOL_DLL, false)
+
+DEBUG :: #config(SOKOL_APP_DEBUG, SOKOL_DEBUG)
+USE_GL :: #config(SOKOL_USE_GL, false)
+USE_DLL :: #config(SOKOL_DLL, false)
 
 when ODIN_OS == .Windows {
-    when SOKOL_DLL {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_app_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
+    when USE_DLL {
+        when USE_GL {
+            when DEBUG { foreign import sokol_app_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_app_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_app_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_app_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_app_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
         }
     } else {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_app_clib { "sokol_app_windows_x64_gl_release.lib" } }
+        when USE_GL {
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_app_clib { "sokol_app_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_app_clib { "sokol_app_windows_x64_d3d11_release.lib" } }
         }
     }
 } else when ODIN_OS == .Darwin {
-    when SOKOL_USE_GL {
+    when USE_GL {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_macos_arm64_gl_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
-            else             { foreign import sokol_app_clib { "sokol_app_macos_arm64_gl_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_macos_arm64_gl_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
+            else       { foreign import sokol_app_clib { "sokol_app_macos_arm64_gl_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
        } else {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_macos_x64_gl_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
-            else             { foreign import sokol_app_clib { "sokol_app_macos_x64_gl_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_macos_x64_gl_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
+            else       { foreign import sokol_app_clib { "sokol_app_macos_x64_gl_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:OpenGL.framework" } }
         }
     } else {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
-            else             { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
+            else       { foreign import sokol_app_clib { "sokol_app_macos_arm64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
-            else             { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
+            when DEBUG { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_debug.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
+            else       { foreign import sokol_app_clib { "sokol_app_macos_x64_metal_release.a", "system:Cocoa.framework","system:QuartzCore.framework","system:Metal.framework","system:MetalKit.framework" } }
         }
     }
 } else when ODIN_OS == .Linux {
-    when SOKOL_DEBUG { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
-    else             { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
+    when DEBUG { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_debug.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
+    else       { foreign import sokol_app_clib { "sokol_app_linux_x64_gl_release.a", "system:X11", "system:Xi", "system:Xcursor", "system:GL", "system:dl", "system:pthread" } }
 } else {
     #panic("This OS is currently not supported")
 }
@@ -113,10 +115,12 @@ foreign sokol_app_clib {
     gl_get_framebuffer :: proc() -> u32 ---
     android_get_native_activity :: proc() -> rawptr ---
 }
+
 MAX_TOUCHPOINTS :: 8
 MAX_MOUSEBUTTONS :: 3
 MAX_KEYCODES :: 512
 MAX_ICONIMAGES :: 8
+
 Event_Type :: enum i32 {
     INVALID,
     KEY_DOWN,
@@ -144,6 +148,7 @@ Event_Type :: enum i32 {
     FILES_DROPPED,
     NUM,
 }
+
 Keycode :: enum i32 {
     INVALID = 0,
     SPACE = 32,
@@ -267,12 +272,14 @@ Keycode :: enum i32 {
     RIGHT_SUPER = 347,
     MENU = 348,
 }
+
 Android_Tooltype :: enum i32 {
     UNKNOWN = 0,
     FINGER = 1,
     STYLUS = 2,
     MOUSE = 3,
 }
+
 Touchpoint :: struct {
     identifier : u64,
     pos_x : f32,
@@ -280,12 +287,14 @@ Touchpoint :: struct {
     android_tooltype : Android_Tooltype,
     changed : bool,
 }
+
 Mousebutton :: enum i32 {
     LEFT = 0,
     RIGHT = 1,
     MIDDLE = 2,
     INVALID = 256,
 }
+
 MODIFIER_SHIFT :: 1
 MODIFIER_CTRL :: 2
 MODIFIER_ALT :: 4
@@ -293,6 +302,7 @@ MODIFIER_SUPER :: 8
 MODIFIER_LMB :: 256
 MODIFIER_RMB :: 512
 MODIFIER_MMB :: 1024
+
 Event :: struct {
     frame_count : u64,
     type : Event_Type,
@@ -314,24 +324,29 @@ Event :: struct {
     framebuffer_width : c.int,
     framebuffer_height : c.int,
 }
+
 Range :: struct {
     ptr : rawptr,
     size : u64,
 }
+
 Image_Desc :: struct {
     width : c.int,
     height : c.int,
     pixels : Range,
 }
+
 Icon_Desc :: struct {
     sokol_default : bool,
     images : [8]Image_Desc,
 }
+
 Allocator :: struct {
     alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+
 Log_Item :: enum i32 {
     OK,
     MALLOC_FAILED,
@@ -432,10 +447,12 @@ Log_Item :: enum i32 {
     DROPPED_FILE_PATH_TOO_LONG,
     CLIPBOARD_STRING_TOO_BIG,
 }
+
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
     user_data : rawptr,
 }
+
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -481,11 +498,13 @@ Desc :: struct {
     html5_emsc_set_main_loop_simulate_infinite_loop : bool,
     ios_keyboard_resizes_canvas : bool,
 }
+
 Html5_Fetch_Error :: enum i32 {
     FETCH_ERROR_NO_ERROR,
     FETCH_ERROR_BUFFER_TOO_SMALL,
     FETCH_ERROR_OTHER,
 }
+
 Html5_Fetch_Response :: struct {
     succeeded : bool,
     error_code : Html5_Fetch_Error,
@@ -494,12 +513,14 @@ Html5_Fetch_Response :: struct {
     buffer : Range,
     user_data : rawptr,
 }
+
 Html5_Fetch_Request :: struct {
     dropped_file_index : c.int,
     callback : proc "c" (a0: ^Html5_Fetch_Response),
     buffer : Range,
     user_data : rawptr,
 }
+
 Mouse_Cursor :: enum i32 {
     DEFAULT = 0,
     ARROW,
@@ -514,3 +535,4 @@ Mouse_Cursor :: enum i32 {
     NOT_ALLOWED,
     NUM,
 }
+

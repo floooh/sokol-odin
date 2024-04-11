@@ -5,48 +5,50 @@ package sokol_audio
 import "core:c"
 
 SOKOL_DEBUG :: #config(SOKOL_DEBUG, ODIN_DEBUG)
-SOKOL_USE_GL :: #config(SOKOL_USE_GL, false)
-SOKOL_DLL :: #config(SOKOL_DLL, false)
+
+DEBUG :: #config(SOKOL_AUDIO_DEBUG, SOKOL_DEBUG)
+USE_GL :: #config(SOKOL_USE_GL, false)
+USE_DLL :: #config(SOKOL_DLL, false)
 
 when ODIN_OS == .Windows {
-    when SOKOL_DLL {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
+    when USE_DLL {
+        when USE_GL {
+            when DEBUG { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_audio_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
         }
     } else {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_windows_x64_gl_release.lib" } }
+        when USE_GL {
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_windows_x64_d3d11_release.lib" } }
         }
     }
 } else when ODIN_OS == .Darwin {
-    when SOKOL_USE_GL {
+    when USE_GL {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_gl_debug.a", "system:AudioToolbox.framework" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_gl_release.a", "system:AudioToolbox.framework" } }
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_gl_debug.a", "system:AudioToolbox.framework" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_gl_release.a", "system:AudioToolbox.framework" } }
        } else {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_x64_gl_debug.a", "system:AudioToolbox.framework" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_macos_x64_gl_release.a", "system:AudioToolbox.framework" } }
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_x64_gl_debug.a", "system:AudioToolbox.framework" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_macos_x64_gl_release.a", "system:AudioToolbox.framework" } }
         }
     } else {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_metal_debug.a", "system:AudioToolbox.framework" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_metal_release.a", "system:AudioToolbox.framework" } }
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_metal_debug.a", "system:AudioToolbox.framework" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_macos_arm64_metal_release.a", "system:AudioToolbox.framework" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_x64_metal_debug.a", "system:AudioToolbox.framework" } }
-            else             { foreign import sokol_audio_clib { "sokol_audio_macos_x64_metal_release.a", "system:AudioToolbox.framework" } }
+            when DEBUG { foreign import sokol_audio_clib { "sokol_audio_macos_x64_metal_debug.a", "system:AudioToolbox.framework" } }
+            else       { foreign import sokol_audio_clib { "sokol_audio_macos_x64_metal_release.a", "system:AudioToolbox.framework" } }
         }
     }
 } else when ODIN_OS == .Linux {
-    when SOKOL_DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
-    else             { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
+    when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
+    else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
 } else {
     #panic("This OS is currently not supported")
 }
@@ -65,6 +67,7 @@ foreign sokol_audio_clib {
     expect :: proc() -> c.int ---
     push :: proc(frames: ^f32, #any_int num_frames: c.int) -> c.int ---
 }
+
 Log_Item :: enum i32 {
     OK,
     MALLOC_FAILED,
@@ -103,15 +106,18 @@ Log_Item :: enum i32 {
     COREAUDIO_START_FAILED,
     BACKEND_BUFFER_SIZE_ISNT_MULTIPLE_OF_PACKET_SIZE,
 }
+
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
     user_data : rawptr,
 }
+
 Allocator :: struct {
     alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+
 Desc :: struct {
     sample_rate : c.int,
     num_channels : c.int,
@@ -124,3 +130,4 @@ Desc :: struct {
     allocator : Allocator,
     logger : Logger,
 }
+

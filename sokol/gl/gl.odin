@@ -6,48 +6,50 @@ import sg "../gfx"
 import "core:c"
 
 SOKOL_DEBUG :: #config(SOKOL_DEBUG, ODIN_DEBUG)
-SOKOL_USE_GL :: #config(SOKOL_USE_GL, false)
-SOKOL_DLL :: #config(SOKOL_DLL, false)
+
+DEBUG :: #config(SOKOL_GL_DEBUG, SOKOL_DEBUG)
+USE_GL :: #config(SOKOL_USE_GL, false)
+USE_DLL :: #config(SOKOL_DLL, false)
 
 when ODIN_OS == .Windows {
-    when SOKOL_DLL {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
+    when USE_DLL {
+        when USE_GL {
+            when DEBUG { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_gl_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
         }
     } else {
-        when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_windows_x64_gl_release.lib" } }
+        when USE_GL {
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_windows_x64_gl_debug.lib" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_windows_x64_d3d11_release.lib" } }
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_windows_x64_d3d11_debug.lib" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_windows_x64_d3d11_release.lib" } }
         }
     }
 } else when ODIN_OS == .Darwin {
-    when SOKOL_USE_GL {
+    when USE_GL {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_gl_debug.a" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_gl_release.a" } }
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_gl_debug.a" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_gl_release.a" } }
        } else {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_x64_gl_debug.a" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_macos_x64_gl_release.a" } }
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_x64_gl_debug.a" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_macos_x64_gl_release.a" } }
         }
     } else {
         when ODIN_ARCH == .arm64 {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_metal_debug.a" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_metal_release.a" } }
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_metal_debug.a" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_macos_arm64_metal_release.a" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_x64_metal_debug.a" } }
-            else             { foreign import sokol_gl_clib { "sokol_gl_macos_x64_metal_release.a" } }
+            when DEBUG { foreign import sokol_gl_clib { "sokol_gl_macos_x64_metal_debug.a" } }
+            else       { foreign import sokol_gl_clib { "sokol_gl_macos_x64_metal_release.a" } }
         }
     }
 } else when ODIN_OS == .Linux {
-    when SOKOL_DEBUG { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_debug.a" } }
-    else             { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_release.a" } }
+    when DEBUG { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_debug.a" } }
+    else       { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_release.a" } }
 } else {
     #panic("This OS is currently not supported")
 }
@@ -141,6 +143,7 @@ foreign sokol_gl_clib {
     v3f_t2f_c1i :: proc(x: f32, y: f32, z: f32, u: f32, v: f32, rgba: u32)  ---
     end :: proc()  ---
 }
+
 Log_Item :: enum i32 {
     OK,
     MALLOC_FAILED,
@@ -150,16 +153,20 @@ Log_Item :: enum i32 {
     CONTEXT_POOL_EXHAUSTED,
     CANNOT_DESTROY_DEFAULT_CONTEXT,
 }
+
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
     user_data : rawptr,
 }
+
 Pipeline :: struct {
     id : u32,
 }
+
 Context :: struct {
     id : u32,
 }
+
 Error :: enum i32 {
     NO_ERROR = 0,
     VERTICES_FULL,
@@ -169,6 +176,7 @@ Error :: enum i32 {
     STACK_UNDERFLOW,
     NO_CONTEXT,
 }
+
 Context_Desc :: struct {
     max_vertices : c.int,
     max_commands : c.int,
@@ -176,11 +184,13 @@ Context_Desc :: struct {
     depth_format : sg.Pixel_Format,
     sample_count : c.int,
 }
+
 Allocator :: struct {
     alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
     free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
+
 Desc :: struct {
     max_vertices : c.int,
     max_commands : c.int,
@@ -193,3 +203,4 @@ Desc :: struct {
     allocator : Allocator,
     logger : Logger,
 }
+
