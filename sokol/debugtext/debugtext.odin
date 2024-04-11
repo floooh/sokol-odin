@@ -10,37 +10,54 @@ printf :: proc(s: string, args: ..any) {
     putr(strings.unsafe_string_to_cstring(fstr), len(fstr))
 }
 import "core:c"
+
+SOKOL_DEBUG :: #config(SOKOL_DEBUG, ODIN_DEBUG)
+SOKOL_USE_GL :: #config(SOKOL_USE_GL, false)
+SOKOL_DLL :: #config(SOKOL_DLL, false)
+
 when ODIN_OS == .Windows {
-    when #config(SOKOL_USE_GL,false) {
-        when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_gl_debug.lib" } }
-        else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_gl_release.lib" } }
+    when SOKOL_DLL {
+        when SOKOL_USE_GL {
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_dll_windows_x64_gl_debug.lib" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_dll_windows_x64_gl_release.lib" } }
+        } else {
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_dll_windows_x64_d3d11_debug.lib" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_dll_windows_x64_d3d11_release.lib" } }
+        }
     } else {
-        when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_debug.lib" } }
-        else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_release.lib" } }
+        when SOKOL_USE_GL {
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_gl_debug.lib" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_gl_release.lib" } }
+        } else {
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_debug.lib" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_windows_x64_d3d11_release.lib" } }
+        }
     }
 } else when ODIN_OS == .Darwin {
-    when #config(SOKOL_USE_GL,false) {
+    when SOKOL_USE_GL {
         when ODIN_ARCH == .arm64 {
-            when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_debug.a" } }
-            else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_release.a" } }
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_debug.a" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_release.a" } }
        } else {
-            when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_debug.a" } }
-            else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_release.a" } }
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_debug.a" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_release.a" } }
         }
     } else {
         when ODIN_ARCH == .arm64 {
-            when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_metal_debug.a" } }
-            else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_metal_release.a" } }
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_metal_debug.a" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_metal_release.a" } }
         } else {
-            when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_metal_debug.a" } }
-            else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_metal_release.a" } }
+            when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_metal_debug.a" } }
+            else             { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_metal_release.a" } }
         }
     }
+} else when ODIN_OS == .Linux {
+    when SOKOL_DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_debug.a" } }
+    else             { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_release.a" } }
+} else {
+    #panic("This OS is currently not supported")
 }
-else {
-    when ODIN_DEBUG == true { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_debug.a" } }
-    else                    { foreign import sokol_debugtext_clib { "sokol_debugtext_linux_x64_gl_release.a" } }
-}
+
 @(default_calling_convention="c", link_prefix="sdtx_")
 foreign sokol_debugtext_clib {
     setup :: proc(#by_ptr desc: Desc)  ---
