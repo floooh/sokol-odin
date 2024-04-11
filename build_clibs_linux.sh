@@ -5,7 +5,7 @@ build_lib_x64_release() {
     dst=$2
     backend=$3
     echo $dst
-    cc -pthread -c -O2 -DNDEBUG -DIMPL -D$backend c/$src.c
+    cc -pthread -c -O2 -DNDEBUG -DIMPL -D$backend sokol/c/$src.c
     ar rcs $dst.a $src.o
 }
 
@@ -14,7 +14,7 @@ build_lib_x64_debug() {
     dst=$2
     backend=$3
     echo $dst
-    cc -pthread -c -g -DIMPL -D$backend c/$src.c
+    cc -pthread -c -g -DIMPL -D$backend sokol/c/$src.c
     ar rcs $dst.a $src.o
 }
 
