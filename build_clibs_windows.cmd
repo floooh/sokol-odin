@@ -16,16 +16,16 @@ echo === GL Release ===
 cl /c /O2 /DNDEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol.c
 lib /OUT:sokol\sokol_windows_x64_gl_release.lib sokol.obj
 
-del sokol.obj
-
 echo === D3D11 Debug DLL ===
-cl /OUT:sokol\sokol_dll_windows_x64_d3d11_debug.dll /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_dll.c /Z7 /LDd /MDd /DLL
+cl /D_DEBUG /DIMPL /DSOKOL_DLL /DSOKOL_D3D11 c\sokol.c /Z7 /LDd /MDd /DLL /Fe:sokol\sokol_dll_windows_x64_d3d11_debug.dll /link /INCREMENTAL:NO
 
 echo === D3D11 Release DLL ===
-cl /OUT:sokol\sokol_dll_windows_x64_d3d11_release.dll /D_DEBUG /DIMPL /DSOKOL_D3D11 c\sokol_dll.c /LD /MD /DLL
+cl /D_DEBUG /DIMPL /DSOKOL_DLL /DSOKOL_D3D11 c\sokol.c /LD /MD /DLL /Fe:sokol\sokol_dll_windows_x64_d3d11_release.dll /link /INCREMENTAL:NO
 
 echo === GL Debug DLL ===
-cl /OUT:sokol\sokol_dll_windows_x64_gl_debug.dll /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_dll.c /Z7 /LDd /MDd /DLL
+cl /D_DEBUG /DIMPL /DSOKOL_DLL /DSOKOL_GLCORE33 c\sokol.c /Z7 /LDd /MDd /DLL /Fe:sokol\sokol_dll_windows_x64_gl_debug.dll /link /INCREMENTAL:NO
 
 echo === GL Release DLL ===
-cl /OUT:sokol\sokol_dll_windows_x64_gl_release.dll /D_DEBUG /DIMPL /DSOKOL_GLCORE33 c\sokol_dll.c /LD /MD /DLL
+cl /D_DEBUG /DIMPL /DSOKOL_DLL /DSOKOL_GLCORE33 c\sokol.c /LD /MD /DLL /Fe:sokol\sokol_dll_windows_x64_gl_release.dll /link /INCREMENTAL:NO
+
+del sokol.obj
