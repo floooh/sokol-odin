@@ -12,11 +12,11 @@ SOKOL_DLL :: #config(SOKOL_DLL, false)
 when ODIN_OS == .Windows {
     when SOKOL_DLL {
         when SOKOL_USE_GL {
-            when SOKOL_DEBUG { foreign import sokol_shape_clib { "sokol_dll_windows_x64_gl_debug.lib" } }
-            else             { foreign import sokol_shape_clib { "sokol_dll_windows_x64_gl_release.lib" } }
+            when SOKOL_DEBUG { foreign import sokol_shape_clib { "../sokol_dll_windows_x64_gl_debug.lib" } }
+            else             { foreign import sokol_shape_clib { "../sokol_dll_windows_x64_gl_release.lib" } }
         } else {
-            when SOKOL_DEBUG { foreign import sokol_shape_clib { "sokol_dll_windows_x64_d3d11_debug.lib" } }
-            else             { foreign import sokol_shape_clib { "sokol_dll_windows_x64_d3d11_release.lib" } }
+            when SOKOL_DEBUG { foreign import sokol_shape_clib { "../sokol_dll_windows_x64_d3d11_debug.lib" } }
+            else             { foreign import sokol_shape_clib { "../sokol_dll_windows_x64_d3d11_release.lib" } }
         }
     } else {
         when SOKOL_USE_GL {
