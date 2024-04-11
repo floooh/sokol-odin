@@ -27,7 +27,7 @@ jobs:
           rm -r ./dist/examples
           mv ./dist/* ./
           chmod a+x ./odin
-          chmod a+x ./sokol
+          chmod a+x ./sokol/build_clibs_linux.sh
           ./sokol/build_clibs_linux.sh
       - if: runner.os == 'macOS'
         name: prepare-macos
@@ -39,7 +39,7 @@ jobs:
           rm -r ./dist/examples
           mv ./dist/* ./
           chmod a+x ./odin
-          chmod a+x ./sokol
+          chmod a+x ./sokol/build_clibs_macos.sh
           ./sokol/build_clibs_macos.sh
       - if: runner.os == 'Windows'
         name: prepare-windows
