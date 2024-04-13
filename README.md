@@ -1,6 +1,8 @@
 [![Odin](https://github.com/floooh/sokol-odin/actions/workflows/main.yml/badge.svg)](https://github.com/floooh/sokol-odin/actions/workflows/main.yml)
 
-Auto-generated Odin bindings for the [sokol headers](https://github.com/floooh/sokol).
+Auto-generated [Odin](https://github.com/odin-lang/odin) bindings for the [sokol headers](https://github.com/floooh/sokol).
+
+To include sokol in your project you can copy the [sokol](sokol/) directory.
 
 ## BUILD
 
@@ -12,12 +14,14 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
 1. First build the required static link libraries:
 
     ```
+    cd sokol
     # on macOS:
     ./build_clibs_macos.sh
     # on Linux:
     ./build_clibs_linux.sh
     # on Windows with MSVC (from a 'Visual Studio Developer Command Prompt')
     build_clibs_windows.cmd
+    cd ..
     ```
 
 2. Create a build directory and cd into it:
