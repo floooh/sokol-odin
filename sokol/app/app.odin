@@ -125,7 +125,6 @@ Event_Type :: enum i32 {
     QUIT_REQUESTED,
     CLIPBOARD_PASTED,
     FILES_DROPPED,
-    NUM,
 }
 Keycode :: enum i32 {
     INVALID = 0,
@@ -495,5 +494,4 @@ Mouse_Cursor :: enum i32 {
     RESIZE_NESW,
     RESIZE_ALL,
     NOT_ALLOWED,
-    NUM,
 }

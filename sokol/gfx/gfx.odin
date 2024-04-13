@@ -290,7 +290,6 @@ Pixel_Format :: enum i32 {
     ETC2_RG11SN,
     ASTC_4x4_RGBA,
     ASTC_4x4_SRGBA,
-    NUM,
 }
 Pixelformat_Info :: struct {
     sample : bool,
@@ -330,20 +329,17 @@ Usage :: enum i32 {
     IMMUTABLE,
     DYNAMIC,
     STREAM,
-    NUM,
 }
 Buffer_Type :: enum i32 {
     DEFAULT,
     VERTEXBUFFER,
     INDEXBUFFER,
-    NUM,
 }
 Index_Type :: enum i32 {
     DEFAULT,
     NONE,
     UINT16,
     UINT32,
-    NUM,
 }
 Image_Type :: enum i32 {
     DEFAULT,
@@ -351,7 +347,6 @@ Image_Type :: enum i32 {
     CUBE,
     _3D,
     ARRAY,
-    NUM,
 }
 Image_Sample_Type :: enum i32 {
     DEFAULT,
@@ -360,14 +355,12 @@ Image_Sample_Type :: enum i32 {
     SINT,
     UINT,
     UNFILTERABLE_FLOAT,
-    NUM,
 }
 Sampler_Type :: enum i32 {
     DEFAULT,
     FILTERING,
     NONFILTERING,
     COMPARISON,
-    NUM,
 }
 Cube_Face :: enum i32 {
     POS_X,
@@ -376,7 +369,6 @@ Cube_Face :: enum i32 {
     NEG_Y,
     POS_Z,
     NEG_Z,
-    NUM,
 }
 Shader_Stage :: enum i32 {
     VS,
@@ -389,14 +381,12 @@ Primitive_Type :: enum i32 {
     LINE_STRIP,
     TRIANGLES,
     TRIANGLE_STRIP,
-    NUM,
 }
 Filter :: enum i32 {
     DEFAULT,
     NONE,
     NEAREST,
     LINEAR,
-    NUM,
 }
 Wrap :: enum i32 {
     DEFAULT,
@@ -404,14 +394,12 @@ Wrap :: enum i32 {
     CLAMP_TO_EDGE,
     CLAMP_TO_BORDER,
     MIRRORED_REPEAT,
-    NUM,
 }
 Border_Color :: enum i32 {
     DEFAULT,
     TRANSPARENT_BLACK,
     OPAQUE_BLACK,
     OPAQUE_WHITE,
-    NUM,
 }
 Vertex_Format :: enum i32 {
     INVALID,
@@ -432,13 +420,11 @@ Vertex_Format :: enum i32 {
     UINT10_N2,
     HALF2,
     HALF4,
-    NUM,
 }
 Vertex_Step :: enum i32 {
     DEFAULT,
     PER_VERTEX,
     PER_INSTANCE,
-    NUM,
 }
 Uniform_Type :: enum i32 {
     INVALID,
@@ -451,26 +437,22 @@ Uniform_Type :: enum i32 {
     INT3,
     INT4,
     MAT4,
-    NUM,
 }
 Uniform_Layout :: enum i32 {
     DEFAULT,
     NATIVE,
     STD140,
-    NUM,
 }
 Cull_Mode :: enum i32 {
     DEFAULT,
     NONE,
     FRONT,
     BACK,
-    NUM,
 }
 Face_Winding :: enum i32 {
     DEFAULT,
     CCW,
     CW,
-    NUM,
 }
 Compare_Func :: enum i32 {
     DEFAULT,
@@ -482,7 +464,6 @@ Compare_Func :: enum i32 {
     NOT_EQUAL,
     GREATER_EQUAL,
     ALWAYS,
-    NUM,
 }
 Stencil_Op :: enum i32 {
     DEFAULT,
@@ -494,7 +475,6 @@ Stencil_Op :: enum i32 {
     INVERT,
     INCR_WRAP,
     DECR_WRAP,
-    NUM,
 }
 Blend_Factor :: enum i32 {
     DEFAULT,
@@ -513,14 +493,12 @@ Blend_Factor :: enum i32 {
     ONE_MINUS_BLEND_COLOR,
     BLEND_ALPHA,
     ONE_MINUS_BLEND_ALPHA,
-    NUM,
 }
 Blend_Op :: enum i32 {
     DEFAULT,
     ADD,
     SUBTRACT,
     REVERSE_SUBTRACT,
-    NUM,
 }
 Color_Mask :: enum i32 {
     DEFAULT = 0,
