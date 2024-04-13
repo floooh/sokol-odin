@@ -6,4 +6,8 @@ build/
 *.obj
 *.pdb
 *.bin
+*.exp
+*.ilk
+*.dll
+*.exe
 *.dSYM/
