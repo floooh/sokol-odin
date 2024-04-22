@@ -405,41 +405,38 @@ vertexpull_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "vertexpull_shader"
     #partial switch backend {
-        case .GLCORE: {
-            desc.vs.source = transmute(cstring)&vs_source_glsl430
-            desc.vs.entry = "main"
-            desc.vs.uniform_blocks[0].size = 64
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params"
-            desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-            desc.vs.uniform_blocks[0].uniforms[0].array_count = 4
-            desc.vs.storage_buffers[0].used = true
-            desc.vs.storage_buffers[0].readonly = true
-            desc.fs.source = transmute(cstring)&fs_source_glsl430
-            desc.fs.entry = "main"
-        }
-        case .D3D11: {
-            desc.vs.source = transmute(cstring)&vs_source_hlsl5
-            desc.vs.d3d11_target = "vs_5_0"
-            desc.vs.entry = "main"
-            desc.vs.uniform_blocks[0].size = 64
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.vs.storage_buffers[0].used = true
-            desc.vs.storage_buffers[0].readonly = true
-            desc.fs.source = transmute(cstring)&fs_source_hlsl5
-            desc.fs.d3d11_target = "ps_5_0"
-            desc.fs.entry = "main"
-        }
-        case .METAL_MACOS: {
-            desc.vs.source = transmute(cstring)&vs_source_metal_macos
-            desc.vs.entry = "main0"
-            desc.vs.uniform_blocks[0].size = 64
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.vs.storage_buffers[0].used = true
-            desc.vs.storage_buffers[0].readonly = true
-            desc.fs.source = transmute(cstring)&fs_source_metal_macos
-            desc.fs.entry = "main0"
-        }
+    case .GLCORE:
+        desc.vs.source = transmute(cstring)&vs_source_glsl430
+        desc.vs.entry = "main"
+        desc.vs.uniform_blocks[0].size = 64
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params"
+        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
+        desc.vs.uniform_blocks[0].uniforms[0].array_count = 4
+        desc.vs.storage_buffers[0].used = true
+        desc.vs.storage_buffers[0].readonly = true
+        desc.fs.source = transmute(cstring)&fs_source_glsl430
+        desc.fs.entry = "main"
+    case .D3D11:
+        desc.vs.source = transmute(cstring)&vs_source_hlsl5
+        desc.vs.d3d11_target = "vs_5_0"
+        desc.vs.entry = "main"
+        desc.vs.uniform_blocks[0].size = 64
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.vs.storage_buffers[0].used = true
+        desc.vs.storage_buffers[0].readonly = true
+        desc.fs.source = transmute(cstring)&fs_source_hlsl5
+        desc.fs.d3d11_target = "ps_5_0"
+        desc.fs.entry = "main"
+    case .METAL_MACOS:
+        desc.vs.source = transmute(cstring)&vs_source_metal_macos
+        desc.vs.entry = "main0"
+        desc.vs.uniform_blocks[0].size = 64
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.vs.storage_buffers[0].used = true
+        desc.vs.storage_buffers[0].readonly = true
+        desc.fs.source = transmute(cstring)&fs_source_metal_macos
+        desc.fs.entry = "main0"
     }
     return desc
 }

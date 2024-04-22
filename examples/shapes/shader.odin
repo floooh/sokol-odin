@@ -494,47 +494,44 @@ shapes_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "shapes_shader"
     #partial switch backend {
-        case .GLCORE: {
-            desc.attrs[0].name = "position"
-            desc.attrs[1].name = "normal"
-            desc.attrs[2].name = "texcoord"
-            desc.attrs[3].name = "color0"
-            desc.vs.source = transmute(cstring)&vs_source_glsl430
-            desc.vs.entry = "main"
-            desc.vs.uniform_blocks[0].size = 80
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params"
-            desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-            desc.vs.uniform_blocks[0].uniforms[0].array_count = 5
-            desc.fs.source = transmute(cstring)&fs_source_glsl430
-            desc.fs.entry = "main"
-        }
-        case .D3D11: {
-            desc.attrs[0].sem_name = "TEXCOORD"
-            desc.attrs[0].sem_index = 0
-            desc.attrs[1].sem_name = "TEXCOORD"
-            desc.attrs[1].sem_index = 1
-            desc.attrs[2].sem_name = "TEXCOORD"
-            desc.attrs[2].sem_index = 2
-            desc.attrs[3].sem_name = "TEXCOORD"
-            desc.attrs[3].sem_index = 3
-            desc.vs.source = transmute(cstring)&vs_source_hlsl5
-            desc.vs.d3d11_target = "vs_5_0"
-            desc.vs.entry = "main"
-            desc.vs.uniform_blocks[0].size = 80
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.fs.source = transmute(cstring)&fs_source_hlsl5
-            desc.fs.d3d11_target = "ps_5_0"
-            desc.fs.entry = "main"
-        }
-        case .METAL_MACOS: {
-            desc.vs.source = transmute(cstring)&vs_source_metal_macos
-            desc.vs.entry = "main0"
-            desc.vs.uniform_blocks[0].size = 80
-            desc.vs.uniform_blocks[0].layout = .STD140
-            desc.fs.source = transmute(cstring)&fs_source_metal_macos
-            desc.fs.entry = "main0"
-        }
+    case .GLCORE:
+        desc.attrs[0].name = "position"
+        desc.attrs[1].name = "normal"
+        desc.attrs[2].name = "texcoord"
+        desc.attrs[3].name = "color0"
+        desc.vs.source = transmute(cstring)&vs_source_glsl430
+        desc.vs.entry = "main"
+        desc.vs.uniform_blocks[0].size = 80
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params"
+        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
+        desc.vs.uniform_blocks[0].uniforms[0].array_count = 5
+        desc.fs.source = transmute(cstring)&fs_source_glsl430
+        desc.fs.entry = "main"
+    case .D3D11:
+        desc.attrs[0].sem_name = "TEXCOORD"
+        desc.attrs[0].sem_index = 0
+        desc.attrs[1].sem_name = "TEXCOORD"
+        desc.attrs[1].sem_index = 1
+        desc.attrs[2].sem_name = "TEXCOORD"
+        desc.attrs[2].sem_index = 2
+        desc.attrs[3].sem_name = "TEXCOORD"
+        desc.attrs[3].sem_index = 3
+        desc.vs.source = transmute(cstring)&vs_source_hlsl5
+        desc.vs.d3d11_target = "vs_5_0"
+        desc.vs.entry = "main"
+        desc.vs.uniform_blocks[0].size = 80
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.fs.source = transmute(cstring)&fs_source_hlsl5
+        desc.fs.d3d11_target = "ps_5_0"
+        desc.fs.entry = "main"
+    case .METAL_MACOS:
+        desc.vs.source = transmute(cstring)&vs_source_metal_macos
+        desc.vs.entry = "main0"
+        desc.vs.uniform_blocks[0].size = 80
+        desc.vs.uniform_blocks[0].layout = .STD140
+        desc.fs.source = transmute(cstring)&fs_source_metal_macos
+        desc.fs.entry = "main0"
     }
     return desc
 }
