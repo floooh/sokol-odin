@@ -25,7 +25,7 @@ init :: proc "c" () {
     // just some debug output what backend we're running on
     switch sg.query_backend() {
         case .D3D11: fmt.println(">> using D3D11 backend")
-        case .GLCORE33, .GLES3: fmt.println(">> using GL backend")
+        case .GLCORE, .GLES3: fmt.println(">> using GL backend")
         case .METAL_MACOS, .METAL_IOS, .METAL_SIMULATOR: fmt.println(">> using Metal backend")
         case .WGPU: fmt.println(">> using WebGPU backend")
         case .DUMMY: fmt.println(">> using dummy backend")
