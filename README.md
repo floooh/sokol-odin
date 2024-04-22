@@ -51,6 +51,7 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
     odin run ../examples/sgl -debug
     odin run ../examples/sgl-points -debug
     odin run ../examples/sgl-context -debug
+    odin run ../examples/vertexpull -debug
     ```
 
     By default, the backend 3D API will be selected based on the target platform:

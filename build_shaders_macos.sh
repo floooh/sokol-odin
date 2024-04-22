@@ -26,3 +26,4 @@ build_shader quad
 build_shader shapes
 build_shader texcube
 build_shader triangle
+build_shader vertexpull
