@@ -9,7 +9,7 @@
 //------------------------------------------------------------------------------
 package main
 
-import "core:runtime"
+import "base:runtime"
 import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
