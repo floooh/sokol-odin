@@ -9,5 +9,6 @@ build/
 *.exp
 *.ilk
 *.dll
+*.dylib
 *.exe
 *.dSYM/
