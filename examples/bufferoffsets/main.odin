@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 package main
 
-import "core:runtime"
+import "base:runtime"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
