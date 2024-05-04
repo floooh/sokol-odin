@@ -30,32 +30,21 @@ when ODIN_OS == .Windows {
         }
     }
 } else when ODIN_OS == .Darwin {
-    when USE_DLL {
-             when  USE_GL && ODIN_ARCH == .arm64 &&  DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_arm64_gl_debug.dylib" }}
-        else when  USE_GL && ODIN_ARCH == .arm64 && !DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_arm64_gl_release.dylib" }}
-        else when  USE_GL && ODIN_ARCH == .amd64 &&  DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_x64_gl_debug.dylib" }}
-        else when  USE_GL && ODIN_ARCH == .amd64 && !DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_x64_gl_release.dylib" }}
-        else when !USE_GL && ODIN_ARCH == .arm64 &&  DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_arm64_metal_debug.dylib" }}
-        else when !USE_GL && ODIN_ARCH == .arm64 && !DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_arm64_metal_release.dylib" }}
-        else when !USE_GL && ODIN_ARCH == .amd64 &&  DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_x64_metal_debug.dylib" }}
-        else when !USE_GL && ODIN_ARCH == .amd64 && !DEBUG { foreign import sokol_shape_clib { "../dylib/sokol_dylib_macos_x64_metal_release.dylib" }}
-    } else {
-        when USE_GL {
-            when ODIN_ARCH == .arm64 {
-                when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_gl_debug.a" } }
-                else       { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_gl_release.a" } }
-           } else {
-                when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_x64_gl_debug.a" } }
-                else       { foreign import sokol_shape_clib { "sokol_shape_macos_x64_gl_release.a" } }
-            }
+    when USE_GL {
+        when ODIN_ARCH == .arm64 {
+            when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_gl_debug.a" } }
+            else       { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_gl_release.a" } }
         } else {
-            when ODIN_ARCH == .arm64 {
-                when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_metal_debug.a" } }
-                else       { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_metal_release.a" } }
-            } else {
-                when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_x64_metal_debug.a" } }
-                else       { foreign import sokol_shape_clib { "sokol_shape_macos_x64_metal_release.a" } }
-            }
+            when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_x64_gl_debug.a" } }
+            else       { foreign import sokol_shape_clib { "sokol_shape_macos_x64_gl_release.a" } }
+        }
+    } else {
+        when ODIN_ARCH == .arm64 {
+            when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_metal_debug.a" } }
+            else       { foreign import sokol_shape_clib { "sokol_shape_macos_arm64_metal_release.a" } }
+        } else {
+            when DEBUG { foreign import sokol_shape_clib { "sokol_shape_macos_x64_metal_debug.a" } }
+            else       { foreign import sokol_shape_clib { "sokol_shape_macos_x64_metal_release.a" } }
         }
     }
 } else when ODIN_OS == .Linux {
