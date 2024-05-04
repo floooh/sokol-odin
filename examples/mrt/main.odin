@@ -6,7 +6,7 @@
 //------------------------------------------------------------------------------
 package main
 
-import "core:runtime"
+import "base:runtime"
 import "core:math"
 import slog "../../sokol/log"
 import sg "../../sokol/gfx"
