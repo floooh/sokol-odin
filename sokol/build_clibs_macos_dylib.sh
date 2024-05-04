@@ -36,6 +36,8 @@ build_lib_debug() {
     cc -dynamiclib -arch $arch $FRAMEWORKS_CORE $frameworks -o $dst.dylib $src.o $dep
 }
 
+mkdir -p dylib
+
 build_lib_release sokol dylib/sokol_dylib_macos_arm64_metal_release SOKOL_METAL    arm64
 build_lib_debug   sokol dylib/sokol_dylib_macos_arm64_metal_debug   SOKOL_METAL    arm64
 build_lib_release sokol dylib/sokol_dylib_macos_x64_metal_release   SOKOL_METAL    x86_64
