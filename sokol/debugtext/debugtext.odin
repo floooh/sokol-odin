@@ -40,7 +40,7 @@ when ODIN_OS == .Windows {
         when ODIN_ARCH == .arm64 {
             when DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_debug.a" } }
             else       { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_arm64_gl_release.a" } }
-        } else {
+       } else {
             when DEBUG { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_debug.a" } }
             else       { foreign import sokol_debugtext_clib { "sokol_debugtext_macos_x64_gl_release.a" } }
         }

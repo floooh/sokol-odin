@@ -33,7 +33,7 @@ when ODIN_OS == .Windows {
         when ODIN_ARCH == .arm64 {
             when DEBUG { foreign import sokol_time_clib { "sokol_time_macos_arm64_gl_debug.a" } }
             else       { foreign import sokol_time_clib { "sokol_time_macos_arm64_gl_release.a" } }
-        } else {
+       } else {
             when DEBUG { foreign import sokol_time_clib { "sokol_time_macos_x64_gl_debug.a" } }
             else       { foreign import sokol_time_clib { "sokol_time_macos_x64_gl_release.a" } }
         }
