@@ -124,6 +124,8 @@ foreign sokol_app_clib {
     wgpu_get_resolve_view :: proc() -> rawptr ---
     wgpu_get_depth_stencil_view :: proc() -> rawptr ---
     gl_get_framebuffer :: proc() -> u32 ---
+    gl_get_major_version :: proc() -> c.int ---
+    gl_get_minor_version :: proc() -> c.int ---
     android_get_native_activity :: proc() -> rawptr ---
 }
 

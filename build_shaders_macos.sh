@@ -12,7 +12,7 @@ build_shader() {
         shdc=$sokol_tools_root/bin/osx/sokol-shdc
     fi
     echo $dir
-    $shdc -i $dir/shader.glsl -o $dir/shader.odin -l glsl330:metal_macos:hlsl4 -f sokol_odin
+    $shdc -i $dir/shader.glsl -o $dir/shader.odin -l glsl430:metal_macos:hlsl5 -f sokol_odin
 }
 
 build_shader blend
@@ -26,5 +26,4 @@ build_shader quad
 build_shader shapes
 build_shader texcube
 build_shader triangle
-
-
+build_shader vertexpull
