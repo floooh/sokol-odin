@@ -78,6 +78,8 @@ foreign sokol_gl_clib {
     set_context :: proc(ctx: Context)  ---
     get_context :: proc() -> Context ---
     default_context :: proc() -> Context ---
+    num_vertices :: proc() -> c.int ---
+    num_commands :: proc() -> c.int ---
     draw :: proc()  ---
     context_draw :: proc(ctx: Context)  ---
     draw_layer :: proc(#any_int layer_id: c.int)  ---
@@ -178,14 +180,14 @@ Context :: struct {
     id : u32,
 }
 
-Error :: enum i32 {
-    NO_ERROR = 0,
-    VERTICES_FULL,
-    UNIFORMS_FULL,
-    COMMANDS_FULL,
-    STACK_OVERFLOW,
-    STACK_UNDERFLOW,
-    NO_CONTEXT,
+Error :: struct {
+    any : bool,
+    vertices_full : bool,
+    uniforms_full : bool,
+    commands_full : bool,
+    stack_overflow : bool,
+    stack_underflow : bool,
+    no_context : bool,
 }
 
 Context_Desc :: struct {
