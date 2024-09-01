@@ -44,6 +44,7 @@ jobs:
           cd sokol
           chmod a+x ./build_clibs_macos.sh
           ./build_clibs_macos.sh
+          ./build_clibs_macos_dylib.sh
           cd ..
       - if: runner.os == 'Windows'
         name: prepare-windows
