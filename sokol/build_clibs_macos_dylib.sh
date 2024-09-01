@@ -42,9 +42,9 @@ build_lib_release sokol dylib/sokol_dylib_macos_arm64_metal_release SOKOL_METAL 
 build_lib_debug   sokol dylib/sokol_dylib_macos_arm64_metal_debug   SOKOL_METAL    arm64
 build_lib_release sokol dylib/sokol_dylib_macos_x64_metal_release   SOKOL_METAL    x86_64
 build_lib_debug   sokol dylib/sokol_dylib_macos_x64_metal_debug     SOKOL_METAL    x86_64
-build_lib_release sokol dylib/sokol_dylib_macos_arm64_gl_release    SOKOL_GLCORE33 arm64
-build_lib_debug   sokol dylib/sokol_dylib_macos_arm64_gl_debug      SOKOL_GLCORE33 arm64
-build_lib_release sokol dylib/sokol_dylib_macos_x64_gl_release      SOKOL_GLCORE33 x86_64
-build_lib_debug   sokol dylib/sokol_dylib_macos_x64_gl_debug        SOKOL_GLCORE33 x86_64
+build_lib_release sokol dylib/sokol_dylib_macos_arm64_gl_release    SOKOL_GLCORE arm64
+build_lib_debug   sokol dylib/sokol_dylib_macos_arm64_gl_debug      SOKOL_GLCORE arm64
+build_lib_release sokol dylib/sokol_dylib_macos_x64_gl_release      SOKOL_GLCORE x86_64
+build_lib_debug   sokol dylib/sokol_dylib_macos_x64_gl_debug        SOKOL_GLCORE x86_64
 
 rm *.o
