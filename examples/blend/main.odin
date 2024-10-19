@@ -62,7 +62,7 @@ init :: proc "c" () {
                 0 = { stride = 28 },
             },
             attrs = {
-                ATTR_vs_bg_position = { format = .FLOAT2 },
+                ATTR_bg_position = { format = .FLOAT2 },
             },
         },
         primitive_type = .TRIANGLE_STRIP,
@@ -75,8 +75,8 @@ init :: proc "c" () {
     pip_desc := sg.Pipeline_Desc {
         layout = {
             attrs = {
-                ATTR_vs_quad_position = { format = .FLOAT3 },
-                ATTR_vs_quad_color0   = { format = .FLOAT4 },
+                ATTR_quad_position = { format = .FLOAT3 },
+                ATTR_quad_color0   = { format = .FLOAT4 },
             },
         },
         shader = quad_shd,
@@ -115,7 +115,7 @@ frame :: proc "c" () {
     // draw a background quad
     sg.apply_pipeline(state.bg_pip)
     sg.apply_bindings(state.bind)
-    sg.apply_uniforms(.FS, SLOT_bg_fs_params, { ptr = &state.bg_fs_params, size = size_of(state.bg_fs_params) })
+    sg.apply_uniforms(UB_bg_fs_params, { ptr = &state.bg_fs_params, size = size_of(state.bg_fs_params) })
     sg.draw(0, 4, 1)
 
     // draw the blended quads
@@ -131,7 +131,7 @@ frame :: proc "c" () {
 
             sg.apply_pipeline(state.pips[src][dst])
             sg.apply_bindings(state.bind)
-            sg.apply_uniforms(.VS, SLOT_quad_vs_params, { ptr = &state.quad_vs_params, size = size_of(state.quad_vs_params) })
+            sg.apply_uniforms(UB_quad_vs_params, { ptr = &state.quad_vs_params, size = size_of(state.quad_vs_params) })
             sg.draw(0, 4, 1)
         }
     }

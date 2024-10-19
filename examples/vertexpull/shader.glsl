@@ -5,7 +5,7 @@
 @ctype mat4 m.mat4
 
 @vs vs
-uniform vs_params {
+layout(binding=0) uniform vs_params {
     mat4 mvp;
 };
 
@@ -15,7 +15,7 @@ struct sb_vertex {
     vec4 color;
 };
 
-readonly buffer ssbo {
+layout(binding=0) readonly buffer ssbo {
     sb_vertex vtx[];
 };
 

@@ -50,8 +50,8 @@ init :: proc "c" () {
         index_type = .UINT16,
         layout = {
             attrs = {
-                ATTR_vs_position = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .FLOAT4 },
+                ATTR_quad_position = { format = .FLOAT3 },
+                ATTR_quad_color0 = { format = .FLOAT4 },
             },
         },
     })

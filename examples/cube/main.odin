@@ -84,8 +84,8 @@ init :: proc "c" () {
                 0 = { stride = 28 },
             },
             attrs = {
-                ATTR_vs_position = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .FLOAT4 },
+                ATTR_cube_position = { format = .FLOAT3 },
+                ATTR_cube_color0 = { format = .FLOAT4 },
             },
         },
         index_type = .UINT16,
@@ -115,7 +115,7 @@ frame :: proc "c" () {
     sg.begin_pass({ action = pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
-    sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params)} )
+    sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params)} )
     sg.draw(0, 36, 1)
     sg.end_pass()
     sg.commit()

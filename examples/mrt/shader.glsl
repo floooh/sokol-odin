@@ -10,7 +10,7 @@
 // shaders for offscreen-pass rendering
 @vs vs_offscreen
 
-uniform offscreen_params {
+layout(binding=0) uniform offscreen_params {
     mat4 mvp;
 };
 
@@ -45,7 +45,7 @@ void main() {
 @vs vs_fsq
 @glsl_options flip_vert_y
 
-uniform fsq_params {
+layout(binding=0) uniform fsq_params {
     vec2 offset;
 };
 
@@ -64,10 +64,10 @@ void main() {
 @end
 
 @fs fs_fsq
-uniform texture2D tex0;
-uniform texture2D tex1;
-uniform texture2D tex2;
-uniform sampler smp;
+layout(binding=0) uniform texture2D tex0;
+layout(binding=1) uniform texture2D tex1;
+layout(binding=2) uniform texture2D tex2;
+layout(binding=0) uniform sampler smp;
 
 in vec2 uv0;
 in vec2 uv1;
@@ -99,8 +99,8 @@ void main() {
 @end
 
 @fs fs_dbg
-uniform texture2D tex;
-uniform sampler smp;
+layout(binding=0) uniform texture2D tex;
+layout(binding=0) uniform sampler smp;
 
 in vec2 uv;
 out vec4 frag_color;

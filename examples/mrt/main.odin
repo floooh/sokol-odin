@@ -72,7 +72,7 @@ create_offscreen_attachments :: proc (width, height: i32) {
 
     // also need to update the fullscreen-quad texture bindings
     for i in 0..<3 {
-        state.fsq.bind.fs.images[i] = state.offscreen.attachments_desc.colors[i].image
+        state.fsq.bind.images[i] = state.offscreen.attachments_desc.colors[i].image
     }
 }
 
@@ -168,8 +168,8 @@ init :: proc "c" () {
         layout = {
             buffers = { 0 = { stride = size_of(Vertex) } },
             attrs = {
-                ATTR_vs_offscreen_pos     = { offset = i32(offset_of(Vertex, x)), format = .FLOAT3 },
-                ATTR_vs_offscreen_bright0 = { offset = i32(offset_of(Vertex, b)), format = .FLOAT },
+                ATTR_offscreen_pos     = { offset = i32(offset_of(Vertex, x)), format = .FLOAT3 },
+                ATTR_offscreen_bright0 = { offset = i32(offset_of(Vertex, b)), format = .FLOAT },
             },
         },
         index_type = .UINT16,
@@ -202,7 +202,7 @@ init :: proc "c" () {
         shader = sg.make_shader(fsq_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_fsq_pos = { format = .FLOAT2 },
+                ATTR_fsq_pos = { format = .FLOAT2 },
             },
         },
         primitive_type = .TRIANGLE_STRIP,
@@ -221,15 +221,13 @@ init :: proc "c" () {
         vertex_buffers = {
             0 = quad_vbuf,
         },
-        fs = {
-            images = {
-                SLOT_tex0 = state.offscreen.attachments_desc.colors[0].image,
-                SLOT_tex1 = state.offscreen.attachments_desc.colors[1].image,
-                SLOT_tex2 = state.offscreen.attachments_desc.colors[2].image,
-            },
-            samplers = {
-                SLOT_smp = smp,
-            }
+        images = {
+            IMG_tex0 = state.offscreen.attachments_desc.colors[0].image,
+            IMG_tex1 = state.offscreen.attachments_desc.colors[1].image,
+            IMG_tex2 = state.offscreen.attachments_desc.colors[2].image,
+        },
+        samplers = {
+            SMP_smp = smp,
         }
     }
 
@@ -238,13 +236,13 @@ init :: proc "c" () {
         shader = sg.make_shader(dbg_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_dbg_pos = { format = .FLOAT2 },
+                ATTR_dbg_pos = { format = .FLOAT2 },
             },
         },
         primitive_type = .TRIANGLE_STRIP,
     })
     state.dbg.bind.vertex_buffers[0] = quad_vbuf
-    state.dbg.bind.fs.samplers[SLOT_smp] = smp
+    state.dbg.bind.samplers[SMP_smp] = smp
 }
 
 frame :: proc "c" () {
@@ -273,7 +271,7 @@ frame :: proc "c" () {
     sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
-    sg.apply_uniforms(.VS, SLOT_offscreen_params, { ptr = &offscreen_params, size = size_of(offscreen_params) })
+    sg.apply_uniforms(UB_offscreen_params, { ptr = &offscreen_params, size = size_of(offscreen_params) })
     sg.draw(0, 36, 1)
     sg.end_pass()
 
@@ -281,12 +279,12 @@ frame :: proc "c" () {
     sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.fsq.pip)
     sg.apply_bindings(state.fsq.bind)
-    sg.apply_uniforms(.VS, SLOT_fsq_params, { ptr = &fsq_params, size = size_of(fsq_params) })
+    sg.apply_uniforms(UB_fsq_params, { ptr = &fsq_params, size = size_of(fsq_params) })
     sg.draw(0, 4, 1)
     sg.apply_pipeline(state.dbg.pip)
     for i in 0..<3 {
         sg.apply_viewport(i * 100, 0, 100, 100, false)
-        state.dbg.bind.fs.images[SLOT_tex] = state.offscreen.attachments_desc.colors[i].image
+        state.dbg.bind.images[IMG_tex] = state.offscreen.attachments_desc.colors[i].image
         sg.apply_bindings(state.dbg.bind)
         sg.draw(0, 4, 1)
     }

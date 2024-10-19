@@ -96,7 +96,7 @@ init :: proc "c" () {
         0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
     }
     /* NOTE: SLOT_tex is provided by shader code generation */
-    state.bind.fs.images[SLOT_tex] = sg.make_image({
+    state.bind.images[IMG_tex] = sg.make_image({
         width = 4,
         height = 4,
         data = {
@@ -109,16 +109,16 @@ init :: proc "c" () {
     })
 
     // a sampler with default options to sample the above image as texture
-    state.bind.fs.samplers[SLOT_smp] = sg.make_sampler({})
+    state.bind.samplers[SMP_smp] = sg.make_sampler({})
 
     // shader and pipeline object
     state.pip = sg.make_pipeline({
         shader = sg.make_shader(texcube_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_pos = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .UBYTE4N },
-                ATTR_vs_texcoord0 = { format = .SHORT2N },
+                ATTR_texcube_pos = { format = .FLOAT3 },
+                ATTR_texcube_color0 = { format = .UBYTE4N },
+                ATTR_texcube_texcoord0 = { format = .SHORT2N },
             },
         },
         index_type = .UINT16,
@@ -151,7 +151,7 @@ frame :: proc "c" () {
     sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
-    sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
+    sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
     sg.draw(0, 36, 1)
     sg.end_pass()
     sg.commit()

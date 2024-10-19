@@ -98,7 +98,7 @@ foreign sokol_gfx_clib {
     apply_scissor_rectf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
     apply_pipeline :: proc(pip: Pipeline)  ---
     apply_bindings :: proc(#by_ptr bindings: Bindings)  ---
-    apply_uniforms :: proc(stage: Shader_Stage, #any_int ub_index: c.int, #by_ptr data: Range)  ---
+    apply_uniforms :: proc(#any_int ub_slot: c.int, #by_ptr data: Range)  ---
     draw :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int)  ---
     end_pass :: proc()  ---
     commit :: proc()  ---
@@ -229,19 +229,18 @@ Range :: struct {
 }
 
 INVALID_ID :: 0
-NUM_SHADER_STAGES :: 2
 NUM_INFLIGHT_FRAMES :: 2
 MAX_COLOR_ATTACHMENTS :: 4
-MAX_VERTEX_BUFFERS :: 8
-MAX_SHADERSTAGE_IMAGES :: 12
-MAX_SHADERSTAGE_SAMPLERS :: 8
-MAX_SHADERSTAGE_IMAGESAMPLERPAIRS :: 12
-MAX_SHADERSTAGE_STORAGEBUFFERS :: 8
-MAX_SHADERSTAGE_UBS :: 4
-MAX_UB_MEMBERS :: 16
+MAX_UNIFORMBLOCK_MEMBERS :: 16
 MAX_VERTEX_ATTRIBUTES :: 16
 MAX_MIPMAPS :: 16
 MAX_TEXTUREARRAY_LAYERS :: 128
+MAX_UNIFORMBLOCK_BINDSLOTS :: 8
+MAX_VERTEXBUFFER_BINDSLOTS :: 8
+MAX_IMAGE_BINDSLOTS :: 16
+MAX_SAMPLER_BINDSLOTS :: 16
+MAX_STORAGEBUFFER_BINDSLOTS :: 8
+MAX_IMAGE_SAMPLER_PAIRS :: 16
 
 Color :: struct {
     r : f32,
@@ -426,11 +425,6 @@ Cube_Face :: enum i32 {
     NEG_Y,
     POS_Z,
     NEG_Z,
-}
-
-Shader_Stage :: enum i32 {
-    VS,
-    FS,
 }
 
 Primitive_Type :: enum i32 {
@@ -672,20 +666,15 @@ Pass :: struct {
     _ : u32,
 }
 
-Stage_Bindings :: struct {
-    images : [12]Image,
-    samplers : [8]Sampler,
-    storage_buffers : [8]Buffer,
-}
-
 Bindings :: struct {
     _ : u32,
     vertex_buffers : [8]Buffer,
     vertex_buffer_offsets : [8]c.int,
     index_buffer : Buffer,
     index_buffer_offset : c.int,
-    vs : Stage_Bindings,
-    fs : Stage_Bindings,
+    images : [16]Image,
+    samplers : [16]Sampler,
+    storage_buffers : [8]Buffer,
     _ : u32,
 }
 
@@ -751,65 +740,86 @@ Sampler_Desc :: struct {
     _ : u32,
 }
 
-Shader_Attr_Desc :: struct {
-    name : cstring,
-    sem_name : cstring,
-    sem_index : c.int,
+Shader_Stage :: enum i32 {
+    NONE,
+    VERTEX,
+    FRAGMENT,
 }
 
-Shader_Uniform_Desc :: struct {
-    name : cstring,
+Shader_Vertex_Attr :: struct {
+    glsl_name : cstring,
+    hlsl_sem_name : cstring,
+    hlsl_sem_index : u8,
+}
+
+Glsl_Shader_Uniform :: struct {
     type : Uniform_Type,
-    array_count : c.int,
-}
-
-Shader_Uniform_Block_Desc :: struct {
-    size : u64,
-    layout : Uniform_Layout,
-    uniforms : [16]Shader_Uniform_Desc,
-}
-
-Shader_Storage_Buffer_Desc :: struct {
-    used : bool,
-    readonly : bool,
-}
-
-Shader_Image_Desc :: struct {
-    used : bool,
-    multisampled : bool,
-    image_type : Image_Type,
-    sample_type : Image_Sample_Type,
-}
-
-Shader_Sampler_Desc :: struct {
-    used : bool,
-    sampler_type : Sampler_Type,
-}
-
-Shader_Image_Sampler_Pair_Desc :: struct {
-    used : bool,
-    image_slot : c.int,
-    sampler_slot : c.int,
+    offset : u32,
+    array_count : u16,
     glsl_name : cstring,
 }
 
-Shader_Stage_Desc :: struct {
+Shader_Uniform_Block :: struct {
+    stage : Shader_Stage,
+    layout : Uniform_Layout,
+    size : u32,
+    hlsl_register_b_n : u8,
+    msl_buffer_n : u8,
+    wgsl_group0_binding_n : u8,
+    glsl_uniforms : [16]Glsl_Shader_Uniform,
+}
+
+Shader_Image :: struct {
+    stage : Shader_Stage,
+    image_type : Image_Type,
+    sample_type : Image_Sample_Type,
+    multisampled : bool,
+    hlsl_register_t_n : u8,
+    msl_texture_n : u8,
+    wgsl_group1_binding_n : u8,
+}
+
+Shader_Sampler :: struct {
+    stage : Shader_Stage,
+    sampler_type : Sampler_Type,
+    hlsl_register_s_n : u8,
+    msl_sampler_n : u8,
+    wgsl_group1_binding_n : u8,
+}
+
+Shader_Storage_Buffer :: struct {
+    stage : Shader_Stage,
+    readonly : bool,
+    hlsl_register_t_n : u8,
+    msl_buffer_n : u8,
+    wgsl_group1_binding_n : u8,
+    glsl_binding_n : u8,
+}
+
+Shader_Image_Sampler_Pair :: struct {
+    stage : Shader_Stage,
+    image_slot : u8,
+    sampler_slot : u8,
+    glsl_name : cstring,
+}
+
+Shader_Function :: struct {
     source : cstring,
     bytecode : Range,
     entry : cstring,
     d3d11_target : cstring,
-    uniform_blocks : [4]Shader_Uniform_Block_Desc,
-    storage_buffers : [8]Shader_Storage_Buffer_Desc,
-    images : [12]Shader_Image_Desc,
-    samplers : [8]Shader_Sampler_Desc,
-    image_sampler_pairs : [12]Shader_Image_Sampler_Pair_Desc,
 }
 
 Shader_Desc :: struct {
     _ : u32,
-    attrs : [16]Shader_Attr_Desc,
-    vs : Shader_Stage_Desc,
-    fs : Shader_Stage_Desc,
+    vertex_func : Shader_Function,
+    fragment_func : Shader_Function,
+    attrs : [16]Shader_Vertex_Attr,
+    uniform_blocks : [8]Shader_Uniform_Block,
+    storage_buffers : [8]Shader_Storage_Buffer,
+    images : [16]Shader_Image,
+    samplers : [16]Shader_Sampler,
+    image_sampler_pairs : [16]Shader_Image_Sampler_Pair,
     label : cstring,
     _ : u32,
 }
@@ -1101,7 +1111,7 @@ Log_Item :: enum i32 {
     GL_SHADER_COMPILATION_FAILED,
     GL_SHADER_LINKING_FAILED,
     GL_VERTEX_ATTRIBUTE_NOT_FOUND_IN_SHADER,
-    GL_TEXTURE_NAME_NOT_FOUND_IN_SHADER,
+    GL_IMAGE_SAMPLER_NAME_NOT_FOUND_IN_SHADER,
     GL_FRAMEBUFFER_STATUS_UNDEFINED,
     GL_FRAMEBUFFER_STATUS_INCOMPLETE_ATTACHMENT,
     GL_FRAMEBUFFER_STATUS_INCOMPLETE_MISSING_ATTACHMENT,
@@ -1140,8 +1150,7 @@ Log_Item :: enum i32 {
     METAL_SHADER_COMPILATION_FAILED,
     METAL_SHADER_CREATION_FAILED,
     METAL_SHADER_COMPILATION_OUTPUT,
-    METAL_VERTEX_SHADER_ENTRY_NOT_FOUND,
-    METAL_FRAGMENT_SHADER_ENTRY_NOT_FOUND,
+    METAL_SHADER_ENTRY_NOT_FOUND,
     METAL_CREATE_RPS_FAILED,
     METAL_CREATE_RPS_OUTPUT,
     METAL_CREATE_DSS_FAILED,
@@ -1154,9 +1163,6 @@ Log_Item :: enum i32 {
     WGPU_CREATE_TEXTURE_VIEW_FAILED,
     WGPU_CREATE_SAMPLER_FAILED,
     WGPU_CREATE_SHADER_MODULE_FAILED,
-    WGPU_SHADER_TOO_MANY_IMAGES,
-    WGPU_SHADER_TOO_MANY_SAMPLERS,
-    WGPU_SHADER_TOO_MANY_STORAGEBUFFERS,
     WGPU_SHADER_CREATE_BINDGROUP_LAYOUT_FAILED,
     WGPU_CREATE_PIPELINE_LAYOUT_FAILED,
     WGPU_CREATE_RENDER_PIPELINE_FAILED,
@@ -1227,28 +1233,49 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_BYTECODE,
     VALIDATE_SHADERDESC_SOURCE_OR_BYTECODE,
     VALIDATE_SHADERDESC_NO_BYTECODE_SIZE,
-    VALIDATE_SHADERDESC_NO_CONT_UBS,
     VALIDATE_SHADERDESC_NO_CONT_UB_MEMBERS,
+    VALIDATE_SHADERDESC_UB_SIZE_IS_ZERO,
+    VALIDATE_SHADERDESC_UB_METAL_BUFFER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_UB_METAL_BUFFER_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_UB_HLSL_REGISTER_B_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_UB_HLSL_REGISTER_B_COLLISION,
+    VALIDATE_SHADERDESC_UB_WGSL_GROUP0_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_UB_WGSL_GROUP0_BINDING_COLLISION,
     VALIDATE_SHADERDESC_NO_UB_MEMBERS,
-    VALIDATE_SHADERDESC_UB_MEMBER_NAME,
+    VALIDATE_SHADERDESC_UB_UNIFORM_GLSL_NAME,
     VALIDATE_SHADERDESC_UB_SIZE_MISMATCH,
     VALIDATE_SHADERDESC_UB_ARRAY_COUNT,
     VALIDATE_SHADERDESC_UB_STD140_ARRAY_TYPE,
-    VALIDATE_SHADERDESC_NO_CONT_STORAGEBUFFERS,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_METAL_BUFFER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_METAL_BUFFER_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_T_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_T_COLLISION,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_GLSL_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_GLSL_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_STORAGEBUFFER_WGSL_GROUP1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_STORAGEBUFFER_READONLY,
-    VALIDATE_SHADERDESC_NO_CONT_IMAGES,
-    VALIDATE_SHADERDESC_NO_CONT_SAMPLERS,
+    VALIDATE_SHADERDESC_IMAGE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_IMAGE_METAL_TEXTURE_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_IMAGE_HLSL_REGISTER_T_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_IMAGE_HLSL_REGISTER_T_COLLISION,
+    VALIDATE_SHADERDESC_IMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_IMAGE_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_COLLISION,
+    VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_IMAGE_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_SAMPLER_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_NAME_REQUIRED_FOR_GL,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_NAME_BUT_NOT_USED,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_IMAGE_BUT_NOT_USED,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_HAS_SAMPLER_BUT_NOT_USED,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_IMAGE_STAGE_MISMATCH,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_SAMPLER_STAGE_MISMATCH,
+    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_GLSL_NAME,
     VALIDATE_SHADERDESC_NONFILTERING_SAMPLER_REQUIRED,
     VALIDATE_SHADERDESC_COMPARISON_SAMPLER_REQUIRED,
     VALIDATE_SHADERDESC_IMAGE_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
     VALIDATE_SHADERDESC_SAMPLER_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
-    VALIDATE_SHADERDESC_NO_CONT_IMAGE_SAMPLER_PAIRS,
     VALIDATE_SHADERDESC_ATTR_STRING_TOO_LONG,
     VALIDATE_PIPELINEDESC_CANARY,
     VALIDATE_PIPELINEDESC_SHADER,
@@ -1343,40 +1370,23 @@ Log_Item :: enum i32 {
     VALIDATE_ABND_IB_EXISTS,
     VALIDATE_ABND_IB_TYPE,
     VALIDATE_ABND_IB_OVERFLOW,
-    VALIDATE_ABND_VS_EXPECTED_IMAGE_BINDING,
-    VALIDATE_ABND_VS_IMG_EXISTS,
-    VALIDATE_ABND_VS_IMAGE_TYPE_MISMATCH,
-    VALIDATE_ABND_VS_IMAGE_MSAA,
-    VALIDATE_ABND_VS_EXPECTED_FILTERABLE_IMAGE,
-    VALIDATE_ABND_VS_EXPECTED_DEPTH_IMAGE,
-    VALIDATE_ABND_VS_UNEXPECTED_IMAGE_BINDING,
-    VALIDATE_ABND_VS_EXPECTED_SAMPLER_BINDING,
-    VALIDATE_ABND_VS_UNEXPECTED_SAMPLER_COMPARE_NEVER,
-    VALIDATE_ABND_VS_EXPECTED_SAMPLER_COMPARE_NEVER,
-    VALIDATE_ABND_VS_EXPECTED_NONFILTERING_SAMPLER,
-    VALIDATE_ABND_VS_UNEXPECTED_SAMPLER_BINDING,
-    VALIDATE_ABND_VS_SMP_EXISTS,
-    VALIDATE_ABND_VS_EXPECTED_STORAGEBUFFER_BINDING,
-    VALIDATE_ABND_VS_STORAGEBUFFER_EXISTS,
-    VALIDATE_ABND_VS_STORAGEBUFFER_BINDING_BUFFERTYPE,
-    VALIDATE_ABND_VS_UNEXPECTED_STORAGEBUFFER_BINDING,
-    VALIDATE_ABND_FS_EXPECTED_IMAGE_BINDING,
-    VALIDATE_ABND_FS_IMG_EXISTS,
-    VALIDATE_ABND_FS_IMAGE_TYPE_MISMATCH,
-    VALIDATE_ABND_FS_IMAGE_MSAA,
-    VALIDATE_ABND_FS_EXPECTED_FILTERABLE_IMAGE,
-    VALIDATE_ABND_FS_EXPECTED_DEPTH_IMAGE,
-    VALIDATE_ABND_FS_UNEXPECTED_IMAGE_BINDING,
-    VALIDATE_ABND_FS_EXPECTED_SAMPLER_BINDING,
-    VALIDATE_ABND_FS_UNEXPECTED_SAMPLER_COMPARE_NEVER,
-    VALIDATE_ABND_FS_EXPECTED_SAMPLER_COMPARE_NEVER,
-    VALIDATE_ABND_FS_EXPECTED_NONFILTERING_SAMPLER,
-    VALIDATE_ABND_FS_UNEXPECTED_SAMPLER_BINDING,
-    VALIDATE_ABND_FS_SMP_EXISTS,
-    VALIDATE_ABND_FS_EXPECTED_STORAGEBUFFER_BINDING,
-    VALIDATE_ABND_FS_STORAGEBUFFER_EXISTS,
-    VALIDATE_ABND_FS_STORAGEBUFFER_BINDING_BUFFERTYPE,
-    VALIDATE_ABND_FS_UNEXPECTED_STORAGEBUFFER_BINDING,
+    VALIDATE_ABND_EXPECTED_IMAGE_BINDING,
+    VALIDATE_ABND_IMG_EXISTS,
+    VALIDATE_ABND_IMAGE_TYPE_MISMATCH,
+    VALIDATE_ABND_IMAGE_MSAA,
+    VALIDATE_ABND_EXPECTED_FILTERABLE_IMAGE,
+    VALIDATE_ABND_EXPECTED_DEPTH_IMAGE,
+    VALIDATE_ABND_UNEXPECTED_IMAGE_BINDING,
+    VALIDATE_ABND_EXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_UNEXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_EXPECTED_SAMPLER_COMPARE_NEVER,
+    VALIDATE_ABND_EXPECTED_NONFILTERING_SAMPLER,
+    VALIDATE_ABND_UNEXPECTED_SAMPLER_BINDING,
+    VALIDATE_ABND_SMP_EXISTS,
+    VALIDATE_ABND_EXPECTED_STORAGEBUFFER_BINDING,
+    VALIDATE_ABND_STORAGEBUFFER_EXISTS,
+    VALIDATE_ABND_STORAGEBUFFER_BINDING_BUFFERTYPE,
+    VALIDATE_ABND_UNEXPECTED_STORAGEBUFFER_BINDING,
     VALIDATE_AUB_NO_PIPELINE,
     VALIDATE_AUB_NO_UB_AT_SLOT,
     VALIDATE_AUB_SIZE,
@@ -1472,8 +1482,7 @@ D3d11_Sampler_Info :: struct {
 }
 
 D3d11_Shader_Info :: struct {
-    vs_cbufs : [4]rawptr,
-    fs_cbufs : [4]rawptr,
+    cbufs : [8]rawptr,
     vs : rawptr,
     fs : rawptr,
 }
@@ -1506,10 +1515,10 @@ Mtl_Sampler_Info :: struct {
 }
 
 Mtl_Shader_Info :: struct {
-    vs_lib : rawptr,
-    fs_lib : rawptr,
-    vs_func : rawptr,
-    fs_func : rawptr,
+    vertex_lib : rawptr,
+    fragment_lib : rawptr,
+    vertex_func : rawptr,
+    fragment_func : rawptr,
 }
 
 Mtl_Pipeline_Info :: struct {

@@ -105,8 +105,8 @@ init :: proc "c" () {
                 0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_offscreen_position = sshape.position_vertex_attr_state(),
-                ATTR_vs_offscreen_normal = sshape.normal_vertex_attr_state(),
+                ATTR_offscreen_position = sshape.position_vertex_attr_state(),
+                ATTR_offscreen_normal = sshape.normal_vertex_attr_state(),
             },
         },
         index_type = .UINT16,
@@ -130,9 +130,9 @@ init :: proc "c" () {
                 0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_default_position = sshape.position_vertex_attr_state(),
-                ATTR_vs_default_normal = sshape.normal_vertex_attr_state(),
-                ATTR_vs_default_texcoord0 = sshape.texcoord_vertex_attr_state(),
+                ATTR_default_position = sshape.position_vertex_attr_state(),
+                ATTR_default_normal = sshape.normal_vertex_attr_state(),
+                ATTR_default_texcoord0 = sshape.texcoord_vertex_attr_state(),
             },
         },
         index_type = .UINT16,
@@ -165,10 +165,8 @@ init :: proc "c" () {
             0 = vbuf,
         },
         index_buffer = ibuf,
-        fs = {
-            images = { SLOT_tex = color_img },
-            samplers = { SLOT_smp = smp },
-        },
+        images = { IMG_tex = color_img },
+        samplers = { SMP_smp = smp },
     }
 }
 
@@ -185,7 +183,7 @@ frame :: proc "c" () {
     sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
-    sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
+    sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
     sg.draw(int(state.donut.base_element), int(state.donut.num_elements), 1)
     sg.end_pass()
 
@@ -202,7 +200,7 @@ frame :: proc "c" () {
     sg.begin_pass({ action = state.default.pass_action, swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.default.pip)
     sg.apply_bindings(state.default.bind)
-    sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
+    sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
     sg.draw(int(state.sphere.base_element), int(state.sphere.num_elements), 1)
     sg.end_pass()
 

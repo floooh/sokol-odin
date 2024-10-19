@@ -13,88 +13,86 @@ import m "../math"
     =========
     Shader program: 'dbg':
         Get shader desc: dbg_shader_desc(sg.query_backend())
-        Vertex shader: vs_dbg
-            Attributes:
-                ATTR_vs_dbg_pos => 0
-        Fragment shader: fs_dbg
-            Image 'tex':
-                Image type: ._2D
-                Sample type: .FLOAT
-                Multisampled: false
-                Bind slot: SLOT_tex => 0
-            Sampler 'smp':
-                Type: .FILTERING
-                Bind slot: SLOT_smp => 0
-            Image Sampler Pair 'tex_smp':
-                Image: tex
-                Sampler: smp
+        Vertex Shader: vs_dbg
+        Fragment Shader: fs_dbg
+        Attributes:
+            ATTR_dbg_pos => 0
     Shader program: 'fsq':
         Get shader desc: fsq_shader_desc(sg.query_backend())
-        Vertex shader: vs_fsq
-            Attributes:
-                ATTR_vs_fsq_pos => 0
-            Uniform block 'fsq_params':
-                Odin struct: Fsq_Params
-                Bind slot: SLOT_fsq_params => 0
-        Fragment shader: fs_fsq
-            Image 'tex0':
-                Image type: ._2D
-                Sample type: .FLOAT
-                Multisampled: false
-                Bind slot: SLOT_tex0 => 0
-            Image 'tex1':
-                Image type: ._2D
-                Sample type: .FLOAT
-                Multisampled: false
-                Bind slot: SLOT_tex1 => 1
-            Image 'tex2':
-                Image type: ._2D
-                Sample type: .FLOAT
-                Multisampled: false
-                Bind slot: SLOT_tex2 => 2
-            Sampler 'smp':
-                Type: .FILTERING
-                Bind slot: SLOT_smp => 0
-            Image Sampler Pair 'tex0_smp':
-                Image: tex0
-                Sampler: smp
-            Image Sampler Pair 'tex1_smp':
-                Image: tex1
-                Sampler: smp
-            Image Sampler Pair 'tex2_smp':
-                Image: tex2
-                Sampler: smp
+        Vertex Shader: vs_fsq
+        Fragment Shader: fs_fsq
+        Attributes:
+            ATTR_fsq_pos => 0
     Shader program: 'offscreen':
         Get shader desc: offscreen_shader_desc(sg.query_backend())
-        Vertex shader: vs_offscreen
-            Attributes:
-                ATTR_vs_offscreen_pos => 0
-                ATTR_vs_offscreen_bright0 => 1
-            Uniform block 'offscreen_params':
-                Odin struct: Offscreen_Params
-                Bind slot: SLOT_offscreen_params => 0
-        Fragment shader: fs_offscreen
+        Vertex Shader: vs_offscreen
+        Fragment Shader: fs_offscreen
+        Attributes:
+            ATTR_offscreen_pos => 0
+            ATTR_offscreen_bright0 => 1
+    Bindings:
+        Uniform block 'fsq_params':
+            Odin struct: Fsq_Params
+            Bind slot: UB_fsq_params => 0
+        Uniform block 'offscreen_params':
+            Odin struct: Offscreen_Params
+            Bind slot: UB_offscreen_params => 0
+        Image 'tex':
+            Image type: ._2D
+            Sample type: .FLOAT
+            Multisampled: false
+            Bind slot: IMG_tex => 0
+        Image 'tex0':
+            Image type: ._2D
+            Sample type: .FLOAT
+            Multisampled: false
+            Bind slot: IMG_tex0 => 0
+        Image 'tex1':
+            Image type: ._2D
+            Sample type: .FLOAT
+            Multisampled: false
+            Bind slot: IMG_tex1 => 1
+        Image 'tex2':
+            Image type: ._2D
+            Sample type: .FLOAT
+            Multisampled: false
+            Bind slot: IMG_tex2 => 2
+        Sampler 'smp':
+            Type: .FILTERING
+            Bind slot: SMP_smp => 0
+        Image Sampler Pair 'tex_smp':
+            Image: tex
+            Sampler: smp
+        Image Sampler Pair 'tex0_smp':
+            Image: tex0
+            Sampler: smp
+        Image Sampler Pair 'tex1_smp':
+            Image: tex1
+            Sampler: smp
+        Image Sampler Pair 'tex2_smp':
+            Image: tex2
+            Sampler: smp
 */
-ATTR_vs_dbg_pos :: 0
-ATTR_vs_fsq_pos :: 0
-ATTR_vs_offscreen_pos :: 0
-ATTR_vs_offscreen_bright0 :: 1
-SLOT_offscreen_params :: 0
-SLOT_fsq_params :: 0
-SLOT_tex0 :: 0
-SLOT_tex1 :: 1
-SLOT_tex2 :: 2
-SLOT_tex :: 0
-SLOT_smp :: 0
-Offscreen_Params :: struct #align(16) {
-    using _: struct #packed {
-        mvp: m.mat4,
-    },
-}
+ATTR_dbg_pos :: 0
+ATTR_fsq_pos :: 0
+ATTR_offscreen_pos :: 0
+ATTR_offscreen_bright0 :: 1
+UB_fsq_params :: 0
+UB_offscreen_params :: 0
+IMG_tex :: 0
+IMG_tex0 :: 0
+IMG_tex1 :: 1
+IMG_tex2 :: 2
+SMP_smp :: 0
 Fsq_Params :: struct #align(16) {
     using _: struct #packed {
         offset: m.vec2,
         _: [8]u8,
+    },
+}
+Offscreen_Params :: struct #align(16) {
+    using _: struct #packed {
+        mvp: m.mat4,
     },
 }
 /*
@@ -226,9 +224,9 @@ vs_fsq_source_glsl430 := [398]u8 {
 /*
     #version 430
 
-    layout(binding = 0) uniform sampler2D tex0_smp;
-    layout(binding = 1) uniform sampler2D tex1_smp;
-    layout(binding = 2) uniform sampler2D tex2_smp;
+    layout(binding = 16) uniform sampler2D tex0_smp;
+    layout(binding = 17) uniform sampler2D tex1_smp;
+    layout(binding = 18) uniform sampler2D tex2_smp;
 
     layout(location = 0) in vec2 uv0;
     layout(location = 1) in vec2 uv1;
@@ -242,35 +240,35 @@ vs_fsq_source_glsl430 := [398]u8 {
 
 */
 @(private)
-fs_fsq_source_glsl430 := [438]u8 {
+fs_fsq_source_glsl430 := [441]u8 {
     0x23,0x76,0x65,0x72,0x73,0x69,0x6f,0x6e,0x20,0x34,0x33,0x30,0x0a,0x0a,0x6c,0x61,
-    0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,0x30,
-    0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,0x65,
-    0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x30,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x6c,0x61,
     0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,0x31,
-    0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,0x65,
-    0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x31,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x6c,0x61,
-    0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,0x32,
-    0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,0x65,
-    0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x32,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x0a,0x6c,
-    0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,
-    0x20,0x30,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,0x63,0x32,0x20,0x75,0x76,0x30,0x3b,
-    0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,
-    0x20,0x3d,0x20,0x31,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,0x63,0x32,0x20,0x75,0x76,
-    0x31,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,
-    0x6f,0x6e,0x20,0x3d,0x20,0x32,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,0x63,0x32,0x20,
-    0x75,0x76,0x32,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,
-    0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,0x30,0x29,0x20,0x6f,0x75,0x74,0x20,0x76,0x65,
-    0x63,0x34,0x20,0x66,0x72,0x61,0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x3b,0x0a,0x0a,
-    0x76,0x6f,0x69,0x64,0x20,0x6d,0x61,0x69,0x6e,0x28,0x29,0x0a,0x7b,0x0a,0x20,0x20,
-    0x20,0x20,0x66,0x72,0x61,0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x20,0x3d,0x20,0x76,
-    0x65,0x63,0x34,0x28,0x28,0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,
-    0x30,0x5f,0x73,0x6d,0x70,0x2c,0x20,0x75,0x76,0x30,0x29,0x2e,0x78,0x79,0x7a,0x20,
-    0x2b,0x20,0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,0x31,0x5f,0x73,
-    0x6d,0x70,0x2c,0x20,0x75,0x76,0x31,0x29,0x2e,0x78,0x79,0x7a,0x29,0x20,0x2b,0x20,
-    0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,0x32,0x5f,0x73,0x6d,0x70,
-    0x2c,0x20,0x75,0x76,0x32,0x29,0x2e,0x78,0x79,0x7a,0x2c,0x20,0x31,0x2e,0x30,0x29,
-    0x3b,0x0a,0x7d,0x0a,0x0a,0x00,
+    0x36,0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,
+    0x65,0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x30,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x6c,
+    0x61,0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,
+    0x31,0x37,0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,
+    0x6c,0x65,0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x31,0x5f,0x73,0x6d,0x70,0x3b,0x0a,
+    0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,
+    0x20,0x31,0x38,0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,
+    0x70,0x6c,0x65,0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x32,0x5f,0x73,0x6d,0x70,0x3b,
+    0x0a,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,
+    0x6e,0x20,0x3d,0x20,0x30,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,0x63,0x32,0x20,0x75,
+    0x76,0x30,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,
+    0x69,0x6f,0x6e,0x20,0x3d,0x20,0x31,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,0x63,0x32,
+    0x20,0x75,0x76,0x31,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,
+    0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,0x32,0x29,0x20,0x69,0x6e,0x20,0x76,0x65,
+    0x63,0x32,0x20,0x75,0x76,0x32,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,
+    0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,0x30,0x29,0x20,0x6f,0x75,0x74,
+    0x20,0x76,0x65,0x63,0x34,0x20,0x66,0x72,0x61,0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,
+    0x3b,0x0a,0x0a,0x76,0x6f,0x69,0x64,0x20,0x6d,0x61,0x69,0x6e,0x28,0x29,0x0a,0x7b,
+    0x0a,0x20,0x20,0x20,0x20,0x66,0x72,0x61,0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x20,
+    0x3d,0x20,0x76,0x65,0x63,0x34,0x28,0x28,0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,
+    0x74,0x65,0x78,0x30,0x5f,0x73,0x6d,0x70,0x2c,0x20,0x75,0x76,0x30,0x29,0x2e,0x78,
+    0x79,0x7a,0x20,0x2b,0x20,0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,
+    0x31,0x5f,0x73,0x6d,0x70,0x2c,0x20,0x75,0x76,0x31,0x29,0x2e,0x78,0x79,0x7a,0x29,
+    0x20,0x2b,0x20,0x74,0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,0x32,0x5f,
+    0x73,0x6d,0x70,0x2c,0x20,0x75,0x76,0x32,0x29,0x2e,0x78,0x79,0x7a,0x2c,0x20,0x31,
+    0x2e,0x30,0x29,0x3b,0x0a,0x7d,0x0a,0x0a,0x00,
 }
 /*
     #version 430
@@ -306,7 +304,7 @@ vs_dbg_source_glsl430 := [210]u8 {
 /*
     #version 430
 
-    layout(binding = 0) uniform sampler2D tex_smp;
+    layout(binding = 16) uniform sampler2D tex_smp;
 
     layout(location = 0) out vec4 frag_color;
     layout(location = 0) in vec2 uv;
@@ -318,21 +316,21 @@ vs_dbg_source_glsl430 := [210]u8 {
 
 */
 @(private)
-fs_dbg_source_glsl430 := [210]u8 {
+fs_dbg_source_glsl430 := [211]u8 {
     0x23,0x76,0x65,0x72,0x73,0x69,0x6f,0x6e,0x20,0x34,0x33,0x30,0x0a,0x0a,0x6c,0x61,
-    0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,0x30,
-    0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,0x65,
-    0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x0a,0x6c,0x61,
-    0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,
-    0x30,0x29,0x20,0x6f,0x75,0x74,0x20,0x76,0x65,0x63,0x34,0x20,0x66,0x72,0x61,0x67,
-    0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,
-    0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,0x30,0x29,0x20,0x69,0x6e,0x20,
-    0x76,0x65,0x63,0x32,0x20,0x75,0x76,0x3b,0x0a,0x0a,0x76,0x6f,0x69,0x64,0x20,0x6d,
-    0x61,0x69,0x6e,0x28,0x29,0x0a,0x7b,0x0a,0x20,0x20,0x20,0x20,0x66,0x72,0x61,0x67,
-    0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x20,0x3d,0x20,0x76,0x65,0x63,0x34,0x28,0x74,0x65,
-    0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,0x5f,0x73,0x6d,0x70,0x2c,0x20,0x75,
-    0x76,0x29,0x2e,0x78,0x79,0x7a,0x2c,0x20,0x31,0x2e,0x30,0x29,0x3b,0x0a,0x7d,0x0a,
-    0x0a,0x00,
+    0x79,0x6f,0x75,0x74,0x28,0x62,0x69,0x6e,0x64,0x69,0x6e,0x67,0x20,0x3d,0x20,0x31,
+    0x36,0x29,0x20,0x75,0x6e,0x69,0x66,0x6f,0x72,0x6d,0x20,0x73,0x61,0x6d,0x70,0x6c,
+    0x65,0x72,0x32,0x44,0x20,0x74,0x65,0x78,0x5f,0x73,0x6d,0x70,0x3b,0x0a,0x0a,0x6c,
+    0x61,0x79,0x6f,0x75,0x74,0x28,0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,
+    0x20,0x30,0x29,0x20,0x6f,0x75,0x74,0x20,0x76,0x65,0x63,0x34,0x20,0x66,0x72,0x61,
+    0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x3b,0x0a,0x6c,0x61,0x79,0x6f,0x75,0x74,0x28,
+    0x6c,0x6f,0x63,0x61,0x74,0x69,0x6f,0x6e,0x20,0x3d,0x20,0x30,0x29,0x20,0x69,0x6e,
+    0x20,0x76,0x65,0x63,0x32,0x20,0x75,0x76,0x3b,0x0a,0x0a,0x76,0x6f,0x69,0x64,0x20,
+    0x6d,0x61,0x69,0x6e,0x28,0x29,0x0a,0x7b,0x0a,0x20,0x20,0x20,0x20,0x66,0x72,0x61,
+    0x67,0x5f,0x63,0x6f,0x6c,0x6f,0x72,0x20,0x3d,0x20,0x76,0x65,0x63,0x34,0x28,0x74,
+    0x65,0x78,0x74,0x75,0x72,0x65,0x28,0x74,0x65,0x78,0x5f,0x73,0x6d,0x70,0x2c,0x20,
+    0x75,0x76,0x29,0x2e,0x78,0x79,0x7a,0x2c,0x20,0x31,0x2e,0x30,0x29,0x3b,0x0a,0x7d,
+    0x0a,0x0a,0x00,
 }
 /*
     cbuffer offscreen_params : register(b0)
@@ -1243,53 +1241,57 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "dbg_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "pos"
-        desc.vs.source = transmute(cstring)&vs_dbg_source_glsl430
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_dbg_source_glsl430
-        desc.fs.entry = "main"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
-        desc.fs.image_sampler_pairs[0].glsl_name = "tex_smp"
+        desc.vertex_func.source = transmute(cstring)&vs_dbg_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_dbg_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "pos"
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
+        desc.image_sampler_pairs[0].glsl_name = "tex_smp"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.vs.source = transmute(cstring)&vs_dbg_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_dbg_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
+        desc.vertex_func.source = transmute(cstring)&vs_dbg_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_dbg_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.images[0].hlsl_register_t_n = 0
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.samplers[0].hlsl_register_s_n = 0
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_dbg_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.fs.source = transmute(cstring)&fs_dbg_source_metal_macos
-        desc.fs.entry = "main0"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
+        desc.vertex_func.source = transmute(cstring)&vs_dbg_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_dbg_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.images[0].msl_texture_n = 0
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.samplers[0].msl_sampler_n = 0
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
     }
     return desc
 }
@@ -1298,106 +1300,119 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "fsq_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "pos"
-        desc.vs.source = transmute(cstring)&vs_fsq_source_glsl430
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 16
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.vs.uniform_blocks[0].uniforms[0].name = "fsq_params"
-        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-        desc.vs.uniform_blocks[0].uniforms[0].array_count = 1
-        desc.fs.source = transmute(cstring)&fs_fsq_source_glsl430
-        desc.fs.entry = "main"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.images[1].used = true
-        desc.fs.images[1].multisampled = false
-        desc.fs.images[1].image_type = ._2D
-        desc.fs.images[1].sample_type = .FLOAT
-        desc.fs.images[2].used = true
-        desc.fs.images[2].multisampled = false
-        desc.fs.images[2].image_type = ._2D
-        desc.fs.images[2].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
-        desc.fs.image_sampler_pairs[0].glsl_name = "tex0_smp"
-        desc.fs.image_sampler_pairs[1].used = true
-        desc.fs.image_sampler_pairs[1].image_slot = 1
-        desc.fs.image_sampler_pairs[1].sampler_slot = 0
-        desc.fs.image_sampler_pairs[1].glsl_name = "tex1_smp"
-        desc.fs.image_sampler_pairs[2].used = true
-        desc.fs.image_sampler_pairs[2].image_slot = 2
-        desc.fs.image_sampler_pairs[2].sampler_slot = 0
-        desc.fs.image_sampler_pairs[2].glsl_name = "tex2_smp"
+        desc.vertex_func.source = transmute(cstring)&vs_fsq_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_fsq_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "pos"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].glsl_uniforms[0].type = .FLOAT4
+        desc.uniform_blocks[0].glsl_uniforms[0].array_count = 1
+        desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "fsq_params"
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.images[1].stage = .FRAGMENT
+        desc.images[1].multisampled = false
+        desc.images[1].image_type = ._2D
+        desc.images[1].sample_type = .FLOAT
+        desc.images[2].stage = .FRAGMENT
+        desc.images[2].multisampled = false
+        desc.images[2].image_type = ._2D
+        desc.images[2].sample_type = .FLOAT
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
+        desc.image_sampler_pairs[0].glsl_name = "tex0_smp"
+        desc.image_sampler_pairs[1].stage = .FRAGMENT
+        desc.image_sampler_pairs[1].image_slot = 1
+        desc.image_sampler_pairs[1].sampler_slot = 0
+        desc.image_sampler_pairs[1].glsl_name = "tex1_smp"
+        desc.image_sampler_pairs[2].stage = .FRAGMENT
+        desc.image_sampler_pairs[2].image_slot = 2
+        desc.image_sampler_pairs[2].sampler_slot = 0
+        desc.image_sampler_pairs[2].glsl_name = "tex2_smp"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.vs.source = transmute(cstring)&vs_fsq_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 16
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_fsq_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.images[1].used = true
-        desc.fs.images[1].multisampled = false
-        desc.fs.images[1].image_type = ._2D
-        desc.fs.images[1].sample_type = .FLOAT
-        desc.fs.images[2].used = true
-        desc.fs.images[2].multisampled = false
-        desc.fs.images[2].image_type = ._2D
-        desc.fs.images[2].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
-        desc.fs.image_sampler_pairs[1].used = true
-        desc.fs.image_sampler_pairs[1].image_slot = 1
-        desc.fs.image_sampler_pairs[1].sampler_slot = 0
-        desc.fs.image_sampler_pairs[2].used = true
-        desc.fs.image_sampler_pairs[2].image_slot = 2
-        desc.fs.image_sampler_pairs[2].sampler_slot = 0
+        desc.vertex_func.source = transmute(cstring)&vs_fsq_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_fsq_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].hlsl_register_b_n = 0
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.images[0].hlsl_register_t_n = 0
+        desc.images[1].stage = .FRAGMENT
+        desc.images[1].multisampled = false
+        desc.images[1].image_type = ._2D
+        desc.images[1].sample_type = .FLOAT
+        desc.images[1].hlsl_register_t_n = 1
+        desc.images[2].stage = .FRAGMENT
+        desc.images[2].multisampled = false
+        desc.images[2].image_type = ._2D
+        desc.images[2].sample_type = .FLOAT
+        desc.images[2].hlsl_register_t_n = 2
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.samplers[0].hlsl_register_s_n = 0
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
+        desc.image_sampler_pairs[1].stage = .FRAGMENT
+        desc.image_sampler_pairs[1].image_slot = 1
+        desc.image_sampler_pairs[1].sampler_slot = 0
+        desc.image_sampler_pairs[2].stage = .FRAGMENT
+        desc.image_sampler_pairs[2].image_slot = 2
+        desc.image_sampler_pairs[2].sampler_slot = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_fsq_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.vs.uniform_blocks[0].size = 16
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_fsq_source_metal_macos
-        desc.fs.entry = "main0"
-        desc.fs.images[0].used = true
-        desc.fs.images[0].multisampled = false
-        desc.fs.images[0].image_type = ._2D
-        desc.fs.images[0].sample_type = .FLOAT
-        desc.fs.images[1].used = true
-        desc.fs.images[1].multisampled = false
-        desc.fs.images[1].image_type = ._2D
-        desc.fs.images[1].sample_type = .FLOAT
-        desc.fs.images[2].used = true
-        desc.fs.images[2].multisampled = false
-        desc.fs.images[2].image_type = ._2D
-        desc.fs.images[2].sample_type = .FLOAT
-        desc.fs.samplers[0].used = true
-        desc.fs.samplers[0].sampler_type = .FILTERING
-        desc.fs.image_sampler_pairs[0].used = true
-        desc.fs.image_sampler_pairs[0].image_slot = 0
-        desc.fs.image_sampler_pairs[0].sampler_slot = 0
-        desc.fs.image_sampler_pairs[1].used = true
-        desc.fs.image_sampler_pairs[1].image_slot = 1
-        desc.fs.image_sampler_pairs[1].sampler_slot = 0
-        desc.fs.image_sampler_pairs[2].used = true
-        desc.fs.image_sampler_pairs[2].image_slot = 2
-        desc.fs.image_sampler_pairs[2].sampler_slot = 0
+        desc.vertex_func.source = transmute(cstring)&vs_fsq_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_fsq_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].msl_buffer_n = 0
+        desc.images[0].stage = .FRAGMENT
+        desc.images[0].multisampled = false
+        desc.images[0].image_type = ._2D
+        desc.images[0].sample_type = .FLOAT
+        desc.images[0].msl_texture_n = 0
+        desc.images[1].stage = .FRAGMENT
+        desc.images[1].multisampled = false
+        desc.images[1].image_type = ._2D
+        desc.images[1].sample_type = .FLOAT
+        desc.images[1].msl_texture_n = 1
+        desc.images[2].stage = .FRAGMENT
+        desc.images[2].multisampled = false
+        desc.images[2].image_type = ._2D
+        desc.images[2].sample_type = .FLOAT
+        desc.images[2].msl_texture_n = 2
+        desc.samplers[0].stage = .FRAGMENT
+        desc.samplers[0].sampler_type = .FILTERING
+        desc.samplers[0].msl_sampler_n = 0
+        desc.image_sampler_pairs[0].stage = .FRAGMENT
+        desc.image_sampler_pairs[0].image_slot = 0
+        desc.image_sampler_pairs[0].sampler_slot = 0
+        desc.image_sampler_pairs[1].stage = .FRAGMENT
+        desc.image_sampler_pairs[1].image_slot = 1
+        desc.image_sampler_pairs[1].sampler_slot = 0
+        desc.image_sampler_pairs[2].stage = .FRAGMENT
+        desc.image_sampler_pairs[2].image_slot = 2
+        desc.image_sampler_pairs[2].sampler_slot = 0
     }
     return desc
 }
@@ -1406,37 +1421,42 @@ offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "offscreen_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "pos"
-        desc.attrs[1].name = "bright0"
-        desc.vs.source = transmute(cstring)&vs_offscreen_source_glsl430
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.vs.uniform_blocks[0].uniforms[0].name = "offscreen_params"
-        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-        desc.vs.uniform_blocks[0].uniforms[0].array_count = 4
-        desc.fs.source = transmute(cstring)&fs_offscreen_source_glsl430
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_offscreen_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "pos"
+        desc.attrs[1].glsl_name = "bright0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].glsl_uniforms[0].type = .FLOAT4
+        desc.uniform_blocks[0].glsl_uniforms[0].array_count = 4
+        desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "offscreen_params"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.attrs[1].sem_name = "TEXCOORD"
-        desc.attrs[1].sem_index = 1
-        desc.vs.source = transmute(cstring)&vs_offscreen_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_offscreen_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_offscreen_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[1].hlsl_sem_index = 1
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].hlsl_register_b_n = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_offscreen_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_offscreen_source_metal_macos
-        desc.fs.entry = "main0"
+        desc.vertex_func.source = transmute(cstring)&vs_offscreen_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].msl_buffer_n = 0
     }
     return desc
 }

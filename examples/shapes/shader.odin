@@ -13,22 +13,23 @@ import m "../math"
     =========
     Shader program: 'shapes':
         Get shader desc: shapes_shader_desc(sg.query_backend())
-        Vertex shader: vs
-            Attributes:
-                ATTR_vs_position => 0
-                ATTR_vs_normal => 1
-                ATTR_vs_texcoord => 2
-                ATTR_vs_color0 => 3
-            Uniform block 'vs_params':
-                Odin struct: Vs_Params
-                Bind slot: SLOT_vs_params => 0
-        Fragment shader: fs
+        Vertex Shader: vs
+        Fragment Shader: fs
+        Attributes:
+            ATTR_shapes_position => 0
+            ATTR_shapes_normal => 1
+            ATTR_shapes_texcoord => 2
+            ATTR_shapes_color0 => 3
+    Bindings:
+        Uniform block 'vs_params':
+            Odin struct: Vs_Params
+            Bind slot: UB_vs_params => 0
 */
-ATTR_vs_position :: 0
-ATTR_vs_normal :: 1
-ATTR_vs_texcoord :: 2
-ATTR_vs_color0 :: 3
-SLOT_vs_params :: 0
+ATTR_shapes_position :: 0
+ATTR_shapes_normal :: 1
+ATTR_shapes_texcoord :: 2
+ATTR_shapes_color0 :: 3
+UB_vs_params :: 0
 Vs_Params :: struct #align(16) {
     using _: struct #packed {
         draw_mode: f32,
@@ -495,43 +496,48 @@ shapes_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "shapes_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "position"
-        desc.attrs[1].name = "normal"
-        desc.attrs[2].name = "texcoord"
-        desc.attrs[3].name = "color0"
-        desc.vs.source = transmute(cstring)&vs_source_glsl430
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 80
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.vs.uniform_blocks[0].uniforms[0].name = "vs_params"
-        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-        desc.vs.uniform_blocks[0].uniforms[0].array_count = 5
-        desc.fs.source = transmute(cstring)&fs_source_glsl430
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "position"
+        desc.attrs[1].glsl_name = "normal"
+        desc.attrs[2].glsl_name = "texcoord"
+        desc.attrs[3].glsl_name = "color0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 80
+        desc.uniform_blocks[0].glsl_uniforms[0].type = .FLOAT4
+        desc.uniform_blocks[0].glsl_uniforms[0].array_count = 5
+        desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "vs_params"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.attrs[1].sem_name = "TEXCOORD"
-        desc.attrs[1].sem_index = 1
-        desc.attrs[2].sem_name = "TEXCOORD"
-        desc.attrs[2].sem_index = 2
-        desc.attrs[3].sem_name = "TEXCOORD"
-        desc.attrs[3].sem_index = 3
-        desc.vs.source = transmute(cstring)&vs_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 80
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[1].hlsl_sem_index = 1
+        desc.attrs[2].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[2].hlsl_sem_index = 2
+        desc.attrs[3].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[3].hlsl_sem_index = 3
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 80
+        desc.uniform_blocks[0].hlsl_register_b_n = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.vs.uniform_blocks[0].size = 80
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_source_metal_macos
-        desc.fs.entry = "main0"
+        desc.vertex_func.source = transmute(cstring)&vs_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 80
+        desc.uniform_blocks[0].msl_buffer_n = 0
     }
     return desc
 }
