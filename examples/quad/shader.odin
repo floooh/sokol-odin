@@ -12,14 +12,15 @@ import sg "../../sokol/gfx"
     =========
     Shader program: 'quad':
         Get shader desc: quad_shader_desc(sg.query_backend())
-        Vertex shader: vs
-            Attributes:
-                ATTR_vs_position => 0
-                ATTR_vs_color0 => 1
-        Fragment shader: fs
+        Vertex Shader: vs
+        Fragment Shader: fs
+        Attributes:
+            ATTR_quad_position => 0
+            ATTR_quad_color0 => 1
+    Bindings:
 */
-ATTR_vs_position :: 0
-ATTR_vs_color0 :: 1
+ATTR_quad_position :: 0
+ATTR_quad_color0 :: 1
 /*
     #version 430
 
@@ -321,28 +322,28 @@ quad_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "quad_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "position"
-        desc.attrs[1].name = "color0"
-        desc.vs.source = transmute(cstring)&vs_source_glsl430
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_source_glsl430
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "position"
+        desc.attrs[1].glsl_name = "color0"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.attrs[1].sem_name = "TEXCOORD"
-        desc.attrs[1].sem_index = 1
-        desc.vs.source = transmute(cstring)&vs_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[1].hlsl_sem_index = 1
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.fs.source = transmute(cstring)&fs_source_metal_macos
-        desc.fs.entry = "main0"
+        desc.vertex_func.source = transmute(cstring)&vs_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_source_metal_macos
+        desc.fragment_func.entry = "main0"
     }
     return desc
 }

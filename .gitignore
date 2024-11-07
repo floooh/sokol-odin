@@ -12,3 +12,4 @@ build/
 *.dylib
 *.exe
 *.dSYM/
+ols.json

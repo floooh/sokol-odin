@@ -68,7 +68,7 @@ init :: proc "c" () {
         { pos = {  1.0,  1.0,  1.0 }, color = { 1.0, 0.0, 0.5, 1.0} },
         { pos = {  1.0,  1.0, -1.0 }, color = { 1.0, 0.0, 0.5, 1.0} },
     }
-    state.bind.vs.storage_buffers[SLOT_ssbo] = sg.make_buffer({
+    state.bind.storage_buffers[SBUF_ssbo] = sg.make_buffer({
         type = .STORAGEBUFFER,
         data = { ptr = &vertices, size = size_of(vertices) },
     })
@@ -114,7 +114,7 @@ frame :: proc "c" () {
     if sg.query_features().storage_buffer {
         sg.apply_pipeline(state.pip)
         sg.apply_bindings(state.bind)
-        sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
+        sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
         sg.draw(0, 36, 1)
     }
     sg.end_pass()

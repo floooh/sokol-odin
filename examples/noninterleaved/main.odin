@@ -72,9 +72,9 @@ init :: proc "c" () {
             // note how the vertex components are pulled from different buffer bind slots
             attrs = {
                 // positions come from vertex buffer slot 0
-                ATTR_vs_position = { format = .FLOAT3, buffer_index = 0 },
+                ATTR_noninterleaved_position = { format = .FLOAT3, buffer_index = 0 },
                 // colors come from vertex buffer slot 1
-                ATTR_vs_color0 = { format = .FLOAT4, buffer_index = 1 },
+                ATTR_noninterleaved_color0 = { format = .FLOAT4, buffer_index = 1 },
             },
         },
         index_type = .UINT16,
@@ -118,7 +118,7 @@ frame :: proc "c" () {
     sg.begin_pass({ swapchain = sglue.swapchain() })
     sg.apply_pipeline(state.pip)
     sg.apply_bindings(state.bind)
-    sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
+    sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
     sg.draw(0, 36, 1)
     sg.end_pass()
     sg.commit()

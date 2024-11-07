@@ -13,29 +13,30 @@ import m "../math"
     =========
     Shader program: 'bg':
         Get shader desc: bg_shader_desc(sg.query_backend())
-        Vertex shader: vs_bg
-            Attributes:
-                ATTR_vs_bg_position => 0
-        Fragment shader: fs_bg
-            Uniform block 'bg_fs_params':
-                Odin struct: Bg_Fs_Params
-                Bind slot: SLOT_bg_fs_params => 0
+        Vertex Shader: vs_bg
+        Fragment Shader: fs_bg
+        Attributes:
+            ATTR_bg_position => 0
     Shader program: 'quad':
         Get shader desc: quad_shader_desc(sg.query_backend())
-        Vertex shader: vs_quad
-            Attributes:
-                ATTR_vs_quad_position => 0
-                ATTR_vs_quad_color0 => 1
-            Uniform block 'quad_vs_params':
-                Odin struct: Quad_Vs_Params
-                Bind slot: SLOT_quad_vs_params => 0
-        Fragment shader: fs_quad
+        Vertex Shader: vs_quad
+        Fragment Shader: fs_quad
+        Attributes:
+            ATTR_quad_position => 0
+            ATTR_quad_color0 => 1
+    Bindings:
+        Uniform block 'bg_fs_params':
+            Odin struct: Bg_Fs_Params
+            Bind slot: UB_bg_fs_params => 0
+        Uniform block 'quad_vs_params':
+            Odin struct: Quad_Vs_Params
+            Bind slot: UB_quad_vs_params => 0
 */
-ATTR_vs_bg_position :: 0
-ATTR_vs_quad_position :: 0
-ATTR_vs_quad_color0 :: 1
-SLOT_bg_fs_params :: 0
-SLOT_quad_vs_params :: 0
+ATTR_bg_position :: 0
+ATTR_quad_position :: 0
+ATTR_quad_color0 :: 1
+UB_bg_fs_params :: 0
+UB_quad_vs_params :: 0
 Bg_Fs_Params :: struct #align(16) {
     using _: struct #packed {
         tick: f32,
@@ -694,34 +695,39 @@ bg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "bg_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "position"
-        desc.vs.source = transmute(cstring)&vs_bg_source_glsl430
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_bg_source_glsl430
-        desc.fs.entry = "main"
-        desc.fs.uniform_blocks[0].size = 16
-        desc.fs.uniform_blocks[0].layout = .STD140
-        desc.fs.uniform_blocks[0].uniforms[0].name = "bg_fs_params"
-        desc.fs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-        desc.fs.uniform_blocks[0].uniforms[0].array_count = 1
+        desc.vertex_func.source = transmute(cstring)&vs_bg_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_bg_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "position"
+        desc.uniform_blocks[0].stage = .FRAGMENT
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].glsl_uniforms[0].type = .FLOAT4
+        desc.uniform_blocks[0].glsl_uniforms[0].array_count = 1
+        desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "bg_fs_params"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.vs.source = transmute(cstring)&vs_bg_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.fs.source = transmute(cstring)&fs_bg_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
-        desc.fs.uniform_blocks[0].size = 16
-        desc.fs.uniform_blocks[0].layout = .STD140
+        desc.vertex_func.source = transmute(cstring)&vs_bg_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_bg_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.uniform_blocks[0].stage = .FRAGMENT
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].hlsl_register_b_n = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_bg_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.fs.source = transmute(cstring)&fs_bg_source_metal_macos
-        desc.fs.entry = "main0"
-        desc.fs.uniform_blocks[0].size = 16
-        desc.fs.uniform_blocks[0].layout = .STD140
+        desc.vertex_func.source = transmute(cstring)&vs_bg_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_bg_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.uniform_blocks[0].stage = .FRAGMENT
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 16
+        desc.uniform_blocks[0].msl_buffer_n = 0
     }
     return desc
 }
@@ -730,37 +736,42 @@ quad_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     desc.label = "quad_shader"
     #partial switch backend {
     case .GLCORE:
-        desc.attrs[0].name = "position"
-        desc.attrs[1].name = "color0"
-        desc.vs.source = transmute(cstring)&vs_quad_source_glsl430
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.vs.uniform_blocks[0].uniforms[0].name = "quad_vs_params"
-        desc.vs.uniform_blocks[0].uniforms[0].type = .FLOAT4
-        desc.vs.uniform_blocks[0].uniforms[0].array_count = 4
-        desc.fs.source = transmute(cstring)&fs_quad_source_glsl430
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_quad_source_glsl430
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_quad_source_glsl430
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].glsl_name = "position"
+        desc.attrs[1].glsl_name = "color0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].glsl_uniforms[0].type = .FLOAT4
+        desc.uniform_blocks[0].glsl_uniforms[0].array_count = 4
+        desc.uniform_blocks[0].glsl_uniforms[0].glsl_name = "quad_vs_params"
     case .D3D11:
-        desc.attrs[0].sem_name = "TEXCOORD"
-        desc.attrs[0].sem_index = 0
-        desc.attrs[1].sem_name = "TEXCOORD"
-        desc.attrs[1].sem_index = 1
-        desc.vs.source = transmute(cstring)&vs_quad_source_hlsl5
-        desc.vs.d3d11_target = "vs_5_0"
-        desc.vs.entry = "main"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_quad_source_hlsl5
-        desc.fs.d3d11_target = "ps_5_0"
-        desc.fs.entry = "main"
+        desc.vertex_func.source = transmute(cstring)&vs_quad_source_hlsl5
+        desc.vertex_func.d3d11_target = "vs_5_0"
+        desc.vertex_func.entry = "main"
+        desc.fragment_func.source = transmute(cstring)&fs_quad_source_hlsl5
+        desc.fragment_func.d3d11_target = "ps_5_0"
+        desc.fragment_func.entry = "main"
+        desc.attrs[0].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].hlsl_sem_name = "TEXCOORD"
+        desc.attrs[1].hlsl_sem_index = 1
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].hlsl_register_b_n = 0
     case .METAL_MACOS:
-        desc.vs.source = transmute(cstring)&vs_quad_source_metal_macos
-        desc.vs.entry = "main0"
-        desc.vs.uniform_blocks[0].size = 64
-        desc.vs.uniform_blocks[0].layout = .STD140
-        desc.fs.source = transmute(cstring)&fs_quad_source_metal_macos
-        desc.fs.entry = "main0"
+        desc.vertex_func.source = transmute(cstring)&vs_quad_source_metal_macos
+        desc.vertex_func.entry = "main0"
+        desc.fragment_func.source = transmute(cstring)&fs_quad_source_metal_macos
+        desc.fragment_func.entry = "main0"
+        desc.uniform_blocks[0].stage = .VERTEX
+        desc.uniform_blocks[0].layout = .STD140
+        desc.uniform_blocks[0].size = 64
+        desc.uniform_blocks[0].msl_buffer_n = 0
     }
     return desc
 }

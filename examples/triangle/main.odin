@@ -41,8 +41,8 @@ init :: proc "c" () {
         shader = sg.make_shader(triangle_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
-                ATTR_vs_position = { format = .FLOAT3 },
-                ATTR_vs_color0 = { format = .FLOAT4 },
+                ATTR_triangle_position = { format = .FLOAT3 },
+                ATTR_triangle_color0 = { format = .FLOAT4 },
             },
         },
     })

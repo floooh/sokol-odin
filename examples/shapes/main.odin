@@ -64,10 +64,10 @@ init :: proc "c" () {
                 0 = sshape.vertex_buffer_layout_state(),
             },
             attrs = {
-                ATTR_vs_position = sshape.position_vertex_attr_state(),
-                ATTR_vs_normal   = sshape.normal_vertex_attr_state(),
-                ATTR_vs_texcoord = sshape.texcoord_vertex_attr_state(),
-                ATTR_vs_color0   = sshape.color_vertex_attr_state(),
+                ATTR_shapes_position = sshape.position_vertex_attr_state(),
+                ATTR_shapes_normal   = sshape.normal_vertex_attr_state(),
+                ATTR_shapes_texcoord = sshape.texcoord_vertex_attr_state(),
+                ATTR_shapes_color0   = sshape.color_vertex_attr_state(),
             },
         },
         index_type = .UINT16,
@@ -174,7 +174,7 @@ frame :: proc "c" () {
         // per shape model-view-projection matrix
         model := m.mul(m.translate(state.shapes[i].pos), rm)
         state.vs_params.mvp = m.mul(view_proj, model)
-        sg.apply_uniforms(.VS, SLOT_vs_params, { ptr = &state.vs_params, size = size_of(state.vs_params ) } )
+        sg.apply_uniforms(UB_vs_params, { ptr = &state.vs_params, size = size_of(state.vs_params ) } )
         sg.draw(int(state.shapes[i].draw.base_element), int(state.shapes[i].draw.num_elements), 1)
     }
     sdtx.draw()

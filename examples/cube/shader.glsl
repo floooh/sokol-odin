@@ -5,7 +5,7 @@
 @ctype mat4 m.mat4
 
 @vs vs
-uniform vs_params {
+layout(binding=0) uniform vs_params {
     mat4 mvp;
 };
 

@@ -57,8 +57,8 @@ init :: proc "c" () {
         index_type = .UINT16,
         layout = {
             attrs = {
-                ATTR_vs_position = { format = .FLOAT2 },
-                ATTR_vs_color0 = { format = .FLOAT3 },
+                ATTR_bufferoffsets_position = { format = .FLOAT2 },
+                ATTR_bufferoffsets_color0 = { format = .FLOAT3 },
             },
         },
     })
