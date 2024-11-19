@@ -5,9 +5,10 @@ package sokol_helpers
 import sapp "../app"
 import sg "../gfx"
 import "base:runtime"
+import "core:c"
 
 Allocator :: struct {
-    alloc_fn:  proc "c" (size: u64, user_data: rawptr) -> rawptr,
+    alloc_fn:  proc "c" (size: c.size_t, user_data: rawptr) -> rawptr,
     free_fn:   proc "c" (ptr: rawptr, user_data: rawptr),
     user_data: rawptr,
 }
@@ -22,7 +23,7 @@ allocator :: proc(context_ptr: ^runtime.Context) -> Allocator {
     }
 }
 
-allocator_alloc_proc :: proc "c" (size: u64, user_data: rawptr) -> rawptr {
+allocator_alloc_proc :: proc "c" (size: c.size_t, user_data: rawptr) -> rawptr {
     context = (cast(^runtime.Context)user_data)^
     bytes, err := runtime.mem_alloc(size = int(size))
     if err != nil {
