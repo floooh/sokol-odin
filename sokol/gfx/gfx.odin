@@ -90,7 +90,7 @@ foreign sokol_gfx_clib {
     update_image :: proc(img: Image, #by_ptr data: Image_Data)  ---
     append_buffer :: proc(buf: Buffer, #by_ptr data: Range) -> c.int ---
     query_buffer_overflow :: proc(buf: Buffer) -> bool ---
-    query_buffer_will_overflow :: proc(buf: Buffer, size: u64) -> bool ---
+    query_buffer_will_overflow :: proc(buf: Buffer, size: c.size_t) -> bool ---
     begin_pass :: proc(#by_ptr pass: Pass)  ---
     apply_viewport :: proc(#any_int x: c.int, #any_int y: c.int, #any_int width: c.int, #any_int height: c.int, origin_top_left: bool)  ---
     apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
@@ -225,7 +225,7 @@ Attachments :: struct {
 
 Range :: struct {
     ptr : rawptr,
-    size : u64,
+    size : c.size_t,
 }
 
 INVALID_ID :: 0
@@ -681,7 +681,7 @@ Bindings :: struct {
 
 Buffer_Desc :: struct {
     _ : u32,
-    size : u64,
+    size : c.size_t,
     type : Buffer_Type,
     usage : Usage,
     data : Range,
@@ -1434,7 +1434,7 @@ Commit_Listener :: struct {
 }
 
 Allocator :: struct {
-    alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
+    alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,
     free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }

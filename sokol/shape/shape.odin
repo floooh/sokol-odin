@@ -95,7 +95,7 @@ foreign sokol_shape_clib {
 
 Range :: struct {
     ptr : rawptr,
-    size : u64,
+    size : c.size_t,
 }
 
 Mat4 :: struct {
@@ -129,8 +129,8 @@ Sizes :: struct {
 
 Buffer_Item :: struct {
     buffer : Range,
-    data_size : u64,
-    shape_offset : u64,
+    data_size : c.size_t,
+    shape_offset : c.size_t,
 }
 
 Buffer :: struct {

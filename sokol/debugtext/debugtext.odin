@@ -132,7 +132,7 @@ Context :: struct {
 
 Range :: struct {
     ptr : rawptr,
-    size : u64,
+    size : c.size_t,
 }
 
 Font_Desc :: struct {
@@ -153,7 +153,7 @@ Context_Desc :: struct {
 }
 
 Allocator :: struct {
-    alloc_fn : proc "c" (a0: u64, a1: rawptr) -> rawptr,
+    alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,
     free_fn : proc "c" (a0: rawptr, a1: rawptr),
     user_data : rawptr,
 }
