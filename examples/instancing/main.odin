@@ -7,6 +7,7 @@
 package main
 
 import "base:runtime"
+import "core:c"
 import slog "../../sokol/log"
 import sg "../../sokol/gfx"
 import sapp "../../sokol/app"
@@ -123,7 +124,7 @@ frame :: proc "c" () {
     // update instance data
     sg.update_buffer(state.bind.vertex_buffers[1], {
         ptr = &state.pos,
-        size = u64(state.cur_num_particles * size_of(m.vec3)),
+        size = c.size_t(state.cur_num_particles * size_of(m.vec3)),
     })
 
     // vertex shader uniform data with model-view-projection matrix
