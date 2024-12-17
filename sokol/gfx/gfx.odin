@@ -133,6 +133,17 @@ foreign sokol_gfx_clib {
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
     query_pipeline_defaults :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline_Desc ---
     query_attachments_defaults :: proc(#by_ptr desc: Attachments_Desc) -> Attachments_Desc ---
+    query_buffer_size :: proc(buf: Buffer) -> c.size_t ---
+    query_buffer_type :: proc(buf: Buffer) -> Buffer_Type ---
+    query_buffer_usage :: proc(buf: Buffer) -> Usage ---
+    query_image_type :: proc(img: Image) -> Image_Type ---
+    query_image_width :: proc(img: Image) -> c.int ---
+    query_image_height :: proc(img: Image) -> c.int ---
+    query_image_num_slices :: proc(img: Image) -> c.int ---
+    query_image_num_mipmaps :: proc(img: Image) -> c.int ---
+    query_image_pixelformat :: proc(img: Image) -> Pixel_Format ---
+    query_image_usage :: proc(img: Image) -> Usage ---
+    query_image_sample_count :: proc(img: Image) -> c.int ---
     alloc_buffer :: proc() -> Buffer ---
     alloc_image :: proc() -> Image ---
     alloc_sampler :: proc() -> Sampler ---
