@@ -5,8 +5,11 @@ build_lib_x64_release() {
     dst=$2
     backend=$3
     echo $dst
+    # static
     cc -pthread -c -O2 -DNDEBUG -DIMPL -D$backend c/$src.c
     ar rcs $dst.a $src.o
+    # shared
+    cc -pthread -shared -O2 -fPIC -DNDEBUG -DIMPL -D$backend -o $dst.so c/$src.c
 }
 
 build_lib_x64_debug() {
@@ -14,8 +17,11 @@ build_lib_x64_debug() {
     dst=$2
     backend=$3
     echo $dst
+    # static
     cc -pthread -c -g -DIMPL -D$backend c/$src.c
     ar rcs $dst.a $src.o
+    # shared
+    cc -pthread -shared -g -fPIC -DIMPL -D$backend -o $dst.so c/$src.c
 }
 
 # x64 + GL + Release
