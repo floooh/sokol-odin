@@ -58,8 +58,13 @@ when ODIN_OS == .Windows {
         }
     }
 } else when ODIN_OS == .Linux {
-    when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
-    else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
+    when USE_DLL {
+        when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.so", "system:asound", "system:dl", "system:pthread" } }
+        else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.so", "system:asound", "system:dl", "system:pthread" } }
+    } else {
+        when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
+        else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
+    }
 } else {
     #panic("This OS is currently not supported")
 }

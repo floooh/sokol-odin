@@ -59,8 +59,13 @@ when ODIN_OS == .Windows {
         }
     }
 } else when ODIN_OS == .Linux {
-    when DEBUG { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_debug.a" } }
-    else       { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_release.a" } }
+    when USE_DLL {
+        when DEBUG { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_debug.so" } }
+        else       { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_release.so" } }
+    } else {
+        when DEBUG { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_debug.a" } }
+        else       { foreign import sokol_shape_clib { "sokol_shape_linux_x64_gl_release.a" } }
+    }
 } else {
     #panic("This OS is currently not supported")
 }
