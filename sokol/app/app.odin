@@ -1905,6 +1905,10 @@ Logger :: struct {
     user_data : rawptr,
 }
 
+/*
+    sokol-app initialization options, used as return value of sokol_main()
+    or sapp_run() argument
+*/
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -1941,6 +1945,7 @@ Desc :: struct {
     html5_preserve_drawing_buffer : bool,
     html5_premultiplied_alpha : bool,
     html5_ask_leave_site : bool,
+    html5_update_document_title : bool,
     html5_bubble_mouse_events : bool,
     html5_bubble_touch_events : bool,
     html5_bubble_wheel_events : bool,
