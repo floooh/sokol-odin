@@ -467,7 +467,7 @@ foreign sokol_shape_clib {
     sshape_range is a pointer-size-pair struct used to pass memory
     blobs into sokol-shape. When initialized from a value type
     (array or struct), use the SSHAPE_RANGE() macro to build
-    an sshape_range struct
+    an sshape_range struct.
 */
 Range :: struct {
     ptr : rawptr,

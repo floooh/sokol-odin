@@ -880,7 +880,7 @@ Log_Item :: enum i32 {
     sgl_logger_t
 
     Used in sgl_desc_t to provide a custom logging and error reporting
-    callback to sokol-gl
+    callback to sokol-gl.
 */
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
@@ -901,7 +901,7 @@ Context :: struct {
     sgl_error_t
 
     Errors are reset each frame after calling sgl_draw(),
-    get the last error code with sgl_error(
+    get the last error code with sgl_error()
 */
 Error :: struct {
     any : bool,
@@ -918,7 +918,7 @@ Error :: struct {
 
     Describes the initialization parameters of a rendering context.
     Creating additional contexts is useful if you want to render
-    in separate sokol-gfx passes
+    in separate sokol-gfx passes.
 */
 Context_Desc :: struct {
     max_vertices : c.int,
@@ -934,7 +934,7 @@ Context_Desc :: struct {
     Used in sgl_desc_t to provide custom memory-alloc and -free functions
     to sokol_gl.h. If memory management should be overridden, both the
     alloc and free function must be provided (e.g. it's not valid to
-    override one function but not the other)
+    override one function but not the other).
 */
 Allocator :: struct {
     alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,

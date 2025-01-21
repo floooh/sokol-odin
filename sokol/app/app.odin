@@ -1474,7 +1474,7 @@ MAX_ICONIMAGES :: 8
     The type of event that's passed to the event handler callback
     in the sapp_event.type field. These are not just "traditional"
     input events, but also notify the application about state changes
-    or other user-invoked actions
+    or other user-invoked actions.
 */
 Event_Type :: enum i32 {
     INVALID,
@@ -1509,7 +1509,7 @@ Event_Type :: enum i32 {
     The 'virtual keycode' of a KEY_DOWN or KEY_UP event in the
     struct field sapp_event.key_code.
 
-    Note that the keycode values are identical with GLFW
+    Note that the keycode values are identical with GLFW.
 */
 Keycode :: enum i32 {
     INVALID = 0,
@@ -1643,7 +1643,7 @@ Keycode :: enum i32 {
     NOTE: the values must remain in sync with the corresponding
     Android SDK type, so don't change those.
 
-    See https://developer.android.com/reference/android/view/MotionEvent#TOOL_TYPE_UNKNOW
+    See https://developer.android.com/reference/android/view/MotionEvent#TOOL_TYPE_UNKNOWN
 */
 Android_Tooltype :: enum i32 {
     UNKNOWN = 0,
@@ -1659,7 +1659,7 @@ Android_Tooltype :: enum i32 {
     TOUCHES_MOVED, TOUCHES_ENDED).
 
     Touch points are stored in the nested array sapp_event.touches[],
-    and the number of touches is stored in sapp_event.num_touches
+    and the number of touches is stored in sapp_event.num_touches.
 */
 Touchpoint :: struct {
     identifier : c.uintptr_t,
@@ -1673,7 +1673,7 @@ Touchpoint :: struct {
     sapp_mousebutton
 
     The currently pressed mouse button in the events MOUSE_DOWN
-    and MOUSE_UP, stored in the struct field sapp_event.mouse_button
+    and MOUSE_UP, stored in the struct field sapp_event.mouse_button.
 */
 Mousebutton :: enum i32 {
     LEFT = 0,
@@ -1684,7 +1684,7 @@ Mousebutton :: enum i32 {
 
 /*
     These are currently pressed modifier keys (and mouse buttons) which are
-    passed in the event struct field sapp_event.modifiers
+    passed in the event struct field sapp_event.modifiers.
 */
 MODIFIER_SHIFT :: 1
 MODIFIER_CTRL :: 2
@@ -1701,7 +1701,7 @@ MODIFIER_MMB :: 1024
     user callback function. Note that it depends on the event
     type what struct fields actually contain useful values, so you
     should first check the event type before reading other struct
-    fields
+    fields.
 */
 Event :: struct {
     frame_count : u64,
@@ -1729,7 +1729,7 @@ Event :: struct {
     sg_range
 
     A general pointer/size-pair struct and constructor macros for passing binary blobs
-    into sokol_app.h
+    into sokol_app.h.
 */
 Range :: struct {
     ptr : rawptr,
@@ -1744,7 +1744,7 @@ Range :: struct {
 
     Note that the actual image pixel format depends on the use case:
 
-    - window icon pixels are RGBA
+    - window icon pixels are RGBA8
 */
 Image_Desc :: struct {
     width : c.int,
@@ -1768,7 +1768,7 @@ Image_Desc :: struct {
     images[] array.
 
     If both the sokol_default flag is set to true, any image candidates
-    will be ignored and the sokol_app.h default icon will be set
+    will be ignored and the sokol_app.h default icon will be set.
 */
 Icon_Desc :: struct {
     sokol_default : bool,
@@ -1781,7 +1781,7 @@ Icon_Desc :: struct {
     Used in sapp_desc to provide custom memory-alloc and -free functions
     to sokol_app.h. If memory management should be overridden, both the
     alloc_fn and free_fn function must be provided (e.g. it's not valid to
-    override one function but not the other)
+    override one function but not the other).
 */
 Allocator :: struct {
     alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,
@@ -1898,7 +1898,7 @@ Log_Item :: enum i32 {
     without logging function, sokol-app will be completely silent, e.g. it will
     not report errors or warnings. For maximum error verbosity, compile in
     debug mode (e.g. NDEBUG *not* defined) and install a logger (for instance
-    the standard logging function from sokol_log.h)
+    the standard logging function from sokol_log.h).
 */
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
@@ -1907,7 +1907,7 @@ Logger :: struct {
 
 /*
     sokol-app initialization options, used as return value of sokol_main()
-    or sapp_run() argument
+    or sapp_run() argument.
 */
 Desc :: struct {
     init_cb : proc "c" (),
@@ -1958,7 +1958,7 @@ Desc :: struct {
 
 /*
     HTML5 specific: request and response structs for
-      asynchronously loading dropped-file content
+      asynchronously loading dropped-file content.
 */
 Html5_Fetch_Error :: enum i32 {
     FETCH_ERROR_NO_ERROR,
@@ -1985,7 +1985,7 @@ Html5_Fetch_Request :: struct {
 /*
     sapp_mouse_cursor
 
-    Predefined cursor image definitions, set with sapp_set_mouse_cursor(sapp_mouse_cursor cursor
+    Predefined cursor image definitions, set with sapp_set_mouse_cursor(sapp_mouse_cursor cursor)
 */
 Mouse_Cursor :: enum i32 {
     DEFAULT = 0,

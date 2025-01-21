@@ -1673,7 +1673,7 @@ when ODIN_OS == .Windows {
 
 @(default_calling_convention="c", link_prefix="sg_")
 foreign sokol_gfx_clib {
-    // setup and misc function
+    // setup and misc functions
     setup :: proc(#by_ptr desc: Desc)  ---
     shutdown :: proc()  ---
     isvalid :: proc() -> bool ---
@@ -1682,7 +1682,7 @@ foreign sokol_gfx_clib {
     pop_debug_group :: proc()  ---
     add_commit_listener :: proc(listener: Commit_Listener) -> bool ---
     remove_commit_listener :: proc(listener: Commit_Listener) -> bool ---
-    // resource creation, destruction and updatin
+    // resource creation, destruction and updating
     make_buffer :: proc(#by_ptr desc: Buffer_Desc) -> Buffer ---
     make_image :: proc(#by_ptr desc: Image_Desc) -> Image ---
     make_sampler :: proc(#by_ptr desc: Sampler_Desc) -> Sampler ---
@@ -1700,7 +1700,7 @@ foreign sokol_gfx_clib {
     append_buffer :: proc(buf: Buffer, #by_ptr data: Range) -> c.int ---
     query_buffer_overflow :: proc(buf: Buffer) -> bool ---
     query_buffer_will_overflow :: proc(buf: Buffer, size: c.size_t) -> bool ---
-    // rendering function
+    // rendering functions
     begin_pass :: proc(#by_ptr pass: Pass)  ---
     apply_viewport :: proc(#any_int x: c.int, #any_int y: c.int, #any_int width: c.int, #any_int height: c.int, origin_top_left: bool)  ---
     apply_viewportf :: proc(x: f32, y: f32, width: f32, height: f32, origin_top_left: bool)  ---
@@ -1712,7 +1712,7 @@ foreign sokol_gfx_clib {
     draw :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int)  ---
     end_pass :: proc()  ---
     commit :: proc()  ---
-    // getting informatio
+    // getting information
     query_desc :: proc() -> Desc ---
     query_backend :: proc() -> Backend ---
     query_features :: proc() -> Features ---
@@ -1720,35 +1720,35 @@ foreign sokol_gfx_clib {
     query_pixelformat :: proc(fmt: Pixel_Format) -> Pixelformat_Info ---
     query_row_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int row_align_bytes: c.int) -> c.int ---
     query_surface_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int height: c.int, #any_int row_align_bytes: c.int) -> c.int ---
-    // get current state of a resource (INITIAL, ALLOC, VALID, FAILED, INVALID
+    // get current state of a resource (INITIAL, ALLOC, VALID, FAILED, INVALID)
     query_buffer_state :: proc(buf: Buffer) -> Resource_State ---
     query_image_state :: proc(img: Image) -> Resource_State ---
     query_sampler_state :: proc(smp: Sampler) -> Resource_State ---
     query_shader_state :: proc(shd: Shader) -> Resource_State ---
     query_pipeline_state :: proc(pip: Pipeline) -> Resource_State ---
     query_attachments_state :: proc(atts: Attachments) -> Resource_State ---
-    // get runtime information about a resourc
+    // get runtime information about a resource
     query_buffer_info :: proc(buf: Buffer) -> Buffer_Info ---
     query_image_info :: proc(img: Image) -> Image_Info ---
     query_sampler_info :: proc(smp: Sampler) -> Sampler_Info ---
     query_shader_info :: proc(shd: Shader) -> Shader_Info ---
     query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info ---
     query_attachments_info :: proc(atts: Attachments) -> Attachments_Info ---
-    // get desc structs matching a specific resource (NOTE that not all creation attributes may be provided
+    // get desc structs matching a specific resource (NOTE that not all creation attributes may be provided)
     query_buffer_desc :: proc(buf: Buffer) -> Buffer_Desc ---
     query_image_desc :: proc(img: Image) -> Image_Desc ---
     query_sampler_desc :: proc(smp: Sampler) -> Sampler_Desc ---
     query_shader_desc :: proc(shd: Shader) -> Shader_Desc ---
     query_pipeline_desc :: proc(pip: Pipeline) -> Pipeline_Desc ---
     query_attachments_desc :: proc(atts: Attachments) -> Attachments_Desc ---
-    // get resource creation desc struct with their default values replace
+    // get resource creation desc struct with their default values replaced
     query_buffer_defaults :: proc(#by_ptr desc: Buffer_Desc) -> Buffer_Desc ---
     query_image_defaults :: proc(#by_ptr desc: Image_Desc) -> Image_Desc ---
     query_sampler_defaults :: proc(#by_ptr desc: Sampler_Desc) -> Sampler_Desc ---
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
     query_pipeline_defaults :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline_Desc ---
     query_attachments_defaults :: proc(#by_ptr desc: Attachments_Desc) -> Attachments_Desc ---
-    // assorted query function
+    // assorted query functions
     query_buffer_size :: proc(buf: Buffer) -> c.size_t ---
     query_buffer_type :: proc(buf: Buffer) -> Buffer_Type ---
     query_buffer_usage :: proc(buf: Buffer) -> Usage ---
@@ -1760,7 +1760,7 @@ foreign sokol_gfx_clib {
     query_image_pixelformat :: proc(img: Image) -> Pixel_Format ---
     query_image_usage :: proc(img: Image) -> Usage ---
     query_image_sample_count :: proc(img: Image) -> c.int ---
-    // separate resource allocation and initialization (for async setup
+    // separate resource allocation and initialization (for async setup)
     alloc_buffer :: proc() -> Buffer ---
     alloc_image :: proc() -> Image ---
     alloc_sampler :: proc() -> Sampler ---
@@ -1791,70 +1791,70 @@ foreign sokol_gfx_clib {
     fail_shader :: proc(shd: Shader)  ---
     fail_pipeline :: proc(pip: Pipeline)  ---
     fail_attachments :: proc(atts: Attachments)  ---
-    // frame stat
+    // frame stats
     enable_frame_stats :: proc()  ---
     disable_frame_stats :: proc()  ---
     frame_stats_enabled :: proc() -> bool ---
     query_frame_stats :: proc() -> Frame_Stats ---
-    // D3D11: return ID3D11Devic
+    // D3D11: return ID3D11Device
     d3d11_device :: proc() -> rawptr ---
-    // D3D11: return ID3D11DeviceContex
+    // D3D11: return ID3D11DeviceContext
     d3d11_device_context :: proc() -> rawptr ---
-    // D3D11: get internal buffer resource object
+    // D3D11: get internal buffer resource objects
     d3d11_query_buffer_info :: proc(buf: Buffer) -> D3d11_Buffer_Info ---
-    // D3D11: get internal image resource object
+    // D3D11: get internal image resource objects
     d3d11_query_image_info :: proc(img: Image) -> D3d11_Image_Info ---
-    // D3D11: get internal sampler resource object
+    // D3D11: get internal sampler resource objects
     d3d11_query_sampler_info :: proc(smp: Sampler) -> D3d11_Sampler_Info ---
-    // D3D11: get internal shader resource object
+    // D3D11: get internal shader resource objects
     d3d11_query_shader_info :: proc(shd: Shader) -> D3d11_Shader_Info ---
-    // D3D11: get internal pipeline resource object
+    // D3D11: get internal pipeline resource objects
     d3d11_query_pipeline_info :: proc(pip: Pipeline) -> D3d11_Pipeline_Info ---
-    // D3D11: get internal pass resource object
+    // D3D11: get internal pass resource objects
     d3d11_query_attachments_info :: proc(atts: Attachments) -> D3d11_Attachments_Info ---
-    // Metal: return __bridge-casted MTLDevic
+    // Metal: return __bridge-casted MTLDevice
     mtl_device :: proc() -> rawptr ---
-    // Metal: return __bridge-casted MTLRenderCommandEncoder in current pass (or zero if outside pass
+    // Metal: return __bridge-casted MTLRenderCommandEncoder in current pass (or zero if outside pass)
     mtl_render_command_encoder :: proc() -> rawptr ---
-    // Metal: get internal __bridge-casted buffer resource object
+    // Metal: get internal __bridge-casted buffer resource objects
     mtl_query_buffer_info :: proc(buf: Buffer) -> Mtl_Buffer_Info ---
-    // Metal: get internal __bridge-casted image resource object
+    // Metal: get internal __bridge-casted image resource objects
     mtl_query_image_info :: proc(img: Image) -> Mtl_Image_Info ---
-    // Metal: get internal __bridge-casted sampler resource object
+    // Metal: get internal __bridge-casted sampler resource objects
     mtl_query_sampler_info :: proc(smp: Sampler) -> Mtl_Sampler_Info ---
-    // Metal: get internal __bridge-casted shader resource object
+    // Metal: get internal __bridge-casted shader resource objects
     mtl_query_shader_info :: proc(shd: Shader) -> Mtl_Shader_Info ---
-    // Metal: get internal __bridge-casted pipeline resource object
+    // Metal: get internal __bridge-casted pipeline resource objects
     mtl_query_pipeline_info :: proc(pip: Pipeline) -> Mtl_Pipeline_Info ---
-    // WebGPU: return WGPUDevice objec
+    // WebGPU: return WGPUDevice object
     wgpu_device :: proc() -> rawptr ---
-    // WebGPU: return WGPUQueue objec
+    // WebGPU: return WGPUQueue object
     wgpu_queue :: proc() -> rawptr ---
-    // WebGPU: return this frame's WGPUCommandEncode
+    // WebGPU: return this frame's WGPUCommandEncoder
     wgpu_command_encoder :: proc() -> rawptr ---
-    // WebGPU: return WGPURenderPassEncoder of current pas
+    // WebGPU: return WGPURenderPassEncoder of current pass
     wgpu_render_pass_encoder :: proc() -> rawptr ---
-    // WebGPU: get internal buffer resource object
+    // WebGPU: get internal buffer resource objects
     wgpu_query_buffer_info :: proc(buf: Buffer) -> Wgpu_Buffer_Info ---
-    // WebGPU: get internal image resource object
+    // WebGPU: get internal image resource objects
     wgpu_query_image_info :: proc(img: Image) -> Wgpu_Image_Info ---
-    // WebGPU: get internal sampler resource object
+    // WebGPU: get internal sampler resource objects
     wgpu_query_sampler_info :: proc(smp: Sampler) -> Wgpu_Sampler_Info ---
-    // WebGPU: get internal shader resource object
+    // WebGPU: get internal shader resource objects
     wgpu_query_shader_info :: proc(shd: Shader) -> Wgpu_Shader_Info ---
-    // WebGPU: get internal pipeline resource object
+    // WebGPU: get internal pipeline resource objects
     wgpu_query_pipeline_info :: proc(pip: Pipeline) -> Wgpu_Pipeline_Info ---
-    // WebGPU: get internal pass resource object
+    // WebGPU: get internal pass resource objects
     wgpu_query_attachments_info :: proc(atts: Attachments) -> Wgpu_Attachments_Info ---
-    // GL: get internal buffer resource object
+    // GL: get internal buffer resource objects
     gl_query_buffer_info :: proc(buf: Buffer) -> Gl_Buffer_Info ---
-    // GL: get internal image resource object
+    // GL: get internal image resource objects
     gl_query_image_info :: proc(img: Image) -> Gl_Image_Info ---
-    // GL: get internal sampler resource object
+    // GL: get internal sampler resource objects
     gl_query_sampler_info :: proc(smp: Sampler) -> Gl_Sampler_Info ---
-    // GL: get internal shader resource object
+    // GL: get internal shader resource objects
     gl_query_shader_info :: proc(shd: Shader) -> Gl_Shader_Info ---
-    // GL: get internal pass resource object
+    // GL: get internal pass resource objects
     gl_query_attachments_info :: proc(atts: Attachments) -> Gl_Attachments_Info ---
 }
 
@@ -1878,7 +1878,7 @@ foreign sokol_gfx_clib {
     its pool slot has been reused for a new object)
 
     The resource ids are wrapped into a strongly-typed struct so that
-    trying to pass an incompatible resource id is a compile error
+    trying to pass an incompatible resource id is a compile error.
 */
 Buffer :: struct {
     id : u32,
@@ -1909,14 +1909,14 @@ Attachments :: struct {
     sokol-gfx. When initialized from a value type (array or struct), you can
     use the SG_RANGE() macro to build an sg_range struct. For functions which
     take either a sg_range pointer, or a (C++) sg_range reference, use the
-    SG_RANGE_REF macro as a solution which compiles both in C and C++
+    SG_RANGE_REF macro as a solution which compiles both in C and C++.
 */
 Range :: struct {
     ptr : rawptr,
     size : c.size_t,
 }
 
-// various compile-time constants in the public AP
+// various compile-time constants in the public API
 INVALID_ID :: 0
 NUM_INFLIGHT_FRAMES :: 2
 MAX_COLOR_ATTACHMENTS :: 4
@@ -1934,7 +1934,7 @@ MAX_IMAGE_SAMPLER_PAIRS :: 16
 /*
     sg_color
 
-    An RGBA color value
+    An RGBA color value.
 */
 Color :: struct {
     r : f32,
@@ -1947,7 +1947,7 @@ Color :: struct {
     sg_backend
 
     The active 3D-API backend, use the function sg_query_backend()
-    to get the currently active backend
+    to get the currently active backend.
 */
 Backend :: enum i32 {
     GLCORE,
@@ -2000,7 +2000,7 @@ Backend :: enum i32 {
     the default formats are:
 
         - for the Metal, D3D11 and WebGPU backends: SG_PIXELFORMAT_BGRA8
-        - for GL backends: SG_PIXELFORMAT_RGBA
+        - for GL backends: SG_PIXELFORMAT_RGBA8
 */
 Pixel_Format :: enum i32 {
     DEFAULT,
@@ -2077,7 +2077,7 @@ Pixel_Format :: enum i32 {
     ASTC_4x4_SRGBA,
 }
 
-// Runtime information about a pixel format, returned by sg_query_pixelformat()
+// Runtime information about a pixel format, returned by sg_query_pixelformat().
 Pixelformat_Info :: struct {
     sample : bool,
     filter : bool,
@@ -2089,7 +2089,7 @@ Pixelformat_Info :: struct {
     bytes_per_pixel : c.int,
 }
 
-// Runtime information about available optional features, returned by sg_query_features(
+// Runtime information about available optional features, returned by sg_query_features()
 Features :: struct {
     origin_top_left : bool,
     image_clamp_to_border : bool,
@@ -2099,7 +2099,7 @@ Features :: struct {
     msaa_image_bindings : bool,
 }
 
-// Runtime information about resource limits, returned by sg_query_limit(
+// Runtime information about resource limits, returned by sg_query_limit()
 Limits :: struct {
     max_image_size_2d : c.int,
     max_image_size_cube : c.int,
@@ -2127,7 +2127,7 @@ Limits :: struct {
     operations will silently be dropped.
 
     The special INVALID state is returned in sg_query_xxx_state() if no
-    resource object exists for the provided resource id
+    resource object exists for the provided resource id.
 */
 Resource_State :: enum i32 {
     INITIAL,
@@ -2169,7 +2169,7 @@ Resource_State :: enum i32 {
     size is used for rendering, you only need to make sure that the data that
     *is* used is valid).
 
-    The default usage is SG_USAGE_IMMUTABLE
+    The default usage is SG_USAGE_IMMUTABLE.
 */
 Usage :: enum i32 {
     DEFAULT,
@@ -2186,7 +2186,7 @@ Usage :: enum i32 {
 
     Used in the sg_buffer_desc.type member when creating a buffer.
 
-    The default value is SG_BUFFERTYPE_VERTEXBUFFER
+    The default value is SG_BUFFERTYPE_VERTEXBUFFER.
 */
 Buffer_Type :: enum i32 {
     DEFAULT,
@@ -2204,7 +2204,7 @@ Buffer_Type :: enum i32 {
     This is used in the sg_pipeline_desc.index_type member when creating a
     pipeline object.
 
-    The default index type is SG_INDEXTYPE_NONE
+    The default index type is SG_INDEXTYPE_NONE.
 */
 Index_Type :: enum i32 {
     DEFAULT,
@@ -2222,7 +2222,7 @@ Index_Type :: enum i32 {
     in the shader (both must match and will be checked in the validation layer
     when calling sg_apply_bindings).
 
-    The default image type when creating an image is SG_IMAGETYPE_2D
+    The default image type when creating an image is SG_IMAGETYPE_2D.
 */
 Image_Type :: enum i32 {
     DEFAULT,
@@ -2252,7 +2252,7 @@ Image_Type :: enum i32 {
     - SG_PIXELFORMAT_RGBA32F
 
     (when using sokol-shdc, also check out the meta tags `@image_sample_type`
-    and `@sampler_type`
+    and `@sampler_type`)
 */
 Image_Sample_Type :: enum i32 {
     DEFAULT,
@@ -2277,7 +2277,7 @@ Image_Sample_Type :: enum i32 {
     - SG_IMAGESAMPLETYPE_UNFILTERABLE_FLOAT => SG_SAMPLERTYPE_NONFILTERING
     - SG_IMAGESAMPLETYPE_SINT => SG_SAMPLERTYPE_NONFILTERING
     - SG_IMAGESAMPLETYPE_UINT => SG_SAMPLERTYPE_NONFILTERING
-    - SG_IMAGESAMPLETYPE_DEPTH => SG_SAMPLERTYPE_COMPARISO
+    - SG_IMAGESAMPLETYPE_DEPTH => SG_SAMPLERTYPE_COMPARISON
 */
 Sampler_Type :: enum i32 {
     DEFAULT,
@@ -2290,7 +2290,7 @@ Sampler_Type :: enum i32 {
     sg_cube_face
 
     The cubemap faces. Use these as indices in the sg_image_desc.content
-    array
+    array.
 */
 Cube_Face :: enum i32 {
     POS_X,
@@ -2308,7 +2308,7 @@ Cube_Face :: enum i32 {
     APIs. This is used in the sg_pipeline_desc.primitive_type member when
     creating a pipeline object.
 
-    The default primitive type is SG_PRIMITIVETYPE_TRIANGLES
+    The default primitive type is SG_PRIMITIVETYPE_TRIANGLES.
 */
 Primitive_Type :: enum i32 {
     DEFAULT,
@@ -2326,7 +2326,7 @@ Primitive_Type :: enum i32 {
     used in the sg_sampler_desc.min_filter, sg_sampler_desc.mag_filter
     and sg_sampler_desc.mipmap_filter members when creating a sampler object.
 
-    For the default is SG_FILTER_NEAREST
+    For the default is SG_FILTER_NEAREST.
 */
 Filter :: enum i32 {
     DEFAULT,
@@ -2349,7 +2349,7 @@ Filter :: enum i32 {
     sg_features struct.
 
     Platforms which don't support SG_WRAP_CLAMP_TO_BORDER will silently fall back
-    to SG_WRAP_CLAMP_TO_EDGE without a validation error
+    to SG_WRAP_CLAMP_TO_EDGE without a validation error.
 */
 Wrap :: enum i32 {
     DEFAULT,
@@ -2365,7 +2365,7 @@ Wrap :: enum i32 {
     The border color to use when sampling a texture, and the UV wrap
     mode is SG_WRAP_CLAMP_TO_BORDER.
 
-    The default border color is SG_BORDERCOLOR_OPAQUE_BLAC
+    The default border color is SG_BORDERCOLOR_OPAQUE_BLACK
 */
 Border_Color :: enum i32 {
     DEFAULT,
@@ -2378,7 +2378,7 @@ Border_Color :: enum i32 {
     sg_vertex_format
 
     The data type of a vertex component. This is used to describe
-    the layout of vertex data when creating a pipeline object
+    the layout of vertex data when creating a pipeline object.
 */
 Vertex_Format :: enum i32 {
     INVALID,
@@ -2410,7 +2410,7 @@ Vertex_Format :: enum i32 {
     instanced-rendering.
 
     The vertex-step is part of the vertex-layout definition
-    when creating pipeline objects
+    when creating pipeline objects.
 */
 Vertex_Step :: enum i32 {
     DEFAULT,
@@ -2424,7 +2424,7 @@ Vertex_Step :: enum i32 {
     The data type of a uniform block member. This is used to
     describe the internal layout of uniform blocks when creating
     a shader object. This is only required for the GL backend, all
-    other backends will ignore the interior layout of uniform blocks
+    other backends will ignore the interior layout of uniform blocks.
 */
 Uniform_Type :: enum i32 {
     INVALID,
@@ -2471,7 +2471,7 @@ Uniform_Type :: enum i32 {
         of 16.
 
     For more information search for 'UNIFORM DATA LAYOUT' in the documentation block
-    at the start of the header
+    at the start of the header.
 */
 Uniform_Layout :: enum i32 {
     DEFAULT,
@@ -2486,7 +2486,7 @@ Uniform_Layout :: enum i32 {
     sg_pipeline_desc.cull_mode member when creating a
     pipeline object.
 
-    The default cull mode is SG_CULLMODE_NON
+    The default cull mode is SG_CULLMODE_NONE
 */
 Cull_Mode :: enum i32 {
     DEFAULT,
@@ -2502,7 +2502,7 @@ Cull_Mode :: enum i32 {
     is used in the member sg_pipeline_desc.face_winding
     when creating a pipeline object.
 
-    The default winding is SG_FACEWINDING_CW (clockwise
+    The default winding is SG_FACEWINDING_CW (clockwise)
 */
 Face_Winding :: enum i32 {
     DEFAULT,
@@ -2532,7 +2532,7 @@ Face_Winding :: enum i32 {
     The default compare func for depth- and stencil-tests is
     SG_COMPAREFUNC_ALWAYS.
 
-    The default compare func for samplers is SG_COMPAREFUNC_NEVER
+    The default compare func for samplers is SG_COMPAREFUNC_NEVER.
 */
 Compare_Func :: enum i32 {
     DEFAULT,
@@ -2564,7 +2564,7 @@ Compare_Func :: enum i32 {
                 .depth_fail_op
                 .pass_op
 
-    The default value is SG_STENCILOP_KEEP
+    The default value is SG_STENCILOP_KEEP.
 */
 Stencil_Op :: enum i32 {
     DEFAULT,
@@ -2593,7 +2593,7 @@ Stencil_Op :: enum i32 {
                 .dst_factor_alpha
 
     The default value is SG_BLENDFACTOR_ONE for source
-    factors, and SG_BLENDFACTOR_ZERO for destination factors
+    factors, and SG_BLENDFACTOR_ZERO for destination factors.
 */
 Blend_Factor :: enum i32 {
     DEFAULT,
@@ -2627,7 +2627,7 @@ Blend_Factor :: enum i32 {
                 .op_rgb
                 .op_alpha
 
-    The default value is SG_BLENDOP_ADD
+    The default value is SG_BLENDOP_ADD.
 */
 Blend_Op :: enum i32 {
     DEFAULT,
@@ -2647,7 +2647,7 @@ Blend_Op :: enum i32 {
 
     NOTE: since the color mask value 0 is reserved for the default value
     (SG_COLORMASK_RGBA), use SG_COLORMASK_NONE if all color channels
-    should be disabled
+    should be disabled.
 */
 Color_Mask :: enum i32 {
     DEFAULT = 0,
@@ -2685,7 +2685,7 @@ Color_Mask :: enum i32 {
 
     If you want to override the default behaviour, it is important to not
     only set the clear color, but the 'action' field as well (as long as this
-    is _SG_LOADACTION_DEFAULT, the value fields will be ignored)
+    is _SG_LOADACTION_DEFAULT, the value fields will be ignored).
 */
 Load_Action :: enum i32 {
     DEFAULT,
@@ -2700,7 +2700,7 @@ Load_Action :: enum i32 {
     Defines the store action that should be performed at the end of a render pass:
 
     SG_STOREACTION_STORE:       store the rendered content to the color attachment image
-    SG_STOREACTION_DONTCARE:    allows the GPU to discard the rendered conten
+    SG_STOREACTION_DONTCARE:    allows the GPU to discard the rendered content
 */
 Store_Action :: enum i32 {
     DEFAULT,
@@ -2718,7 +2718,7 @@ Store_Action :: enum i32 {
       loaded with their previous content, or start in an undefined state
     - for clear operations: the clear value (color, depth, or stencil values)
     - at the end of the pass: whether the rendering result should be
-      stored back into the render attachment or discarde
+      stored back into the render attachment or discarded
 */
 Color_Attachment_Action :: struct {
     load_action : Load_Action,
@@ -2807,7 +2807,7 @@ Pass_Action :: struct {
     It's a good practice to write a helper function which returns an initialized
     sg_swapchain structs, which can then be plugged directly into
     sg_pass.swapchain. Look at the function sglue_swapchain() in the sokol_glue.h
-    as an example
+    as an example.
 */
 Metal_Swapchain :: struct {
     current_drawable : rawptr,
@@ -2872,7 +2872,7 @@ Swapchain :: struct {
         });
 
     You can also omit the .action object to get default pass action behaviour
-    (clear to color=grey, depth=1 and stencil=0)
+    (clear to color=grey, depth=1 and stencil=0).
 */
 Pass :: struct {
     _ : u32,
@@ -2965,7 +2965,7 @@ Pass :: struct {
     sg_shader_desc struct documentation).
 
     The optional buffer offsets can be used to put different unrelated
-    chunks of vertex- and/or index-data into the same buffer objects
+    chunks of vertex- and/or index-data into the same buffer objects.
 */
 Bindings :: struct {
     _ : u32,
@@ -3026,7 +3026,7 @@ Bindings :: struct {
     initialized with content, and the .content member must be 0!
 
     Also you need to call sg_reset_state_cache() after calling native 3D-API
-    functions, and before calling any sokol_gfx function
+    functions, and before calling any sokol_gfx function.
 */
 Buffer_Desc :: struct {
     _ : u32,
@@ -3047,7 +3047,7 @@ Buffer_Desc :: struct {
 
     Defines the content of an image through a 2D array of sg_range structs.
     The first array dimension is the cubemap face, and the second array
-    dimension the mipmap level
+    dimension the mipmap level.
 */
 Image_Data :: struct {
     subimage : [6][16]Range,
@@ -3107,7 +3107,7 @@ Image_Data :: struct {
     injected texture in a shader you *must* provide a shader-resource-view.
 
     The same rules apply as for injecting native buffers (see sg_buffer_desc
-    documentation for more details)
+    documentation for more details).
 */
 Image_Desc :: struct {
     _ : u32,
@@ -3147,7 +3147,7 @@ Image_Desc :: struct {
     .max_lod            FLT_MAX
     .border_color       SG_BORDERCOLOR_OPAQUE_BLACK
     .compare            SG_COMPAREFUNC_NEVER
-    .max_anisotropy     1 (must be 1..16
+    .max_anisotropy     1 (must be 1..16)
 */
 Sampler_Desc :: struct {
     _ : u32,
@@ -3273,7 +3273,7 @@ Sampler_Desc :: struct {
     on demand. If this fails, shader creation will fail. When compiling HLSL
     source code, you can provide an optional target string via
     sg_shader_stage_desc.d3d11_target, the default target is "vs_4_0" for the
-    vertex shader stage and "ps_4_0" for the pixel shader stage
+    vertex shader stage and "ps_4_0" for the pixel shader stage.
 */
 Shader_Stage :: enum i32 {
     NONE,
@@ -3425,7 +3425,7 @@ Shader_Desc :: struct {
     .sample_count:              sg_desc.context.sample_count
     .blend_color:               (sg_color) { 0.0f, 0.0f, 0.0f, 0.0f }
     .alpha_to_coverage_enabled: false
-    .label  0       (optional string label for trace hooks
+    .label  0       (optional string label for trace hooks)
 */
 Vertex_Buffer_Layout_State :: struct {
     stride : c.int,
@@ -3533,7 +3533,7 @@ Pipeline_Desc :: struct {
     (sample_count==1). The resolve attachment also must have the same pixel
     format as the color attachment.
 
-    NOTE that MSAA depth-stencil attachments cannot be msaa-resolved
+    NOTE that MSAA depth-stencil attachments cannot be msaa-resolved!
 */
 Attachment_Desc :: struct {
     image : Image,
@@ -3571,7 +3571,7 @@ Attachments_Desc :: struct {
     sg_query_sampler_info()
     sg_query_shader_info()
     sg_query_pipeline_info()
-    sg_query_pass_info(
+    sg_query_pass_info()
 */
 Slot_Info :: struct {
     state : Resource_State,
@@ -3616,7 +3616,7 @@ Attachments_Info :: struct {
 
     Allows to track generic and backend-specific stats about a
     render frame. Obtained by calling sg_query_frame_stats(). The returned
-    struct contains information about the *previous* frame
+    struct contains information about the *previous* frame.
 */
 Frame_Stats_Gl :: struct {
     num_bind_buffer : u32,
@@ -4154,7 +4154,7 @@ Log_Item :: enum i32 {
     helper function sglue_environment() in the sokol_glue.h header to
     initialize the sg_desc.environment nested struct. sglue_environment() returns
     a completely initialized sg_environment struct with information
-    provided by sokol_app.h
+    provided by sokol_app.h.
 */
 Environment_Defaults :: struct {
     color_format : Pixel_Format,
@@ -4189,7 +4189,7 @@ Environment :: struct {
     which will be called in sg_commit(). This is useful for libraries
     building on top of sokol-gfx to be notified about when a frame
     ends (instead of having to guess, or add a manual 'new-frame'
-    function
+    function.
 */
 Commit_Listener :: struct {
     func : proc "c" (a0: rawptr),
@@ -4202,7 +4202,7 @@ Commit_Listener :: struct {
     Used in sg_desc to provide custom memory-alloc and -free functions
     to sokol_gfx.h. If memory management should be overridden, both the
     alloc_fn and free_fn function must be provided (e.g. it's not valid to
-    override one function but not the other)
+    override one function but not the other).
 */
 Allocator :: struct {
     alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,
@@ -4219,7 +4219,7 @@ Allocator :: struct {
     validation layer messages. For maximum error verbosity,
     compile in debug mode (e.g. NDEBUG *not* defined) and provide a
     compatible logger function in the sg_setup() call
-    (for instance the standard logging function from sokol_log.h)
+    (for instance the standard logging function from sokol_log.h).
 */
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
@@ -4252,7 +4252,7 @@ Desc :: struct {
     Backend-specific structs and functions, these may come in handy for mixing
       sokol-gfx rendering with 'native backend' rendering functions.
 
-      This group of functions will be expanded as needed
+      This group of functions will be expanded as needed.
 */
 D3d11_Buffer_Info :: struct {
     buf : rawptr,

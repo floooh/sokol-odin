@@ -181,7 +181,7 @@ foreign sokol_log_clib {
             .logger = {
                 .func = slog_func
             }
-        })
+        });
     */
     func :: proc(tag: cstring, log_level: u32, log_item: u32, message: cstring, line_nr: u32, filename: cstring, user_data: rawptr)  ---
 }

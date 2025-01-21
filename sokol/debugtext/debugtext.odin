@@ -646,7 +646,7 @@ Log_Item :: enum i32 {
     sdtx_logger_t
 
     Used in sdtx_desc_t to provide a custom logging and error reporting
-    callback to sokol-debugtext
+    callback to sokol-debugtext.
 */
 Logger :: struct {
     func : proc "c" (a0: cstring, a1: u32, a2: u32, a3: cstring, a4: u32, a5: cstring, a6: rawptr),
@@ -662,7 +662,7 @@ Context :: struct {
     sdtx_range is a pointer-size-pair struct used to pass memory
     blobs into sokol-debugtext. When initialized from a value type
     (array or struct), use the SDTX_RANGE() macro to build
-    an sdtx_range struct
+    an sdtx_range struct.
 */
 Range :: struct {
     ptr : rawptr,
@@ -681,7 +681,7 @@ Font_Desc :: struct {
     Describes the initialization parameters of a rendering context. Creating
     additional rendering contexts is useful if you want to render in
     different sokol-gfx rendering passes, or when rendering several layers
-    of text
+    of text.
 */
 Context_Desc :: struct {
     max_commands : c.int,
@@ -700,7 +700,7 @@ Context_Desc :: struct {
     Used in sdtx_desc_t to provide custom memory-alloc and -free functions
     to sokol_debugtext.h. If memory management should be overridden, both the
     alloc_fn and free_fn function must be provided (e.g. it's not valid to
-    override one function but not the other)
+    override one function but not the other).
 */
 Allocator :: struct {
     alloc_fn : proc "c" (a0: c.size_t, a1: rawptr) -> rawptr,
@@ -722,7 +722,7 @@ Allocator :: struct {
         sdtx_font_z1013()
         sdtx_font_cpc()
         sdtx_font_c64()
-        sdtx_font_oric(
+        sdtx_font_oric()
 */
 Desc :: struct {
     context_pool_size : c.int,
