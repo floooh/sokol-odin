@@ -180,7 +180,7 @@ when ODIN_OS == .Windows {
 foreign sokol_log_clib {
     /*
         Plug this function into the 'logger.func' struct item when initializing any of the sokol
-        headers. For instance for sokol_audio.h it would loom like this:
+        headers. For instance for sokol_audio.h it would look like this:
 
         saudio_setup(&(saudio_desc){
             .logger = {
