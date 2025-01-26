@@ -699,6 +699,8 @@ import sg "../gfx"
 
 import "core:c"
 
+_ :: c
+
 SOKOL_DEBUG :: #config(SOKOL_DEBUG, ODIN_DEBUG)
 
 DEBUG :: #config(SOKOL_GL_DEBUG, SOKOL_DEBUG)
@@ -760,6 +762,9 @@ when ODIN_OS == .Windows {
         when DEBUG { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_debug.a" } }
         else       { foreign import sokol_gl_clib { "sokol_gl_linux_x64_gl_release.a" } }
     }
+} else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
+    // Feed sokol_gl_wasm_gl_debug.a or sokol_gl_wasm_gl_release.a into emscripten compiler.
+    foreign import sokol_gl_clib { "env.o" }
 } else {
     #panic("This OS is currently not supported")
 }
