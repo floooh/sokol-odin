@@ -29,7 +29,7 @@ init :: proc "c" () {
 
     // if storage buffers are not supported on the current backend, just
     // render a red screen
-    if !sg.query_features().storage_buffer {
+    if !sg.query_features().compute {
         state.pass_action = {
             colors = { 0 = { load_action = .CLEAR, clear_value = { 1, 0, 0, 1 } } },
         }
@@ -111,7 +111,7 @@ frame :: proc "c" () {
     }
 
     sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
-    if sg.query_features().storage_buffer {
+    if sg.query_features().compute {
         sg.apply_pipeline(state.pip)
         sg.apply_bindings(state.bind)
         sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
