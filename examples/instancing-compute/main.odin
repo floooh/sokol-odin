@@ -148,8 +148,8 @@ frame :: proc "c" () {
     sg.dispatch((state.num_particles + 63) / 64, 1, 1)
     sg.end_pass()
 
-    // shader and pipeline for rendering the particles, this uses
-    // the compute-updated storage buffer to provide the particle positions
+    // render pass to render the particles via instancing, with the
+    // instance positions coming from the storage buffer
     state.ry += 60.0 * dt
     vs_params := compute_vs_params(state.ry)
     sg.begin_pass({
