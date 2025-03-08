@@ -19,6 +19,7 @@ build_shader blend
 build_shader bufferoffsets
 build_shader cube
 build_shader instancing
+build_shader instancing-compute
 build_shader mrt
 build_shader noninterleaved
 build_shader offscreen
