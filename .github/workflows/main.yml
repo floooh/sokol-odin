@@ -77,3 +77,4 @@ jobs:
           ./odin build examples/texcube -debug
           ./odin build examples/triangle -debug
           ./odin build examples/vertexpull -debug
+          ./odin build examples/instancing-compute -debug
