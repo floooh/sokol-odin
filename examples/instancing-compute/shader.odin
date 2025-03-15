@@ -1144,7 +1144,9 @@ display_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main"
         desc.fragment_func.source = transmute(cstring)&fs_source_glsl430
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].glsl_name = "pos"
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].glsl_name = "color0"
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
@@ -1162,8 +1164,10 @@ display_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.fragment_func.source = transmute(cstring)&fs_source_hlsl5
         desc.fragment_func.d3d11_target = "ps_5_0"
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].hlsl_sem_name = "TEXCOORD"
         desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].hlsl_sem_name = "TEXCOORD"
         desc.attrs[1].hlsl_sem_index = 1
         desc.uniform_blocks[0].stage = .VERTEX
@@ -1178,6 +1182,8 @@ display_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main0"
         desc.fragment_func.source = transmute(cstring)&fs_source_metal_macos
         desc.fragment_func.entry = "main0"
+        desc.attrs[0].base_type = .FLOAT
+        desc.attrs[1].base_type = .FLOAT
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
         desc.uniform_blocks[0].size = 64
@@ -1208,9 +1214,9 @@ init_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     case .METAL_MACOS:
         desc.compute_func.source = transmute(cstring)&cs_init_source_metal_macos
         desc.compute_func.entry = "main0"
-        desc.mtl_threads_per_threadgroup.x = 64;
-        desc.mtl_threads_per_threadgroup.y = 1;
-        desc.mtl_threads_per_threadgroup.z = 1;
+        desc.mtl_threads_per_threadgroup.x = 64
+        desc.mtl_threads_per_threadgroup.y = 1
+        desc.mtl_threads_per_threadgroup.z = 1
         desc.storage_buffers[0].stage = .COMPUTE
         desc.storage_buffers[0].readonly = false
         desc.storage_buffers[0].msl_buffer_n = 8
@@ -1250,9 +1256,9 @@ update_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     case .METAL_MACOS:
         desc.compute_func.source = transmute(cstring)&cs_update_source_metal_macos
         desc.compute_func.entry = "main0"
-        desc.mtl_threads_per_threadgroup.x = 64;
-        desc.mtl_threads_per_threadgroup.y = 1;
-        desc.mtl_threads_per_threadgroup.z = 1;
+        desc.mtl_threads_per_threadgroup.x = 64
+        desc.mtl_threads_per_threadgroup.y = 1
+        desc.mtl_threads_per_threadgroup.z = 1
         desc.uniform_blocks[0].stage = .COMPUTE
         desc.uniform_blocks[0].layout = .STD140
         desc.uniform_blocks[0].size = 16

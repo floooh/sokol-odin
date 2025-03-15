@@ -326,7 +326,9 @@ quad_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main"
         desc.fragment_func.source = transmute(cstring)&fs_source_glsl430
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].glsl_name = "position"
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].glsl_name = "color0"
     case .D3D11:
         desc.vertex_func.source = transmute(cstring)&vs_source_hlsl5
@@ -335,8 +337,10 @@ quad_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.fragment_func.source = transmute(cstring)&fs_source_hlsl5
         desc.fragment_func.d3d11_target = "ps_5_0"
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].hlsl_sem_name = "TEXCOORD"
         desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].hlsl_sem_name = "TEXCOORD"
         desc.attrs[1].hlsl_sem_index = 1
     case .METAL_MACOS:
@@ -344,6 +348,8 @@ quad_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main0"
         desc.fragment_func.source = transmute(cstring)&fs_source_metal_macos
         desc.fragment_func.entry = "main0"
+        desc.attrs[0].base_type = .FLOAT
+        desc.attrs[1].base_type = .FLOAT
     }
     return desc
 }

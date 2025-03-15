@@ -1233,6 +1233,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main"
         desc.fragment_func.source = transmute(cstring)&fs_dbg_source_glsl430
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].glsl_name = "pos"
         desc.images[0].stage = .FRAGMENT
         desc.images[0].multisampled = false
@@ -1251,6 +1252,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.fragment_func.source = transmute(cstring)&fs_dbg_source_hlsl5
         desc.fragment_func.d3d11_target = "ps_5_0"
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].hlsl_sem_name = "TEXCOORD"
         desc.attrs[0].hlsl_sem_index = 0
         desc.images[0].stage = .FRAGMENT
@@ -1269,6 +1271,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main0"
         desc.fragment_func.source = transmute(cstring)&fs_dbg_source_metal_macos
         desc.fragment_func.entry = "main0"
+        desc.attrs[0].base_type = .FLOAT
         desc.images[0].stage = .FRAGMENT
         desc.images[0].multisampled = false
         desc.images[0].image_type = ._2D
@@ -1292,6 +1295,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main"
         desc.fragment_func.source = transmute(cstring)&fs_fsq_source_glsl430
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].glsl_name = "pos"
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
@@ -1332,6 +1336,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.fragment_func.source = transmute(cstring)&fs_fsq_source_hlsl5
         desc.fragment_func.d3d11_target = "ps_5_0"
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].hlsl_sem_name = "TEXCOORD"
         desc.attrs[0].hlsl_sem_index = 0
         desc.uniform_blocks[0].stage = .VERTEX
@@ -1370,6 +1375,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main0"
         desc.fragment_func.source = transmute(cstring)&fs_fsq_source_metal_macos
         desc.fragment_func.entry = "main0"
+        desc.attrs[0].base_type = .FLOAT
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
         desc.uniform_blocks[0].size = 16
@@ -1413,7 +1419,9 @@ offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main"
         desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_glsl430
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].glsl_name = "pos"
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].glsl_name = "bright0"
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
@@ -1428,8 +1436,10 @@ offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_hlsl5
         desc.fragment_func.d3d11_target = "ps_5_0"
         desc.fragment_func.entry = "main"
+        desc.attrs[0].base_type = .FLOAT
         desc.attrs[0].hlsl_sem_name = "TEXCOORD"
         desc.attrs[0].hlsl_sem_index = 0
+        desc.attrs[1].base_type = .FLOAT
         desc.attrs[1].hlsl_sem_name = "TEXCOORD"
         desc.attrs[1].hlsl_sem_index = 1
         desc.uniform_blocks[0].stage = .VERTEX
@@ -1441,6 +1451,8 @@ offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
         desc.vertex_func.entry = "main0"
         desc.fragment_func.source = transmute(cstring)&fs_offscreen_source_metal_macos
         desc.fragment_func.entry = "main0"
+        desc.attrs[0].base_type = .FLOAT
+        desc.attrs[1].base_type = .FLOAT
         desc.uniform_blocks[0].stage = .VERTEX
         desc.uniform_blocks[0].layout = .STD140
         desc.uniform_blocks[0].size = 64
