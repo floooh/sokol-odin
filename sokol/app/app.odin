@@ -311,6 +311,16 @@ package sokol_app
             HWND has been cast to a void pointer in order to be tunneled
             through code which doesn't include Windows.h.
 
+        const void* sapp_x11_get_window(void)
+            On Linux, get the X11 Window, otherwise a null pointer. The
+            Window has been cast to a void pointer in order to be tunneled
+            through code which doesn't include X11/Xlib.h.
+
+        const void* sapp_x11_get_display(void)
+            On Linux, get the X11 Display, otherwise a null pointer. The
+            Display has been cast to a void pointer in order to be tunneled
+            through code which doesn't include X11/Xlib.h.
+
         const void* sapp_wgpu_get_device(void)
         const void* sapp_wgpu_get_render_view(void)
         const void* sapp_wgpu_get_resolve_view(void)
@@ -1471,6 +1481,10 @@ foreign sokol_app_clib {
     gl_get_major_version :: proc() -> c.int ---
     // GL: get minor version (only valid for desktop GL)
     gl_get_minor_version :: proc() -> c.int ---
+    // X11: get Window
+    x11_get_window :: proc() -> rawptr ---
+    // X11: get Display
+    x11_get_display :: proc() -> rawptr ---
     // Android: get native activity handle
     android_get_native_activity :: proc() -> rawptr ---
 }
