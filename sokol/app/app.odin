@@ -335,8 +335,9 @@ package sokol_app
 
         int sapp_gl_get_major_version(void)
         int sapp_gl_get_minor_version(void)
-            Returns the major and minor version of the GL context
-            (only for SOKOL_GLCORE, all other backends return zero here, including SOKOL_GLES3)
+        bool sapp_gl_is_gles(void)
+            Returns the major and minor version of the GL context and
+            whether the GL context is a GLES context
 
         const void* sapp_android_get_native_activity(void);
             On Android, get the native activity ANativeActivity pointer, otherwise
@@ -1477,10 +1478,12 @@ foreign sokol_app_clib {
     wgpu_get_depth_stencil_view :: proc() -> rawptr ---
     // GL: get framebuffer object
     gl_get_framebuffer :: proc() -> u32 ---
-    // GL: get major version (only valid for desktop GL)
+    // GL: get major version
     gl_get_major_version :: proc() -> c.int ---
-    // GL: get minor version (only valid for desktop GL)
+    // GL: get minor version
     gl_get_minor_version :: proc() -> c.int ---
+    // GL: return true if the context is GLES
+    gl_is_gles :: proc() -> bool ---
     // X11: get Window
     x11_get_window :: proc() -> rawptr ---
     // X11: get Display
