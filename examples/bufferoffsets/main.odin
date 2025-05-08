@@ -47,7 +47,7 @@ init :: proc "c" () {
         data = { ptr = &vertices, size = size_of(vertices ) },
     })
     state.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &indices, size = size_of(indices) },
     })
 
