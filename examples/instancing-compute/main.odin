@@ -52,7 +52,7 @@ init :: proc "c" () {
 
     // a zero-initialized storage buffer for the particle state
     sbuf := sg.make_buffer({
-        type = .STORAGEBUFFER,
+        usage = { storage_buffer = true },
         size = MAX_PARTICLES * size_of(Particle),
         label = "particle-buffer",
     })
@@ -86,7 +86,7 @@ init :: proc "c" () {
         5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1,
     }
     state.display.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &indices, size = size_of(indices) },
         label = "geometry-ibuf",
     })

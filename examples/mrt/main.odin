@@ -51,7 +51,7 @@ create_offscreen_attachments :: proc (width, height: i32) {
 
     // create offscreen rendertarget images and pass
     color_img_desc := sg.Image_Desc {
-        render_target = true,
+        usage = { render_attachment = true },
         width = width,
         height = height,
         sample_count = OFFSCREEN_SAMPLE_COUNT,
@@ -149,7 +149,7 @@ init :: proc "c" () {
         22, 21, 20,  23, 22, 20,
     }
     cube_ibuf := sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &cube_indices, size = size_of(cube_indices) },
     })
 
