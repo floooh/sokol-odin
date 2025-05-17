@@ -73,7 +73,7 @@ init :: proc "c" () {
 
     // create an offscreen render target texture, pass, and pass_action
     state.offscreen.img = sg.make_image({
-        render_target = true,
+        usage = { render_attachment = true },
         width = OFFSCREEN_WIDTH,
         height = OFFSCREEN_HEIGHT,
         pixel_format = OFFSCREEN_PIXELFORMAT,
