@@ -54,7 +54,7 @@ init :: proc "c" () {
 
     // a render pass with one color- and one depth-attachment image
     img_desc := sg.Image_Desc {
-        render_target = true,
+        usage = { render_attachment = true },
         width = 256,
         height = 256,
         pixel_format = .RGBA8,

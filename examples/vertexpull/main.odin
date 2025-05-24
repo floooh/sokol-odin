@@ -69,7 +69,7 @@ init :: proc "c" () {
         { pos = {  1.0,  1.0, -1.0 }, color = { 1.0, 0.0, 0.5, 1.0} },
     }
     state.bind.storage_buffers[SBUF_ssbo] = sg.make_buffer({
-        type = .STORAGEBUFFER,
+        usage = { storage_buffer = true },
         data = { ptr = &vertices, size = size_of(vertices) },
     })
 
@@ -83,7 +83,7 @@ init :: proc "c" () {
         22, 21, 20,  23, 22, 20,
     }
     state.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &indices, size = size_of(indices) },
     })
 

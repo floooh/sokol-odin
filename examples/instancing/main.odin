@@ -60,14 +60,14 @@ init :: proc "c" () {
         5, 1, 2,    5, 2, 3,    5, 3, 4,    5, 4, 1,
     }
     state.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &indices, size = size_of(indices) },
     })
 
     // empty, dynamic instance-data vertex buffer, goes into vertex-buffer-slot 1
     state.bind.vertex_buffers[1] = sg.make_buffer({
         size = MAX_PARTICLES * size_of(m.vec3),
-        usage = .STREAM,
+        usage = { stream_update = true },
     })
 
     // a shader and pipeline object

@@ -40,7 +40,7 @@ init :: proc "c" () {
     // an index buffer
     indices := [?]u16 { 0, 1, 2,  0, 2, 3 }
     state.bind.index_buffer = sg.make_buffer({
-        type = .INDEXBUFFER,
+        usage = { index_buffer = true },
         data = { ptr = &indices, size = size_of(indices) },
     })
 
