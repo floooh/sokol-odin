@@ -636,6 +636,8 @@ foreign sokol_debugtext_clib {
     putc :: proc(c: u8)  ---
     puts :: proc(str: cstring)  ---
     putr :: proc(str: cstring, #any_int len: c.int)  ---
+    // language bindings helper: get the internal printf format buffer
+    get_cleared_fmt_buffer :: proc() -> Range ---
 }
 
 Log_Item :: enum i32 {
