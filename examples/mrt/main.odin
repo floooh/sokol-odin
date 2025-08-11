@@ -15,24 +15,28 @@ import sglue "../../sokol/glue"
 import m "../math"
 
 OFFSCREEN_SAMPLE_COUNT :: 1
+NUM_MRTS :: 3
 
 state: struct {
+    images: struct {
+        color: [NUM_MRTS]sg.Image,
+        resolve: [NUM_MRTS]sg.Image,
+        depth: sg.Image,
+    },
     offscreen: struct {
-        pass_action: sg.Pass_Action,
-        attachments_desc: sg.Attachments_Desc,
-        attachments: sg.Attachments,
+        pass: sg.Pass,
         pip: sg.Pipeline,
         bind: sg.Bindings,
     },
-    fsq: struct {
+    display: struct {
         pip: sg.Pipeline,
         bind: sg.Bindings,
+        pass_action: sg.Pass_Action,
     },
     dbg: struct {
         pip: sg.Pipeline,
         bind: sg.Bindings,
     },
-    pass_action: sg.Pass_Action,
     rx, ry: f32,
 }
 
@@ -40,48 +44,57 @@ Vertex :: struct {
     x, y, z, b : f32,
 }
 
+// destroy and re-create color, resolve and depth-stencil attachment images and views
 // called initially and when window size changes
-create_offscreen_attachments :: proc (width, height: i32) {
-    // destroy previous resource (can be called for invalid id)
-    sg.destroy_attachments(state.offscreen.attachments)
-    for i in 0..<3 {
-        sg.destroy_image(state.offscreen.attachments_desc.colors[i].image)
-    }
-    sg.destroy_image(state.offscreen.attachments_desc.depth_stencil.image)
+recreate_offscreen_attachments :: proc (width, height: i32) {
+    // (NOTE: calling destroy funcs with invalid handles is fine)
+    for i in 0..<NUM_MRTS {
+        // color-attachment images and views
+        sg.destroy_image(state.images.color[i])
+        state.images.color[i] = sg.make_image({
+            usage = { color_attachment = true },
+            width = width,
+            height = height,
+            sample_count = OFFSCREEN_SAMPLE_COUNT,
+        })
+        sg.destroy_view(state.offscreen.pass.attachments.colors[i])
+        state.offscreen.pass.attachments.colors[i] = sg.make_view({
+            color_attachment = { image = state.images.color[i] },
+        })
 
-    // create offscreen rendertarget images and pass
-    color_img_desc := sg.Image_Desc {
-        usage = { render_attachment = true },
+        // resolve image and views
+        sg.destroy_image(state.images.resolve[i])
+        state.images.resolve[i] = sg.make_image({
+            usage = { resolve_attachment = true },
+            width = width,
+            height = height,
+            sample_count = 1,
+        })
+        sg.destroy_view(state.offscreen.pass.attachments.resolves[i])
+        state.offscreen.pass.attachments.resolves[i] = sg.make_view({
+            resolve_attachment = { image = state.images.resolve[i] },
+        })
+
+        // the resolve images are also samples as texture, so a need texture views
+        sg.destroy_view(state.display.bind.views[i])
+        state.display.bind.views[i] = sg.make_view({
+            texture = { image = state.images.resolve[i] },
+        })
+    }
+
+    // depth-stencil attachment image and view
+    sg.destroy_image(state.images.depth)
+    state.images.depth = sg.make_image({
+        usage = { depth_stencil_attachment = true },
         width = width,
         height = height,
         sample_count = OFFSCREEN_SAMPLE_COUNT,
-    }
-    depth_img_desc := color_img_desc
-    depth_img_desc.pixel_format = .DEPTH;
-    state.offscreen.attachments_desc = {
-        colors = {
-            0 = { image = sg.make_image(color_img_desc) },
-            1 = { image = sg.make_image(color_img_desc) },
-            2 = { image = sg.make_image(color_img_desc) },
-        },
-        depth_stencil = {
-            image = sg.make_image(depth_img_desc),
-        },
-    }
-    state.offscreen.attachments = sg.make_attachments(state.offscreen.attachments_desc)
-
-    // also need to update the fullscreen-quad texture bindings
-    for i in 0..<3 {
-        state.fsq.bind.images[i] = state.offscreen.attachments_desc.colors[i].image
-    }
-}
-
-// listen for window-resize events and recreate offscreen rendertargets
-event :: proc "c" (ev: ^sapp.Event) {
-    context = runtime.default_context()
-    if ev.type == .RESIZED {
-        create_offscreen_attachments(ev.framebuffer_width, ev.framebuffer_height)
-    }
+        pixel_format = .DEPTH,
+    })
+    sg.destroy_view(state.offscreen.pass.attachments.depth_stencil)
+    state.offscreen.pass.attachments.depth_stencil = sg.make_view({
+        depth_stencil_attachment = { image = state.images.depth },
+    })
 }
 
 init :: proc "c" () {
@@ -91,16 +104,23 @@ init :: proc "c" () {
         logger = { func = slog.func },
     })
 
-    // a pass action for the default render pass (don't clear the frame buffer
-    // since it will be completely overwritten anyway)
-    state.pass_action = {
+    // setup the offscreen render pass resources, will also be called when window resizes
+    recreate_offscreen_attachments(sapp.width(), sapp.height())
+
+    // setup pass action for the display render pass (don't clear since the
+    // entire framebuffer will be overwritten anyway)
+    state.display.pass_action = {
         colors = { 0 = { load_action = .DONTCARE} },
         depth = { load_action = .DONTCARE },
         stencil = { load_action = .DONTCARE },
     }
 
-    // a render pass with 3 color attachment images, and a depth attachment image
-    create_offscreen_attachments(sapp.width(), sapp.height())
+    // set pass action for offscreen render pass (clear to some background color)
+    state.offscreen.pass.action.colors = {
+        0 = { load_action = .CLEAR, clear_value = { r = 0.25, g = 0, b = 0, a = 1 } },
+        1 = { load_action = .CLEAR, clear_value = { r = 0, g = 0.25, b = 0, a = 1 } },
+        2 = { load_action = .CLEAR, clear_value = { r = 0, g = 0, b = 0.25, a = 1 } },
+    }
 
     // cube vertex buffer
     cube_vertices := [?]Vertex {
@@ -135,7 +155,7 @@ init :: proc "c" () {
         {  1.0,  1.0,  1.0,   0.7 },
         {  1.0,  1.0, -1.0,   0.7 },
     }
-    cube_vbuf := sg.make_buffer({
+    state.offscreen.bind.vertex_buffers[0] = sg.make_buffer({
         data = { ptr = &cube_vertices, size = size_of(cube_vertices) },
     })
 
@@ -148,19 +168,10 @@ init :: proc "c" () {
         16, 17, 18,  16, 18, 19,
         22, 21, 20,  23, 22, 20,
     }
-    cube_ibuf := sg.make_buffer({
+    state.offscreen.bind.index_buffer = sg.make_buffer({
         usage = { index_buffer = true },
         data = { ptr = &cube_indices, size = size_of(cube_indices) },
     })
-
-    // pass action for offscreen pass
-    state.offscreen.pass_action = {
-        colors = {
-            0 = { load_action = .CLEAR, clear_value = { 0.25, 0.0, 0.0, 1.0 } },
-            1 = { load_action = .CLEAR, clear_value = { 0.0, 0.25, 0.0, 1.0 } },
-            2 = { load_action = .CLEAR, clear_value = { 0.0, 0.0, 0.25, 1.0 } },
-        },
-    }
 
     // shader and pipeline object for offscreen-renderer cube
     state.offscreen.pip = sg.make_pipeline({
@@ -183,22 +194,16 @@ init :: proc "c" () {
         color_count = 3,
     })
 
-    // resource bindings for offscreen rendering
-    state.offscreen.bind = {
-        vertex_buffers = {
-            0 = cube_vbuf,
-        },
-        index_buffer = cube_ibuf,
-    }
-
     // a vertex buffer to render a fullscreen rectangle
     quad_vertices := [?]f32 { 0.0, 0.0,  1.0, 0.0,  0.0, 1.0,  1.0, 1.0 }
     quad_vbuf := sg.make_buffer({
         data = { ptr = &quad_vertices, size = size_of(quad_vertices) },
     })
+    state.display.bind.vertex_buffers[0] = quad_vbuf
+    state.dbg.bind.vertex_buffers[0] = quad_vbuf
 
     // shader and pipeline object to render the fullscreen quad
-    state.fsq.pip = sg.make_pipeline({
+    state.display.pip = sg.make_pipeline({
         shader = sg.make_shader(fsq_shader_desc(sg.query_backend())),
         layout = {
             attrs = {
@@ -215,21 +220,8 @@ init :: proc "c" () {
         wrap_u = .CLAMP_TO_EDGE,
         wrap_v = .CLAMP_TO_EDGE,
     })
-
-    // resource bindings to render the fullscreen quad
-    state.fsq.bind = {
-        vertex_buffers = {
-            0 = quad_vbuf,
-        },
-        images = {
-            IMG_tex0 = state.offscreen.attachments_desc.colors[0].image,
-            IMG_tex1 = state.offscreen.attachments_desc.colors[1].image,
-            IMG_tex2 = state.offscreen.attachments_desc.colors[2].image,
-        },
-        samplers = {
-            SMP_smp = smp,
-        }
-    }
+    state.display.bind.samplers[SMP_smp] = smp
+    state.dbg.bind.samplers[SMP_smp] = smp
 
     // pipeline and resource bindings to render debug-visualization quads
     state.dbg.pip = sg.make_pipeline({
@@ -241,8 +233,6 @@ init :: proc "c" () {
         },
         primitive_type = .TRIANGLE_STRIP,
     })
-    state.dbg.bind.vertex_buffers[0] = quad_vbuf
-    state.dbg.bind.samplers[SMP_smp] = smp
 }
 
 frame :: proc "c" () {
@@ -255,8 +245,8 @@ frame :: proc "c" () {
 
     // shader parameters
     t := f32(sapp.frame_duration() * 60.0)
-    state.rx += 1.0 * t;
-    state.ry += 2.0 * t;
+    state.rx += 1.0 * t
+    state.ry += 2.0 * t
     fsq_params := Fsq_Params {
         offset = { math.sin(state.rx * 0.01) * 0.1, math.sin(state.ry * 0.01) * 0.1 },
     }
@@ -268,7 +258,7 @@ frame :: proc "c" () {
     }
 
     // render cube into MRT offscreen render targets
-    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
+    sg.begin_pass(state.offscreen.pass)
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
     sg.apply_uniforms(UB_offscreen_params, { ptr = &offscreen_params, size = size_of(offscreen_params) })
@@ -276,15 +266,15 @@ frame :: proc "c" () {
     sg.end_pass()
 
     // render fullscreen quad with the 'composed image', plus 3 small debug-view quads
-    sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })
-    sg.apply_pipeline(state.fsq.pip)
-    sg.apply_bindings(state.fsq.bind)
+    sg.begin_pass({ action = state.display.pass_action, swapchain = sglue.swapchain() })
+    sg.apply_pipeline(state.display.pip)
+    sg.apply_bindings(state.display.bind)
     sg.apply_uniforms(UB_fsq_params, { ptr = &fsq_params, size = size_of(fsq_params) })
     sg.draw(0, 4, 1)
     sg.apply_pipeline(state.dbg.pip)
     for i in 0..<3 {
         sg.apply_viewport(i * 100, 0, 100, 100, false)
-        state.dbg.bind.images[IMG_tex] = state.offscreen.attachments_desc.colors[i].image
+        state.dbg.bind.views[VIEW_tex] = state.display.bind.views[i]
         sg.apply_bindings(state.dbg.bind)
         sg.draw(0, 4, 1)
     }
@@ -296,6 +286,14 @@ frame :: proc "c" () {
 cleanup :: proc "c" () {
     context = runtime.default_context()
     sg.shutdown()
+}
+
+// listen for window-resize events and recreate offscreen rendertargets
+event :: proc "c" (ev: ^sapp.Event) {
+    context = runtime.default_context()
+    if ev.type == .RESIZED {
+        recreate_offscreen_attachments(ev.framebuffer_width, ev.framebuffer_height)
+    }
 }
 
 main :: proc () {

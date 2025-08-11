@@ -32,26 +32,26 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
 
 3. Build and run the samples:
     ```
-    odin run ../examples/clear -debug
-    odin run ../examples/triangle -debug
-    odin run ../examples/quad -debug
-    odin run ../examples/bufferoffsets -debug
-    odin run ../examples/cube -debug
-    odin run ../examples/noninterleaved -debug
-    odin run ../examples/texcube -debug
-    odin run ../examples/shapes -debug
-    odin run ../examples/offscreen -debug
-    odin run ../examples/instancing -debug
-    odin run ../examples/mrt -debug
-    odin run ../examples/blend -debug
-    odin run ../examples/debugtext -debug
-    odin run ../examples/debugtext-print -debug
-    odin run ../examples/debugtext-userfont -debug
-    odin run ../examples/saudio -debug
-    odin run ../examples/sgl -debug
-    odin run ../examples/sgl-points -debug
-    odin run ../examples/sgl-context -debug
-    odin run ../examples/vertexpull -debug
+    odin run ../examples/clear -strict-style -debug
+    odin run ../examples/triangle -strict-style -debug
+    odin run ../examples/quad -strict-style -debug
+    odin run ../examples/bufferoffsets -strict-style -debug
+    odin run ../examples/cube -strict-style -debug
+    odin run ../examples/noninterleaved -strict-style -debug
+    odin run ../examples/texcube -strict-style -debug
+    odin run ../examples/shapes -strict-style -debug
+    odin run ../examples/offscreen -strict-style -debug
+    odin run ../examples/instancing -strict-style -debug
+    odin run ../examples/mrt -strict-style -debug
+    odin run ../examples/blend -strict-style -debug
+    odin run ../examples/debugtext -strict-style -debug
+    odin run ../examples/debugtext-print -strict-style -debug
+    odin run ../examples/debugtext-userfont -strict-style -debug
+    odin run ../examples/saudio -strict-style -debug
+    odin run ../examples/sgl -strict-style -debug
+    odin run ../examples/sgl-points -strict-style -debug
+    odin run ../examples/sgl-context -strict-style -debug
+    odin run ../examples/vertexpull -strict-style -debug
     ```
 
     By default, the backend 3D API will be selected based on the target platform:

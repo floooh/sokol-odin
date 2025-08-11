@@ -1977,13 +1977,13 @@ foreign sokol_gfx_clib {
     make_sampler :: proc(#by_ptr desc: Sampler_Desc) -> Sampler ---
     make_shader :: proc(#by_ptr desc: Shader_Desc) -> Shader ---
     make_pipeline :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline ---
-    make_attachments :: proc(#by_ptr desc: Attachments_Desc) -> Attachments ---
+    make_view :: proc(#by_ptr desc: View_Desc) -> View ---
     destroy_buffer :: proc(buf: Buffer)  ---
     destroy_image :: proc(img: Image)  ---
     destroy_sampler :: proc(smp: Sampler)  ---
     destroy_shader :: proc(shd: Shader)  ---
     destroy_pipeline :: proc(pip: Pipeline)  ---
-    destroy_attachments :: proc(atts: Attachments)  ---
+    destroy_view :: proc(view: View)  ---
     update_buffer :: proc(buf: Buffer, #by_ptr data: Range)  ---
     update_image :: proc(img: Image, #by_ptr data: Image_Data)  ---
     append_buffer :: proc(buf: Buffer, #by_ptr data: Range) -> c.int ---
@@ -2016,28 +2016,28 @@ foreign sokol_gfx_clib {
     query_sampler_state :: proc(smp: Sampler) -> Resource_State ---
     query_shader_state :: proc(shd: Shader) -> Resource_State ---
     query_pipeline_state :: proc(pip: Pipeline) -> Resource_State ---
-    query_attachments_state :: proc(atts: Attachments) -> Resource_State ---
+    query_view_state :: proc(view: View) -> Resource_State ---
     // get runtime information about a resource
     query_buffer_info :: proc(buf: Buffer) -> Buffer_Info ---
     query_image_info :: proc(img: Image) -> Image_Info ---
     query_sampler_info :: proc(smp: Sampler) -> Sampler_Info ---
     query_shader_info :: proc(shd: Shader) -> Shader_Info ---
     query_pipeline_info :: proc(pip: Pipeline) -> Pipeline_Info ---
-    query_attachments_info :: proc(atts: Attachments) -> Attachments_Info ---
+    query_view_info :: proc(view: View) -> View_Info ---
     // get desc structs matching a specific resource (NOTE that not all creation attributes may be provided)
     query_buffer_desc :: proc(buf: Buffer) -> Buffer_Desc ---
     query_image_desc :: proc(img: Image) -> Image_Desc ---
     query_sampler_desc :: proc(smp: Sampler) -> Sampler_Desc ---
     query_shader_desc :: proc(shd: Shader) -> Shader_Desc ---
     query_pipeline_desc :: proc(pip: Pipeline) -> Pipeline_Desc ---
-    query_attachments_desc :: proc(atts: Attachments) -> Attachments_Desc ---
+    query_view_desc :: proc(view: View) -> View_Desc ---
     // get resource creation desc struct with their default values replaced
     query_buffer_defaults :: proc(#by_ptr desc: Buffer_Desc) -> Buffer_Desc ---
     query_image_defaults :: proc(#by_ptr desc: Image_Desc) -> Image_Desc ---
     query_sampler_defaults :: proc(#by_ptr desc: Sampler_Desc) -> Sampler_Desc ---
     query_shader_defaults :: proc(#by_ptr desc: Shader_Desc) -> Shader_Desc ---
     query_pipeline_defaults :: proc(#by_ptr desc: Pipeline_Desc) -> Pipeline_Desc ---
-    query_attachments_defaults :: proc(#by_ptr desc: Attachments_Desc) -> Attachments_Desc ---
+    query_view_defaults :: proc(#by_ptr desc: View_Desc) -> View_Desc ---
     // assorted query functions
     query_buffer_size :: proc(buf: Buffer) -> c.size_t ---
     query_buffer_usage :: proc(buf: Buffer) -> Buffer_Usage ---
@@ -2049,37 +2049,40 @@ foreign sokol_gfx_clib {
     query_image_pixelformat :: proc(img: Image) -> Pixel_Format ---
     query_image_usage :: proc(img: Image) -> Image_Usage ---
     query_image_sample_count :: proc(img: Image) -> c.int ---
+    query_view_type :: proc(view: View) -> View_Type ---
+    query_view_image :: proc(view: View) -> Image ---
+    query_view_buffer :: proc(view: View) -> Buffer ---
     // separate resource allocation and initialization (for async setup)
     alloc_buffer :: proc() -> Buffer ---
     alloc_image :: proc() -> Image ---
     alloc_sampler :: proc() -> Sampler ---
     alloc_shader :: proc() -> Shader ---
     alloc_pipeline :: proc() -> Pipeline ---
-    alloc_attachments :: proc() -> Attachments ---
+    alloc_view :: proc() -> View ---
     dealloc_buffer :: proc(buf: Buffer)  ---
     dealloc_image :: proc(img: Image)  ---
     dealloc_sampler :: proc(smp: Sampler)  ---
     dealloc_shader :: proc(shd: Shader)  ---
     dealloc_pipeline :: proc(pip: Pipeline)  ---
-    dealloc_attachments :: proc(attachments: Attachments)  ---
+    dealloc_view :: proc(view: View)  ---
     init_buffer :: proc(buf: Buffer, #by_ptr desc: Buffer_Desc)  ---
     init_image :: proc(img: Image, #by_ptr desc: Image_Desc)  ---
     init_sampler :: proc(smg: Sampler, #by_ptr desc: Sampler_Desc)  ---
     init_shader :: proc(shd: Shader, #by_ptr desc: Shader_Desc)  ---
     init_pipeline :: proc(pip: Pipeline, #by_ptr desc: Pipeline_Desc)  ---
-    init_attachments :: proc(attachments: Attachments, #by_ptr desc: Attachments_Desc)  ---
+    init_view :: proc(view: View, #by_ptr desc: View_Desc)  ---
     uninit_buffer :: proc(buf: Buffer)  ---
     uninit_image :: proc(img: Image)  ---
     uninit_sampler :: proc(smp: Sampler)  ---
     uninit_shader :: proc(shd: Shader)  ---
     uninit_pipeline :: proc(pip: Pipeline)  ---
-    uninit_attachments :: proc(atts: Attachments)  ---
+    uninit_view :: proc(view: View)  ---
     fail_buffer :: proc(buf: Buffer)  ---
     fail_image :: proc(img: Image)  ---
     fail_sampler :: proc(smp: Sampler)  ---
     fail_shader :: proc(shd: Shader)  ---
     fail_pipeline :: proc(pip: Pipeline)  ---
-    fail_attachments :: proc(atts: Attachments)  ---
+    fail_view :: proc(view: View)  ---
     // frame stats
     enable_frame_stats :: proc()  ---
     disable_frame_stats :: proc()  ---
@@ -2099,8 +2102,8 @@ foreign sokol_gfx_clib {
     d3d11_query_shader_info :: proc(shd: Shader) -> D3d11_Shader_Info ---
     // D3D11: get internal pipeline resource objects
     d3d11_query_pipeline_info :: proc(pip: Pipeline) -> D3d11_Pipeline_Info ---
-    // D3D11: get internal pass resource objects
-    d3d11_query_attachments_info :: proc(atts: Attachments) -> D3d11_Attachments_Info ---
+    // D3D11: get internal view resource objects
+    d3d11_query_view_info :: proc(view: View) -> D3d11_View_Info ---
     // Metal: return __bridge-casted MTLDevice
     mtl_device :: proc() -> rawptr ---
     // Metal: return __bridge-casted MTLRenderCommandEncoder when inside render pass (otherwise zero)
@@ -2137,8 +2140,8 @@ foreign sokol_gfx_clib {
     wgpu_query_shader_info :: proc(shd: Shader) -> Wgpu_Shader_Info ---
     // WebGPU: get internal pipeline resource objects
     wgpu_query_pipeline_info :: proc(pip: Pipeline) -> Wgpu_Pipeline_Info ---
-    // WebGPU: get internal pass resource objects
-    wgpu_query_attachments_info :: proc(atts: Attachments) -> Wgpu_Attachments_Info ---
+    // WebGPU: get internal view resource objects
+    wgpu_query_view_info :: proc(view: View) -> Wgpu_View_Info ---
     // GL: get internal buffer resource objects
     gl_query_buffer_info :: proc(buf: Buffer) -> Gl_Buffer_Info ---
     // GL: get internal image resource objects
@@ -2147,8 +2150,8 @@ foreign sokol_gfx_clib {
     gl_query_sampler_info :: proc(smp: Sampler) -> Gl_Sampler_Info ---
     // GL: get internal shader resource objects
     gl_query_shader_info :: proc(shd: Shader) -> Gl_Shader_Info ---
-    // GL: get internal pass resource objects
-    gl_query_attachments_info :: proc(atts: Attachments) -> Gl_Attachments_Info ---
+    // GL: get internal view resource objects
+    gl_query_view_info :: proc(view: View) -> Gl_View_Info ---
 }
 
 /*
@@ -2159,7 +2162,7 @@ foreign sokol_gfx_clib {
     sg_sampler      sampler objects describing how a texture is sampled in a shader
     sg_shader:      vertex- and fragment-shaders and shader interface information
     sg_pipeline:    associated shader and vertex-layouts, and render states
-    sg_attachments: a baked collection of render pass attachment images
+    sg_view:        a resource view object used for bindings and render-pass attachments
 
     Instead of pointers, resource creation functions return a 32-bit
     handle which uniquely identifies the resource object.
@@ -2193,7 +2196,7 @@ Pipeline :: struct {
     id : u32,
 }
 
-Attachments :: struct {
+View :: struct {
     id : u32,
 }
 
@@ -2213,17 +2216,15 @@ Range :: struct {
 INVALID_ID :: 0
 NUM_INFLIGHT_FRAMES :: 2
 MAX_COLOR_ATTACHMENTS :: 4
-MAX_STORAGE_ATTACHMENTS :: 4
 MAX_UNIFORMBLOCK_MEMBERS :: 16
 MAX_VERTEX_ATTRIBUTES :: 16
 MAX_MIPMAPS :: 16
 MAX_TEXTUREARRAY_LAYERS :: 128
-MAX_UNIFORMBLOCK_BINDSLOTS :: 8
 MAX_VERTEXBUFFER_BINDSLOTS :: 8
-MAX_IMAGE_BINDSLOTS :: 16
+MAX_UNIFORMBLOCK_BINDSLOTS :: 8
+MAX_VIEW_BINDSLOTS :: 28
 MAX_SAMPLER_BINDSLOTS :: 16
-MAX_STORAGEBUFFER_BINDSLOTS :: 8
-MAX_IMAGE_SAMPLER_PAIRS :: 16
+MAX_TEXTURE_SAMPLER_PAIRS :: 16
 
 /*
     sg_color
@@ -2388,8 +2389,9 @@ Features :: struct {
     mrt_independent_blend_state : bool,
     mrt_independent_write_mask : bool,
     compute : bool,
-    msaa_image_bindings : bool,
+    msaa_texture_bindings : bool,
     separate_buffer_types : bool,
+    gl_texture_views : bool,
 }
 
 // Runtime information about resource limits, returned by sg_query_limit()
@@ -2468,6 +2470,8 @@ Image_Type :: enum i32 {
 }
 
 /*
+    FIXME: rename to sg_texture_sample_type
+
     sg_image_sample_type
 
     The basic data type of a texture sample as expected by a shader.
@@ -3097,6 +3101,17 @@ Swapchain :: struct {
 }
 
 /*
+    sg_attachments
+
+    TODO
+*/
+Attachments :: struct {
+    colors : [4]View,
+    resolves : [4]View,
+    depth_stencil : View,
+}
+
+/*
     sg_pass
 
     The sg_pass structure is passed as argument into the sg_begin_pass()
@@ -3111,12 +3126,16 @@ Swapchain :: struct {
             .swapchain = sglue_swapchain(),
         });
 
-    For an offscreen render pass, provide an sg_pass_action struct and
-    an sg_attachments handle:
+    For an offscreen render pass, provide an sg_pass_action struct with
+    attachments:
 
         sg_begin_pass(&(sg_pass){
             .action = { ... },
-            .attachments = attachments,
+            .attachments = {
+                .colors = { ... },
+                .resolves = { ... },
+                .depth_stencil = ...,
+            },
         });
 
     You can also omit the .action object to get default pass action behaviour
@@ -3139,8 +3158,9 @@ Pass :: struct {
 /*
     sg_bindings
 
-    The sg_bindings structure defines the buffers, images and
-    samplers resource bindings for the next draw call.
+
+    The sg_bindings structure defines the resource bindings for
+    the next draw call.
 
     To update the resource bindings, call sg_apply_bindings() with
     a pointer to a populated sg_bindings struct. Note that
@@ -3151,19 +3171,21 @@ Pass :: struct {
     A resource binding struct contains:
 
     - 1..N vertex buffers
-    - 0..N vertex buffer offsets
-    - 0..1 index buffers
-    - 0..1 index buffer offsets
-    - 0..N images
+    - 1..N vertex buffer offsets
+    - 0..1 index buffer
+    - 0..1 index buffer offset
+    - 0..N storage buffer views
+    - 0..N storage image views
+    - 0..N texture views
     - 0..N samplers
-    - 0..N storage buffers
 
     Where 'N' is defined in the following constants:
 
     - SG_MAX_VERTEXBUFFER_BINDSLOTS
-    - SG_MAX_IMAGE_BINDLOTS
-    - SG_MAX_SAMPLER_BINDSLOTS
     - SG_MAX_STORAGEBUFFER_BINDGLOTS
+    - SG_MAX_STORAGEIMAGE_BINDSLOTS
+    - SG_MAX_TEXTURE_BINDLOTS
+    - SG_MAX_SAMPLER_BINDSLOTS
 
     Note that inside compute passes vertex- and index-buffer-bindings are
     disallowed.
@@ -3176,14 +3198,14 @@ Pass :: struct {
         @vs vs
         layout(binding=0) uniform vs_params { ... };
         layout(binding=0) readonly buffer ssbo { ... };
-        layout(binding=0) uniform texture2D vs_tex;
+        layout(binding=1) uniform texture2D vs_tex;
         layout(binding=0) uniform sampler vs_smp;
         ...
         @end
 
         @fs fs
         layout(binding=1) uniform fs_params { ... };
-        layout(binding=1) uniform texture2D fs_tex;
+        layout(binding=2) uniform texture2D fs_tex;
         layout(binding=1) uniform sampler fs_smp;
         ...
         @end
@@ -3192,22 +3214,22 @@ Pass :: struct {
 
         const sg_bindings bnd = {
             .vertex_buffers[0] = ...,
-            .images[0] = vs_tex,
-            .images[1] = fs_tex,
+            .views[0] = ssbo_view,
+            .views[0] = vs_tex_view,
+            .views[2] = fs_tex_view,
             .samplers[0] = vs_smp,
             .samplers[1] = fs_smp,
-            .storage_buffers[0] = ssbo,
         };
 
     ...alternatively you can use code-generated slot indices:
 
         const sg_bindings bnd = {
             .vertex_buffers[0] = ...,
-            .images[IMG_vs_tex] = vs_tex,
-            .images[IMG_fs_tex] = fs_tex,
+            .views[SBUF_ssbo] = ssbo_view,
+            .views[TEX_vs_tex] = vs_tex_view,
+            .views[TEX_fs_tex] = fs_tex_view,
             .samplers[SMP_vs_smp] = vs_smp,
             .samplers[SMP_fs_smp] = fs_smp,
-            .storage_buffers[SBUF_ssbo] = ssbo,
         };
 
     Resource bindslots for a specific shader/pipeline may have gaps, and an
@@ -3229,9 +3251,8 @@ Bindings :: struct {
     vertex_buffer_offsets : [8]c.int,
     index_buffer : Buffer,
     index_buffer_offset : c.int,
-    images : [16]Image,
+    views : [28]View,
     samplers : [16]Sampler,
-    storage_buffers : [8]Buffer,
     _ : u32,
 }
 
@@ -3244,7 +3265,7 @@ Bindings :: struct {
         the buffer will bound as vertex buffer via sg_bindings.vertex_buffers[]
     .index_buffer (default: false)
         the buffer will bound as index buffer via sg_bindings.index_buffer
-    .storage_buffer (default: false)
+    .storage_buffer_binding (default: false)
         the buffer will bound as storage buffer via sg_bindings.storage_buffers[]
     .immutable (default: true)
         the buffer content will never be updated from the CPU side (but
@@ -3336,12 +3357,15 @@ Buffer_Desc :: struct {
 
     Describes how the image object is going to be used:
 
-    .render_attachment (default: false)
-        the image object is used as color-, resolve- or depth-stencil-
-        attachment in a render pass
-    .storage_attachment (default: false)
-        the image object is used as storage-attachment in a
+    .storage_image_binding (default: false)
+        the image object is used as storage-image-binding in a
         compute pass (to be written to by compute shaders)
+    .color_attachment (default: false)
+        the image object is used as a color-attachemnt in a render pass
+    .resolve_attachment (default: false)
+        the image object is used as a resolve-attachment in a render pass
+    .depth_stencil_attachment (default: false)
+        the image object is used as a depth-stencil-attachment in a render pass
     .immutable (default: true)
         the image content cannot be updated from the CPU side
         (but may be updated by the GPU in a render- or compute-pass)
@@ -3353,11 +3377,28 @@ Buffer_Desc :: struct {
     Note that the usage as texture binding is implicit and always allowed.
 */
 Image_Usage :: struct {
-    render_attachment : bool,
-    storage_attachment : bool,
+    storage_image : bool,
+    color_attachment : bool,
+    resolve_attachment : bool,
+    depth_stencil_attachment : bool,
     immutable : bool,
     dynamic_update : bool,
     stream_update : bool,
+}
+
+/*
+    sg_view_type
+
+    Allows to query the type of a view via the function sg_query_view_type()
+*/
+View_Type :: enum i32 {
+    INVALID,
+    STORAGEBUFFER,
+    STORAGEIMAGE,
+    TEXTURE,
+    COLORATTACHMENT,
+    RESOLVEATTACHMENT,
+    DEPTHSTENCILATTACHMENT,
 }
 
 /*
@@ -3400,12 +3441,13 @@ Image_Data :: struct {
 
     NOTE:
 
-    Regular (non-attachment) images with usage.immutable must be fully initialized by
-    providing a valid .data member which points to initialization data.
+    Regular images used as texture binding with usage.immutable must be fully
+    initialized by providing a valid .data member which points to initialization
+    data.
 
-    Images with usage.render_attachment or usage.storage_attachment must
+    Images with usage.attachment or usage.storage_image must
     *not* be created with initial content. Be aware that the initial
-    content of render- and storage-attachment images is undefined.
+    content of render-attachment and storage-attachment images is undefined.
 
     ADVANCED TOPIC: Injecting native 3D-API textures:
 
@@ -3446,9 +3488,7 @@ Image_Desc :: struct {
     gl_texture_target : u32,
     mtl_textures : [2]rawptr,
     d3d11_texture : rawptr,
-    d3d11_shader_resource_view : rawptr,
     wgpu_texture : rawptr,
-    wgpu_texture_view : rawptr,
     _ : u32,
 }
 
@@ -3676,7 +3716,7 @@ Shader_Uniform_Block :: struct {
     glsl_uniforms : [16]Glsl_Shader_Uniform,
 }
 
-Shader_Image :: struct {
+Shader_Texture_View :: struct {
     stage : Shader_Stage,
     image_type : Image_Type,
     sample_type : Image_Sample_Type,
@@ -3684,6 +3724,33 @@ Shader_Image :: struct {
     hlsl_register_t_n : u8,
     msl_texture_n : u8,
     wgsl_group1_binding_n : u8,
+}
+
+Shader_Storage_Buffer_View :: struct {
+    stage : Shader_Stage,
+    readonly : bool,
+    hlsl_register_t_n : u8,
+    hlsl_register_u_n : u8,
+    msl_buffer_n : u8,
+    wgsl_group1_binding_n : u8,
+    glsl_binding_n : u8,
+}
+
+Shader_Storage_Image_View :: struct {
+    stage : Shader_Stage,
+    image_type : Image_Type,
+    access_format : Pixel_Format,
+    writeonly : bool,
+    hlsl_register_u_n : u8,
+    msl_texture_n : u8,
+    wgsl_group1_binding_n : u8,
+    glsl_binding_n : u8,
+}
+
+Shader_View :: struct {
+    texture : Shader_Texture_View,
+    storage_buffer : Shader_Storage_Buffer_View,
+    storage_image : Shader_Storage_Image_View,
 }
 
 Shader_Sampler :: struct {
@@ -3694,30 +3761,9 @@ Shader_Sampler :: struct {
     wgsl_group1_binding_n : u8,
 }
 
-Shader_Storage_Buffer :: struct {
+Shader_Texture_Sampler_Pair :: struct {
     stage : Shader_Stage,
-    readonly : bool,
-    hlsl_register_t_n : u8,
-    hlsl_register_u_n : u8,
-    msl_buffer_n : u8,
-    wgsl_group1_binding_n : u8,
-    glsl_binding_n : u8,
-}
-
-Shader_Storage_Image :: struct {
-    stage : Shader_Stage,
-    image_type : Image_Type,
-    access_format : Pixel_Format,
-    writeonly : bool,
-    hlsl_register_u_n : u8,
-    msl_texture_n : u8,
-    wgsl_group2_binding_n : u8,
-    glsl_binding_n : u8,
-}
-
-Shader_Image_Sampler_Pair :: struct {
-    stage : Shader_Stage,
-    image_slot : u8,
+    view_slot : u8,
     sampler_slot : u8,
     glsl_name : cstring,
 }
@@ -3735,11 +3781,9 @@ Shader_Desc :: struct {
     compute_func : Shader_Function,
     attrs : [16]Shader_Vertex_Attr,
     uniform_blocks : [8]Shader_Uniform_Block,
-    storage_buffers : [8]Shader_Storage_Buffer,
-    images : [16]Shader_Image,
+    views : [28]Shader_View,
     samplers : [16]Shader_Sampler,
-    image_sampler_pairs : [16]Shader_Image_Sampler_Pair,
-    storage_images : [4]Shader_Storage_Image,
+    texture_sampler_pairs : [16]Shader_Texture_Sampler_Pair,
     mtl_threads_per_threadgroup : Mtl_Shader_Threads_Per_Threadgroup,
     label : cstring,
     _ : u32,
@@ -3907,62 +3951,40 @@ Pipeline_Desc :: struct {
 }
 
 /*
-    sg_attachments_desc
+    sg_view_desc
 
-    Creation parameters for an sg_attachments object, used as argument to the
-    sg_make_attachments() function.
-
-    An attachments object bundles either bundles 'render attachments' for
-    a render pass, or 'storage attachments' for a compute pass which writes
-    to storage images.
-
-    Render attachments are:
-
-        - 0..4 color attachment images
-        - 0..4 msaa-resolve attachment images
-        - 0 or one depth-stencil attachment image
-
-    Note that all types of render attachment images must be created with
-    `sg_image_desc.usage.render_attachment = true`. At least one color-attachment
-    or depth-stencil-attachment image must be provided in a render pass
-    (only providing a depth-stencil-attachment is useful for depth-only passes).
-
-    Alternatively provide 1..4 storage attachment images which must be created
-    with `sg_image_desc.usage.storage_attachment = true`.
-
-    An sg_attachments object cannot have both render- and storage-attachments.
-
-    Each attachment definition consists of an image object, and two additional indices
-    describing which subimage the pass will render into: one mipmap index, and if the image
-    is a cubemap, array-texture or 3D-texture, the face-index, array-layer or
-    depth-slice.
-
-    All attachments must have the same width and height.
-
-    All color attachments and the depth-stencil attachment must have the
-    same sample count.
-
-    If a resolve attachment is set, an MSAA-resolve operation from the
-    associated color attachment image into the resolve attachment image will take
-    place in the sg_end_pass() function. In this case, the color attachment
-    must have a (sample_count>1), and the resolve attachment a
-    (sample_count==1). The resolve attachment also must have the same pixel
-    format as the color attachment.
-
-    NOTE that MSAA depth-stencil attachments cannot be msaa-resolved!
+    TODO
 */
-Attachment_Desc :: struct {
+Buffer_View_Desc :: struct {
+    buffer : Buffer,
+    offset : c.int,
+}
+
+Image_View_Desc :: struct {
     image : Image,
     mip_level : c.int,
     slice : c.int,
 }
 
-Attachments_Desc :: struct {
+Texture_View_Range :: struct {
+    base : c.int,
+    count : c.int,
+}
+
+Texture_View_Desc :: struct {
+    image : Image,
+    mip_levels : Texture_View_Range,
+    slices : Texture_View_Range,
+}
+
+View_Desc :: struct {
     _ : u32,
-    colors : [4]Attachment_Desc,
-    resolves : [4]Attachment_Desc,
-    depth_stencil : Attachment_Desc,
-    storages : [4]Attachment_Desc,
+    texture : Texture_View_Desc,
+    storage_buffer : Buffer_View_Desc,
+    storage_image : Image_View_Desc,
+    color_attachment : Image_View_Desc,
+    resolve_attachment : Image_View_Desc,
+    depth_stencil_attachment : Image_View_Desc,
     label : cstring,
     _ : u32,
 }
@@ -3973,7 +3995,7 @@ Attachments_Desc :: struct {
     sg_sampler_info
     sg_shader_info
     sg_pipeline_info
-    sg_attachments_info
+    sg_view_info
 
     These structs contain various internal resource attributes which
     might be useful for debug-inspection. Please don't rely on the
@@ -3988,7 +4010,7 @@ Attachments_Desc :: struct {
     sg_query_sampler_info()
     sg_query_shader_info()
     sg_query_pipeline_info()
-    sg_query_attachments_info()
+    sg_query_view_info()
 */
 Slot_Info :: struct {
     state : Resource_State,
@@ -4025,7 +4047,7 @@ Pipeline_Info :: struct {
     slot : Slot_Info,
 }
 
-Attachments_Info :: struct {
+View_Info :: struct {
     slot : Slot_Info,
 }
 
@@ -4041,6 +4063,7 @@ Frame_Stats_Gl :: struct {
     num_active_texture : u32,
     num_bind_texture : u32,
     num_bind_sampler : u32,
+    num_bind_image_texture : u32,
     num_use_program : u32,
     num_render_state : u32,
     num_vertex_attrib_pointer : u32,
@@ -4123,14 +4146,26 @@ Frame_Stats_Metal_Pipeline :: struct {
 
 Frame_Stats_Metal_Bindings :: struct {
     num_set_vertex_buffer : u32,
+    num_set_vertex_buffer_offset : u32,
+    num_skip_redundant_vertex_buffer : u32,
     num_set_vertex_texture : u32,
+    num_skip_redundant_vertex_texture : u32,
     num_set_vertex_sampler_state : u32,
+    num_skip_redundant_vertex_sampler_state : u32,
     num_set_fragment_buffer : u32,
+    num_set_fragment_buffer_offset : u32,
+    num_skip_redundant_fragment_buffer : u32,
     num_set_fragment_texture : u32,
+    num_skip_redundant_fragment_texture : u32,
     num_set_fragment_sampler_state : u32,
+    num_skip_redundant_fragment_sampler_state : u32,
     num_set_compute_buffer : u32,
+    num_set_compute_buffer_offset : u32,
+    num_skip_redundant_compute_buffer : u32,
     num_set_compute_texture : u32,
+    num_skip_redundant_compute_texture : u32,
     num_set_compute_sampler_state : u32,
+    num_skip_redundant_compute_sampler_state : u32,
 }
 
 Frame_Stats_Metal_Uniforms :: struct {
@@ -4231,8 +4266,8 @@ Log_Item :: enum i32 {
     D3D11_STORAGEBUFFER_HLSL_REGISTER_T_OUT_OF_RANGE,
     D3D11_STORAGEBUFFER_HLSL_REGISTER_U_OUT_OF_RANGE,
     D3D11_IMAGE_HLSL_REGISTER_T_OUT_OF_RANGE,
-    D3D11_SAMPLER_HLSL_REGISTER_S_OUT_OF_RANGE,
     D3D11_STORAGEIMAGE_HLSL_REGISTER_U_OUT_OF_RANGE,
+    D3D11_SAMPLER_HLSL_REGISTER_S_OUT_OF_RANGE,
     D3D11_LOAD_D3DCOMPILER_47_DLL_FAILED,
     D3D11_SHADER_COMPILATION_FAILED,
     D3D11_SHADER_COMPILATION_OUTPUT,
@@ -4276,14 +4311,13 @@ Log_Item :: enum i32 {
     WGPU_CREATE_SHADER_MODULE_FAILED,
     WGPU_SHADER_CREATE_BINDGROUP_LAYOUT_FAILED,
     WGPU_UNIFORMBLOCK_WGSL_GROUP0_BINDING_OUT_OF_RANGE,
+    WGPU_TEXTURE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     WGPU_STORAGEBUFFER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
-    WGPU_IMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    WGPU_STORAGEIMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     WGPU_SAMPLER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
-    WGPU_STORAGEIMAGE_WGSL_GROUP2_BINDING_OUT_OF_RANGE,
     WGPU_CREATE_PIPELINE_LAYOUT_FAILED,
     WGPU_CREATE_RENDER_PIPELINE_FAILED,
     WGPU_CREATE_COMPUTE_PIPELINE_FAILED,
-    WGPU_ATTACHMENTS_CREATE_TEXTURE_VIEW_FAILED,
     IDENTICAL_COMMIT_LISTENER,
     COMMIT_LISTENER_ARRAY_FULL,
     TRACE_HOOKS_NOT_ENABLED,
@@ -4292,33 +4326,32 @@ Log_Item :: enum i32 {
     DEALLOC_SAMPLER_INVALID_STATE,
     DEALLOC_SHADER_INVALID_STATE,
     DEALLOC_PIPELINE_INVALID_STATE,
-    DEALLOC_ATTACHMENTS_INVALID_STATE,
+    DEALLOC_VIEW_INVALID_STATE,
     INIT_BUFFER_INVALID_STATE,
     INIT_IMAGE_INVALID_STATE,
     INIT_SAMPLER_INVALID_STATE,
     INIT_SHADER_INVALID_STATE,
     INIT_PIPELINE_INVALID_STATE,
-    INIT_ATTACHMENTS_INVALID_STATE,
+    INIT_VIEW_INVALID_STATE,
     UNINIT_BUFFER_INVALID_STATE,
     UNINIT_IMAGE_INVALID_STATE,
     UNINIT_SAMPLER_INVALID_STATE,
     UNINIT_SHADER_INVALID_STATE,
     UNINIT_PIPELINE_INVALID_STATE,
-    UNINIT_ATTACHMENTS_INVALID_STATE,
+    UNINIT_VIEW_INVALID_STATE,
     FAIL_BUFFER_INVALID_STATE,
     FAIL_IMAGE_INVALID_STATE,
     FAIL_SAMPLER_INVALID_STATE,
     FAIL_SHADER_INVALID_STATE,
     FAIL_PIPELINE_INVALID_STATE,
-    FAIL_ATTACHMENTS_INVALID_STATE,
+    FAIL_VIEW_INVALID_STATE,
     BUFFER_POOL_EXHAUSTED,
     IMAGE_POOL_EXHAUSTED,
     SAMPLER_POOL_EXHAUSTED,
     SHADER_POOL_EXHAUSTED,
     PIPELINE_POOL_EXHAUSTED,
-    PASS_POOL_EXHAUSTED,
-    BEGINPASS_ATTACHMENT_INVALID,
-    APPLY_BINDINGS_STORAGE_BUFFER_TRACKER_EXHAUSTED,
+    VIEW_POOL_EXHAUSTED,
+    BEGINPASS_ATTACHMENTS_ALIVE,
     DRAW_WITHOUT_BINDINGS,
     VALIDATE_BUFFERDESC_CANARY,
     VALIDATE_BUFFERDESC_IMMUTABLE_DYNAMIC_STREAM,
@@ -4334,7 +4367,6 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDATA_DATA_SIZE,
     VALIDATE_IMAGEDESC_CANARY,
     VALIDATE_IMAGEDESC_IMMUTABLE_DYNAMIC_STREAM,
-    VALIDATE_IMAGEDESC_RENDER_VS_STORAGE_ATTACHMENT,
     VALIDATE_IMAGEDESC_WIDTH,
     VALIDATE_IMAGEDESC_HEIGHT,
     VALIDATE_IMAGEDESC_NONRT_PIXELFORMAT,
@@ -4342,14 +4374,15 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDESC_DEPTH_3D_IMAGE,
     VALIDATE_IMAGEDESC_ATTACHMENT_EXPECT_IMMUTABLE,
     VALIDATE_IMAGEDESC_ATTACHMENT_EXPECT_NO_DATA,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_NO_MSAA_SUPPORT,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_MSAA_NUM_MIPMAPS,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_MSAA_3D_IMAGE,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_MSAA_CUBE_IMAGE,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_MSAA_ARRAY_IMAGE,
-    VALIDATE_IMAGEDESC_RENDERATTACHMENT_PIXELFORMAT,
-    VALIDATE_IMAGEDESC_STORAGEATTACHMENT_PIXELFORMAT,
-    VALIDATE_IMAGEDESC_STORAGEATTACHMENT_EXPECT_NO_MSAA,
+    VALIDATE_IMAGEDESC_ATTACHMENT_PIXELFORMAT,
+    VALIDATE_IMAGEDESC_ATTACHMENT_RESOLVE_EXPECT_NO_MSAA,
+    VALIDATE_IMAGEDESC_ATTACHMENT_NO_MSAA_SUPPORT,
+    VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_NUM_MIPMAPS,
+    VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_3D_IMAGE,
+    VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_CUBE_IMAGE,
+    VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_ARRAY_IMAGE,
+    VALIDATE_IMAGEDESC_STORAGEIMAGE_PIXELFORMAT,
+    VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_NO_MSAA,
     VALIDATE_IMAGEDESC_INJECTED_NO_DATA,
     VALIDATE_IMAGEDESC_DYNAMIC_NO_DATA,
     VALIDATE_IMAGEDESC_COMPRESSED_IMMUTABLE,
@@ -4364,7 +4397,8 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_COMPUTE_SOURCE_OR_BYTECODE,
     VALIDATE_SHADERDESC_INVALID_SHADER_COMBO,
     VALIDATE_SHADERDESC_NO_BYTECODE_SIZE,
-    VALIDATE_SHADERDESC_METAL_THREADS_PER_THREADGROUP,
+    VALIDATE_SHADERDESC_METAL_THREADS_PER_THREADGROUP_INITIALIZED,
+    VALIDATE_SHADERDESC_METAL_THREADS_PER_THREADGROUP_MULTIPLE_32,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_NO_CONT_MEMBERS,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_SIZE_IS_ZERO,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_METAL_BUFFER_SLOT_OUT_OF_RANGE,
@@ -4378,46 +4412,47 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_UNIFORMBLOCK_SIZE_MISMATCH,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_ARRAY_COUNT,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_STD140_ARRAY_TYPE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_METAL_BUFFER_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_METAL_BUFFER_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_T_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_T_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_U_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_HLSL_REGISTER_U_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_GLSL_BINDING_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_GLSL_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEBUFFER_WGSL_GROUP1_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_EXPECT_COMPUTE_STAGE,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_METAL_TEXTURE_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_HLSL_REGISTER_U_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_HLSL_REGISTER_U_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_GLSL_BINDING_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_GLSL_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_WGSL_GROUP2_BINDING_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_STORAGEIMAGE_WGSL_GROUP2_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_IMAGE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_METAL_TEXTURE_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_IMAGE_HLSL_REGISTER_T_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_HLSL_REGISTER_T_COLLISION,
-    VALIDATE_SHADERDESC_IMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_METAL_BUFFER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_METAL_BUFFER_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_T_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_T_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_U_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_U_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_GLSL_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_GLSL_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_EXPECT_COMPUTE_STAGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_METAL_TEXTURE_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_HLSL_REGISTER_U_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_HLSL_REGISTER_U_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_GLSL_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_GLSL_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_METAL_TEXTURE_SLOT_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_HLSL_REGISTER_T_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_HLSL_REGISTER_T_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_WGSL_GROUP1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_COLLISION,
     VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_COLLISION,
     VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_IMAGE_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_SAMPLER_SLOT_OUT_OF_RANGE,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_IMAGE_STAGE_MISMATCH,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_SAMPLER_STAGE_MISMATCH,
-    VALIDATE_SHADERDESC_IMAGE_SAMPLER_PAIR_GLSL_NAME,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_VIEW_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_SAMPLER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_TEXTURE_STAGE_MISMATCH,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_EXPECT_TEXTURE_VIEW,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_SAMPLER_STAGE_MISMATCH,
+    VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_GLSL_NAME,
     VALIDATE_SHADERDESC_NONFILTERING_SAMPLER_REQUIRED,
     VALIDATE_SHADERDESC_COMPARISON_SAMPLER_REQUIRED,
-    VALIDATE_SHADERDESC_IMAGE_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
-    VALIDATE_SHADERDESC_SAMPLER_NOT_REFERENCED_BY_IMAGE_SAMPLER_PAIRS,
+    VALIDATE_SHADERDESC_TEXVIEW_NOT_REFERENCED_BY_TEXTURE_SAMPLER_PAIRS,
+    VALIDATE_SHADERDESC_SAMPLER_NOT_REFERENCED_BY_TEXTURE_SAMPLER_PAIRS,
     VALIDATE_SHADERDESC_ATTR_STRING_TOO_LONG,
     VALIDATE_PIPELINEDESC_CANARY,
     VALIDATE_PIPELINEDESC_SHADER,
@@ -4429,58 +4464,35 @@ Log_Item :: enum i32 {
     VALIDATE_PIPELINEDESC_ATTR_SEMANTICS,
     VALIDATE_PIPELINEDESC_SHADER_READONLY_STORAGEBUFFERS,
     VALIDATE_PIPELINEDESC_BLENDOP_MINMAX_REQUIRES_BLENDFACTOR_ONE,
-    VALIDATE_ATTACHMENTSDESC_CANARY,
-    VALIDATE_ATTACHMENTSDESC_NO_ATTACHMENTS,
-    VALIDATE_ATTACHMENTSDESC_NO_CONT_COLOR_ATTS,
-    VALIDATE_ATTACHMENTSDESC_COLOR_IMAGE,
-    VALIDATE_ATTACHMENTSDESC_COLOR_MIPLEVEL,
-    VALIDATE_ATTACHMENTSDESC_COLOR_FACE,
-    VALIDATE_ATTACHMENTSDESC_COLOR_LAYER,
-    VALIDATE_ATTACHMENTSDESC_COLOR_SLICE,
-    VALIDATE_ATTACHMENTSDESC_COLOR_IMAGE_NO_RENDERATTACHMENT,
-    VALIDATE_ATTACHMENTSDESC_COLOR_INV_PIXELFORMAT,
-    VALIDATE_ATTACHMENTSDESC_IMAGE_SIZES,
-    VALIDATE_ATTACHMENTSDESC_IMAGE_SAMPLE_COUNTS,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_COLOR_IMAGE_MSAA,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_SAMPLE_COUNT,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_MIPLEVEL,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_FACE,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_LAYER,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_SLICE,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_NO_RT,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_SIZES,
-    VALIDATE_ATTACHMENTSDESC_RESOLVE_IMAGE_FORMAT,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_INV_PIXELFORMAT,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_MIPLEVEL,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_FACE,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_LAYER,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_SLICE,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_NO_RENDERATTACHMENT,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_SIZES,
-    VALIDATE_ATTACHMENTSDESC_DEPTH_IMAGE_SAMPLE_COUNT,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_IMAGE,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_MIPLEVEL,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_FACE,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_LAYER,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_SLICE,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_IMAGE_NO_STORAGEATTACHMENT,
-    VALIDATE_ATTACHMENTSDESC_STORAGE_INV_PIXELFORMAT,
-    VALIDATE_ATTACHMENTSDESC_RENDER_VS_STORAGE_ATTACHMENTS,
+    VALIDATE_VIEWDESC_CANARY,
+    VALIDATE_VIEWDESC_UNIQUE_VIEWTYPE,
+    VALIDATE_VIEWDESC_ANY_VIEWTYPE,
+    VALIDATE_VIEWDESC_RESOURCE_ALIVE,
+    VALIDATE_VIEWDESC_RESOURCE_FAILED,
+    VALIDATE_VIEWDESC_STORAGEBUFFER_OFFSET_VS_BUFFER_SIZE,
+    VALIDATE_VIEWDESC_STORAGEBUFFER_OFFSET_MULTIPLE_256,
+    VALIDATE_VIEWDESC_STORAGEBUFFER_USAGE,
+    VALIDATE_VIEWDESC_STORAGEIMAGE_USAGE,
+    VALIDATE_VIEWDESC_COLORATTACHMENT_USAGE,
+    VALIDATE_VIEWDESC_RESOLVEATTACHMENT_USAGE,
+    VALIDATE_VIEWDESC_DEPTHSTENCILATTACHMENT_USAGE,
+    VALIDATE_VIEWDESC_IMAGE_MIPLEVEL,
+    VALIDATE_VIEWDESC_IMAGE_2D_SLICE,
+    VALIDATE_VIEWDESC_IMAGE_CUBEMAP_SLICE,
+    VALIDATE_VIEWDESC_IMAGE_ARRAY_SLICE,
+    VALIDATE_VIEWDESC_IMAGE_3D_SLICE,
+    VALIDATE_VIEWDESC_TEXTURE_EXPECT_NO_MSAA,
+    VALIDATE_VIEWDESC_TEXTURE_MIPLEVELS,
+    VALIDATE_VIEWDESC_TEXTURE_2D_SLICES,
+    VALIDATE_VIEWDESC_TEXTURE_CUBEMAP_SLICES,
+    VALIDATE_VIEWDESC_TEXTURE_ARRAY_SLICES,
+    VALIDATE_VIEWDESC_TEXTURE_3D_SLICES,
+    VALIDATE_VIEWDESC_STORAGEIMAGE_PIXELFORMAT,
+    VALIDATE_VIEWDESC_COLORATTACHMENT_PIXELFORMAT,
+    VALIDATE_VIEWDESC_DEPTHSTENCILATTACHMENT_PIXELFORMAT,
+    VALIDATE_VIEWDESC_RESOLVEATTACHMENT_SAMPLECOUNT,
     VALIDATE_BEGINPASS_CANARY,
-    VALIDATE_BEGINPASS_ATTACHMENTS_EXISTS,
-    VALIDATE_BEGINPASS_ATTACHMENTS_VALID,
-    VALIDATE_BEGINPASS_COMPUTEPASS_STORAGE_ATTACHMENTS_ONLY,
-    VALIDATE_BEGINPASS_RENDERPASS_RENDER_ATTACHMENTS_ONLY,
-    VALIDATE_BEGINPASS_COLOR_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_BEGINPASS_COLOR_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_BEGINPASS_RESOLVE_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_BEGINPASS_RESOLVE_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_BEGINPASS_DEPTHSTENCIL_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_BEGINPASS_DEPTHSTENCIL_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_BEGINPASS_STORAGE_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_BEGINPASS_STORAGE_ATTACHMENT_IMAGE_VALID,
+    VALIDATE_BEGINPASS_COMPUTEPASS_EXPECT_NO_ATTACHMENTS,
     VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_WIDTH,
     VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_WIDTH_NOTSET,
     VALIDATE_BEGINPASS_SWAPCHAIN_EXPECT_HEIGHT,
@@ -4509,6 +4521,30 @@ Log_Item :: enum i32 {
     VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_DEPTHSTENCILVIEW,
     VALIDATE_BEGINPASS_SWAPCHAIN_WGPU_EXPECT_DEPTHSTENCILVIEW_NOTSET,
     VALIDATE_BEGINPASS_SWAPCHAIN_GL_EXPECT_FRAMEBUFFER_NOTSET,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEWS_CONTINUOUS,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_ALIVE,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_VALID,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_TYPE,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_IMAGE_ALIVE,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_IMAGE_VALID,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SIZES,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SAMPLECOUNTS,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_NO_COLORATTACHMENTVIEW,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_ALIVE,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_VALID,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_TYPE,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_IMAGE_ALIVE,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_IMAGE_VALID,
+    VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_SIZES,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEWS_CONTINUOUS,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_ALIVE,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_VALID,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_TYPE,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_IMAGE_ALIVE,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_IMAGE_VALID,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_SIZES,
+    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_SAMPLECOUNT,
+    VALIDATE_BEGINPASS_ATTACHMENTS_EXPECTED,
     VALIDATE_AVP_RENDERPASS_EXPECTED,
     VALIDATE_ASR_RENDERPASS_EXPECTED,
     VALIDATE_APIP_PIPELINE_VALID_ID,
@@ -4519,21 +4555,19 @@ Log_Item :: enum i32 {
     VALIDATE_APIP_PIPELINE_SHADER_VALID,
     VALIDATE_APIP_COMPUTEPASS_EXPECTED,
     VALIDATE_APIP_RENDERPASS_EXPECTED,
-    VALIDATE_APIP_CURPASS_ATTACHMENTS_ALIVE,
-    VALIDATE_APIP_CURPASS_ATTACHMENTS_VALID,
-    VALIDATE_APIP_ATT_COUNT,
-    VALIDATE_APIP_COLOR_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_APIP_COLOR_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_APIP_DEPTHSTENCIL_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_APIP_DEPTHSTENCIL_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_APIP_COLOR_FORMAT,
-    VALIDATE_APIP_DEPTH_FORMAT,
-    VALIDATE_APIP_SAMPLE_COUNT,
-    VALIDATE_APIP_EXPECTED_STORAGE_ATTACHMENT_IMAGE,
-    VALIDATE_APIP_STORAGE_ATTACHMENT_IMAGE_ALIVE,
-    VALIDATE_APIP_STORAGE_ATTACHMENT_IMAGE_VALID,
-    VALIDATE_APIP_STORAGE_ATTACHMENT_PIXELFORMAT,
-    VALIDATE_APIP_STORAGE_ATTACHMENT_IMAGE_TYPE,
+    VALIDATE_APIP_SWAPCHAIN_COLOR_COUNT,
+    VALIDATE_APIP_SWAPCHAIN_COLOR_FORMAT,
+    VALIDATE_APIP_SWAPCHAIN_DEPTH_FORMAT,
+    VALIDATE_APIP_SWAPCHAIN_SAMPLE_COUNT,
+    VALIDATE_APIP_ATTACHMENTS_ALIVE,
+    VALIDATE_APIP_COLORATTACHMENTS_COUNT,
+    VALIDATE_APIP_COLORATTACHMENTS_VIEW_VALID,
+    VALIDATE_APIP_COLORATTACHMENTS_IMAGE_VALID,
+    VALIDATE_APIP_COLORATTACHMENTS_FORMAT,
+    VALIDATE_APIP_DEPTHSTENCILATTACHMENT_VIEW_VALID,
+    VALIDATE_APIP_DEPTHSTENCILATTACHMENT_IMAGE_VALID,
+    VALIDATE_APIP_DEPTHSTENCILATTACHMENT_FORMAT,
+    VALIDATE_APIP_ATTACHMENT_SAMPLE_COUNT,
     VALIDATE_ABND_PASS_EXPECTED,
     VALIDATE_ABND_EMPTY_BINDINGS,
     VALIDATE_ABND_NO_PIPELINE,
@@ -4541,38 +4575,41 @@ Log_Item :: enum i32 {
     VALIDATE_ABND_PIPELINE_VALID,
     VALIDATE_ABND_PIPELINE_SHADER_ALIVE,
     VALIDATE_ABND_PIPELINE_SHADER_VALID,
-    VALIDATE_ABND_COMPUTE_EXPECTED_NO_VBS,
-    VALIDATE_ABND_COMPUTE_EXPECTED_NO_IB,
-    VALIDATE_ABND_EXPECTED_VB,
-    VALIDATE_ABND_VB_ALIVE,
-    VALIDATE_ABND_VB_TYPE,
-    VALIDATE_ABND_VB_OVERFLOW,
-    VALIDATE_ABND_NO_IB,
-    VALIDATE_ABND_IB,
-    VALIDATE_ABND_IB_ALIVE,
-    VALIDATE_ABND_IB_TYPE,
-    VALIDATE_ABND_IB_OVERFLOW,
-    VALIDATE_ABND_EXPECTED_IMAGE_BINDING,
-    VALIDATE_ABND_IMG_ALIVE,
-    VALIDATE_ABND_IMAGE_TYPE_MISMATCH,
-    VALIDATE_ABND_EXPECTED_MULTISAMPLED_IMAGE,
-    VALIDATE_ABND_IMAGE_MSAA,
-    VALIDATE_ABND_EXPECTED_FILTERABLE_IMAGE,
-    VALIDATE_ABND_EXPECTED_DEPTH_IMAGE,
+    VALIDATE_ABND_COMPUTE_EXPECTED_NO_VBUFS,
+    VALIDATE_ABND_COMPUTE_EXPECTED_NO_IBUF,
+    VALIDATE_ABND_EXPECTED_VBUF,
+    VALIDATE_ABND_VBUF_ALIVE,
+    VALIDATE_ABND_VBUF_USAGE,
+    VALIDATE_ABND_VBUF_OVERFLOW,
+    VALIDATE_ABND_EXPECTED_NO_IBUF,
+    VALIDATE_ABND_EXPECTED_IBUF,
+    VALIDATE_ABND_IBUF_ALIVE,
+    VALIDATE_ABND_IBUF_USAGE,
+    VALIDATE_ABND_IBUF_OVERFLOW,
+    VALIDATE_ABND_EXPECTED_VIEW_BINDING,
+    VALIDATE_ABND_VIEW_ALIVE,
+    VALIDATE_ABND_EXPECT_TEXVIEW,
+    VALIDATE_ABND_EXPECT_SBVIEW,
+    VALIDATE_ABND_EXPECT_SIMGVIEW,
+    VALIDATE_ABND_TEXVIEW_IMAGETYPE_MISMATCH,
+    VALIDATE_ABND_TEXVIEW_EXPECTED_MULTISAMPLED_IMAGE,
+    VALIDATE_ABND_TEXVIEW_EXPECTED_NON_MULTISAMPLED_IMAGE,
+    VALIDATE_ABND_TEXVIEW_EXPECTED_FILTERABLE_IMAGE,
+    VALIDATE_ABND_TEXVIEW_EXPECTED_DEPTH_IMAGE,
+    VALIDATE_ABND_SBVIEW_READWRITE_IMMUTABLE,
+    VALIDATE_ABND_SIMGVIEW_COMPUTE_PASS_EXPECTED,
+    VALIDATE_ABND_SIMGVIEW_IMAGETYPE_MISMATCH,
+    VALIDATE_ABND_SIMGVIEW_ACCESSFORMAT,
     VALIDATE_ABND_EXPECTED_SAMPLER_BINDING,
     VALIDATE_ABND_UNEXPECTED_SAMPLER_COMPARE_NEVER,
     VALIDATE_ABND_EXPECTED_SAMPLER_COMPARE_NEVER,
     VALIDATE_ABND_EXPECTED_NONFILTERING_SAMPLER,
-    VALIDATE_ABND_SMP_ALIVE,
-    VALIDATE_ABND_SMP_VALID,
-    VALIDATE_ABND_EXPECTED_STORAGEBUFFER_BINDING,
-    VALIDATE_ABND_STORAGEBUFFER_ALIVE,
-    VALIDATE_ABND_STORAGEBUFFER_BINDING_BUFFERTYPE,
-    VALIDATE_ABND_STORAGEBUFFER_READWRITE_IMMUTABLE,
-    VALIDATE_ABND_IMAGE_BINDING_VS_DEPTHSTENCIL_ATTACHMENT,
-    VALIDATE_ABND_IMAGE_BINDING_VS_COLOR_ATTACHMENT,
-    VALIDATE_ABND_IMAGE_BINDING_VS_RESOLVE_ATTACHMENT,
-    VALIDATE_ABND_IMAGE_BINDING_VS_STORAGE_ATTACHMENT,
+    VALIDATE_ABND_SAMPLER_ALIVE,
+    VALIDATE_ABND_SAMPLER_VALID,
+    VALIDATE_ABND_TEXTURE_BINDING_VS_DEPTHSTENCIL_ATTACHMENT,
+    VALIDATE_ABND_TEXTURE_BINDING_VS_COLOR_ATTACHMENT,
+    VALIDATE_ABND_TEXTURE_BINDING_VS_RESOLVE_ATTACHMENT,
+    VALIDATE_ABND_TEXTURE_BINDING_VS_STORAGE_ATTACHMENT,
     VALIDATE_AU_PASS_EXPECTED,
     VALIDATE_AU_NO_PIPELINE,
     VALIDATE_AU_PIPELINE_ALIVE,
@@ -4616,9 +4653,8 @@ Log_Item :: enum i32 {
     .sampler_pool_size              64
     .shader_pool_size               32
     .pipeline_pool_size             64
-    .attachments_pool_size          16
+    .view_pool_size                 256
     .uniform_buffer_size            4 MB (4*1024*1024)
-    .max_dispatch_calls_per_pass    1024
     .max_commit_listeners           1024
     .disable_validation             false
     .mtl_force_managed_storage_mode false
@@ -4770,9 +4806,8 @@ Desc :: struct {
     sampler_pool_size : c.int,
     shader_pool_size : c.int,
     pipeline_pool_size : c.int,
-    attachments_pool_size : c.int,
+    view_pool_size : c.int,
     uniform_buffer_size : c.int,
-    max_dispatch_calls_per_pass : c.int,
     max_commit_listeners : c.int,
     disable_validation : bool,
     d3d11_shader_debugging : bool,
@@ -4800,7 +4835,6 @@ D3d11_Image_Info :: struct {
     tex2d : rawptr,
     tex3d : rawptr,
     res : rawptr,
-    srv : rawptr,
 }
 
 D3d11_Sampler_Info :: struct {
@@ -4820,8 +4854,10 @@ D3d11_Pipeline_Info :: struct {
     bs : rawptr,
 }
 
-D3d11_Attachments_Info :: struct {
-    color_rtv : [4]rawptr,
+D3d11_View_Info :: struct {
+    srv : rawptr,
+    uav : rawptr,
+    rtv : rawptr,
     dsv : rawptr,
 }
 
@@ -4857,7 +4893,6 @@ Wgpu_Buffer_Info :: struct {
 
 Wgpu_Image_Info :: struct {
     tex : rawptr,
-    view : rawptr,
 }
 
 Wgpu_Sampler_Info :: struct {
@@ -4875,10 +4910,8 @@ Wgpu_Pipeline_Info :: struct {
     compute_pipeline : rawptr,
 }
 
-Wgpu_Attachments_Info :: struct {
-    color_view : [4]rawptr,
-    resolve_view : [4]rawptr,
-    ds_view : rawptr,
+Wgpu_View_Info :: struct {
+    view : rawptr,
 }
 
 Gl_Buffer_Info :: struct {
@@ -4889,7 +4922,6 @@ Gl_Buffer_Info :: struct {
 Gl_Image_Info :: struct {
     tex : [2]u32,
     tex_target : u32,
-    msaa_render_buffer : u32,
     active_slot : c.int,
 }
 
@@ -4901,8 +4933,9 @@ Gl_Shader_Info :: struct {
     prog : u32,
 }
 
-Gl_Attachments_Info :: struct {
-    framebuffer : u32,
-    msaa_resolve_framebuffer : [4]u32,
+Gl_View_Info :: struct {
+    tex_view : [2]u32,
+    msaa_render_buffer : u32,
+    msaa_resolve_frame_buffer : u32,
 }
 

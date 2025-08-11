@@ -37,8 +37,7 @@ norm_vec3 :: proc(v: vec3) -> vec3 {
     l := len(v)
     if (l != 0) {
         return { v.x/l, v.y/l, v.z/l }
-    }
-    else {
+    } else {
         return {}
     }
 }
@@ -119,7 +118,7 @@ rotate_mat4 :: proc (angle: f32, axis_unorm: vec3) -> mat4 {
     axis := norm(axis_unorm)
     sin_theta := math.sin(radians(angle))
     cos_theta := math.cos(radians(angle))
-    cos_value := 1.0 - cos_theta;
+    cos_value := 1.0 - cos_theta
 
     m[0][0] = (axis.x * axis.x * cos_value) + cos_theta
     m[0][1] = (axis.x * axis.y * cos_value) + (axis.z * sin_theta)
@@ -150,12 +149,12 @@ mul :: proc{
 }
 mul_mat4 :: proc (left, right: mat4) -> mat4 {
     m := mat4 {}
-    for col := 0; col < 4; col += 1 {
-        for row := 0; row < 4; row += 1 {
+    for col in 0..<4 {
+        for row in 0..<4 {
             m[col][row] = left[0][row] * right[col][0] +
                           left[1][row] * right[col][1] +
                           left[2][row] * right[col][2] +
-                          left[3][row] * right[col][3];
+                          left[3][row] * right[col][3]
         }
     }
     return m

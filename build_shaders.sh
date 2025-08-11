@@ -1,16 +1,17 @@
+#!/usr/bin/env bash
 set -e
 
-sokol_tools_root=../sokol-tools-bin
+if [ -z "$1" ]
+then
+    echo "usage: ./build_shaders.sh [path-to-sokol-shdc]"
+    exit 1
+fi
+
+shdc="$1"
 
 build_shader() {
     name=$1
     dir=examples/$name
-    if [[ $(arch) =~ "arm64" ]]
-    then
-        shdc=$sokol_tools_root/bin/osx_arm64/sokol-shdc
-    else
-        shdc=$sokol_tools_root/bin/osx/sokol-shdc
-    fi
     echo $dir
     $shdc -i $dir/shader.glsl -o $dir/shader.odin -l glsl430:metal_macos:hlsl5 -f sokol_odin
 }

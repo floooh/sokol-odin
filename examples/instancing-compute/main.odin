@@ -50,14 +50,20 @@ init :: proc "c" () {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0.1, 0.2, 1 } } },
     }
 
-    // a zero-initialized storage buffer for the particle state
+    // a buffer and storage-buffer view  for the particle state
     sbuf := sg.make_buffer({
-        usage = { storage_buffer = true },
+        usage = {
+            vertex_buffer = true,
+            storage_buffer = true,
+        },
         size = MAX_PARTICLES * size_of(Particle),
         label = "particle-buffer",
     })
-    state.compute.bind.storage_buffers[SBUF_cs_ssbo] = sbuf
-    state.display.bind.storage_buffers[SBUF_vs_ssbo] = sbuf
+    sbuf_view := sg.make_view({
+        storage_buffer = { buffer = sbuf },
+    })
+    state.compute.bind.views[VIEW_cs_ssbo] = sbuf_view
+    state.display.bind.views[VIEW_vs_ssbo] = sbuf_view
 
     // a compute shader and pipeline object for updating the particle state
     state.compute.pip = sg.make_pipeline({
@@ -110,7 +116,7 @@ init :: proc "c" () {
         label = "render-pipeline",
     })
 
-    // one-time init of particle velocisites via compute shader
+    // one-time init of particle velocities via compute shader
     pip := sg.make_pipeline({
         compute = true,
         shader = sg.make_shader(init_shader_desc(sg.query_backend())),
@@ -129,7 +135,7 @@ frame :: proc "c" () {
         return
     }
 
-    state.num_particles += NUM_PARTICLES_EMITTED_PER_FRAME;
+    state.num_particles += NUM_PARTICLES_EMITTED_PER_FRAME
     if state.num_particles > MAX_PARTICLES {
         state.num_particles = MAX_PARTICLES
     }
@@ -155,7 +161,7 @@ frame :: proc "c" () {
     sg.begin_pass({
         action = state.display.pass_action,
         swapchain = sglue.swapchain(),
-        label = "render-pass"
+        label = "render-pass",
     })
     sg.apply_pipeline(state.display.pip)
     sg.apply_bindings(state.display.bind)
