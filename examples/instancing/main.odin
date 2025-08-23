@@ -103,8 +103,7 @@ frame :: proc "c" () {
             state.pos[state.cur_num_particles] = {}
             state.vel[state.cur_num_particles] = { rand(-0.5, 0.5), rand(2.0, 2.5), rand(-0.5, 0.5) }
             state.cur_num_particles += 1
-        }
-        else {
+        } else {
             break
         }
     }

@@ -40,7 +40,7 @@ init :: proc "c" () {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0.75, 0.5, 0.25, 1 } } },
     }
 
-    // a storage buffer with cube vertices, this is using the code-generated
+    // a buffer with cube vertices, this is using the code-generated
     // per-vertex struct from the shader
     vertices := [?]Sb_Vertex{
         { pos = { -1.0, -1.0, -1.0 }, color = { 1.0, 0.0, 0.0, 1.0} },
@@ -68,9 +68,14 @@ init :: proc "c" () {
         { pos = {  1.0,  1.0,  1.0 }, color = { 1.0, 0.0, 0.5, 1.0} },
         { pos = {  1.0,  1.0, -1.0 }, color = { 1.0, 0.0, 0.5, 1.0} },
     }
-    state.bind.storage_buffers[SBUF_ssbo] = sg.make_buffer({
+    buf := sg.make_buffer({
         usage = { storage_buffer = true },
         data = { ptr = &vertices, size = size_of(vertices) },
+    })
+
+    // ...and a storage buffer view on that buffer
+    state.bind.views[VIEW_ssbo] = sg.make_view({
+        storage_buffer = { buffer = buf },
     })
 
     // a regular index buffer
@@ -95,7 +100,7 @@ init :: proc "c" () {
         depth = {
             write_enabled = true,
             compare = .LESS_EQUAL,
-        }
+        },
     })
 }
 
@@ -107,7 +112,7 @@ frame :: proc "c" () {
     state.ry += 2 * t
 
     vs_params := Vs_Params {
-        mvp = compute_mvp(state.rx, state.ry)
+        mvp = compute_mvp(state.rx, state.ry),
     }
 
     sg.begin_pass({ action = state.pass_action, swapchain = sglue.swapchain() })

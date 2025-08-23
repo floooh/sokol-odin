@@ -25,7 +25,7 @@ Vertex :: struct {
 }
 
 init :: proc "c" () {
-    context = runtime.default_context();
+    context = runtime.default_context()
     sg.setup({
         environment = sglue.environment(),
         logger = { func = slog.func },
@@ -88,23 +88,27 @@ init :: proc "c" () {
         data = { ptr = &indices, size = size_of(indices) },
     })
 
-    // create a checkerboard texture
+    // create a checkerboard image and texture view
     pixels := [4*4]u32 {
         0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
         0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
         0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF, 0xFF000000,
         0xFF000000, 0xFFFFFFFF, 0xFF000000, 0xFFFFFFFF,
     }
-    /* NOTE: SLOT_tex is provided by shader code generation */
-    state.bind.images[IMG_tex] = sg.make_image({
-        width = 4,
-        height = 4,
-        data = {
-            subimage = {
-                0 = {
-                    0 = { ptr = &pixels, size = size_of(pixels) },
+    // NOTE: VIEW_tex is provided by shader code generation
+    state.bind.views[VIEW_tex] = sg.make_view({
+        texture = {
+            image = sg.make_image({
+                width = 4,
+                height = 4,
+                data = {
+                    subimage = {
+                        0 = {
+                            0 = { ptr = &pixels, size = size_of(pixels) },
+                        },
+                    },
                 },
-            },
+            }),
         },
     })
 
@@ -138,7 +142,7 @@ init :: proc "c" () {
 }
 
 frame :: proc "c" () {
-    context = runtime.default_context();
+    context = runtime.default_context()
     t := f32(sapp.frame_duration() * 60.0)
     state.rx += 1.0 * t
     state.ry += 2.0 * t
@@ -168,7 +172,7 @@ compute_mvp :: proc (rx, ry: f32) -> m.mat4 {
 }
 
 cleanup :: proc "c" () {
-    context = runtime.default_context();
+    context = runtime.default_context()
     sg.shutdown()
 }
 

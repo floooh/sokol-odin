@@ -53,7 +53,7 @@ print_font :: proc (font_index: int, title: cstring, r, g, b: u8) {
     sdtx.font(font_index)
     sdtx.color3b(r, g, b)
     sdtx.puts(title)
-    for c := 32; c < 256; c += 1 {
+    for c in 32..<256 {
         sdtx.putc(u8(c))
         if ((c + 1) & 63) == 0 {
             sdtx.crlf()

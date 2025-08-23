@@ -143,7 +143,7 @@ frame :: proc "c" () {
     context = runtime.default_context()
 
     // help text
-    sdtx.canvas(sapp.widthf() * 0.5, sapp.heightf() * 0.5);
+    sdtx.canvas(sapp.widthf() * 0.5, sapp.heightf() * 0.5)
     sdtx.pos(0.5, 0.5)
     sdtx.puts("press key to switch draw mode:\n\n")
     sdtx.puts("  1: vertex normals\n")

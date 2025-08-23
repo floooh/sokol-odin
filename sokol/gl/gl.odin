@@ -234,9 +234,9 @@ package sokol_gl
 
             sgl_enable_texture()
             sgl_disable_texture()
-            sgl_texture(sg_image img, sg_sampler smp)
+            sgl_texture(sg_view tex_view, sg_sampler smp)
 
-        NOTE: the img and smp handles can be invalid (SG_INVALID_ID), in this
+        NOTE: the tex_view and smp handles can be invalid (SG_INVALID_ID), in this
         case, sokol-gl will fall back to the internal default (white) texture
         and sampler.
 
@@ -804,7 +804,7 @@ foreign sokol_gl_clib {
     scissor_rectf :: proc(x: f32, y: f32, w: f32, h: f32, origin_top_left: bool)  ---
     enable_texture :: proc()  ---
     disable_texture :: proc()  ---
-    texture :: proc(img: sg.Image, smp: sg.Sampler)  ---
+    texture :: proc(tex_view: sg.View, smp: sg.Sampler)  ---
     layer :: proc(#any_int layer_id: c.int)  ---
     // pipeline stack functions
     load_default_pipeline :: proc()  ---

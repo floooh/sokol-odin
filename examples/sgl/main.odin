@@ -15,7 +15,7 @@ import sgl "../../sokol/gl"
 
 state: struct {
     pass_action: sg.Pass_Action,
-    img: sg.Image,
+    tex_view: sg.View,
     smp: sg.Sampler,
     pip_3d: sgl.Pipeline,
 } = {
@@ -34,20 +34,21 @@ init :: proc "c" () {
         logger = { func = slog.func },
     })
 
-    // a checkerboard texture
+    // a checkerboard image and texture view
     pixels: [8][8]u32
     for y in 0..<8 {
         for x in 0..<8 {
             pixels[y][x] = (((y ~ x) & 1) == 0) ? 0xFF_00_00_00 : 0xFF_FF_FF_FF
         }
     }
-    state.img = sg.make_image({
+    img := sg.make_image({
         width = 8,
         height = 8,
         data = {
             subimage = { 0 = { 0 = { ptr = &pixels, size = size_of(pixels) } } },
         },
     })
+    state.tex_view = sg.make_view({ texture = { image = img } })
 
     // a sampler to sample the above texture
     state.smp = sg.make_sampler({
@@ -95,7 +96,7 @@ draw_quad :: proc (t: f32) {
 // vertex specification for a cube with colored sides and texture coords
 cube :: proc () {
     sgl.begin_quads()
-    sgl.c3f(1.0, 0.0, 0.0);
+    sgl.c3f(1.0, 0.0, 0.0)
         sgl.v3f_t2f(-1.0,  1.0, -1.0, -1.0,  1.0)
         sgl.v3f_t2f( 1.0,  1.0, -1.0,  1.0,  1.0)
         sgl.v3f_t2f( 1.0, -1.0, -1.0,  1.0, -1.0)
@@ -120,7 +121,7 @@ cube :: proc () {
         sgl.v3f_t2f( 1.0, -1.0,  1.0,  1.0,  1.0)
         sgl.v3f_t2f(-1.0, -1.0,  1.0,  1.0, -1.0)
         sgl.v3f_t2f(-1.0, -1.0, -1.0, -1.0, -1.0)
-    sgl.c3f(1.0, 0.0, 0.5);
+    sgl.c3f(1.0, 0.0, 0.5)
         sgl.v3f_t2f(-1.0,  1.0, -1.0, -1.0,  1.0)
         sgl.v3f_t2f(-1.0,  1.0,  1.0,  1.0,  1.0)
         sgl.v3f_t2f( 1.0,  1.0,  1.0,  1.0, -1.0)
@@ -178,7 +179,7 @@ draw_tex_cube :: proc (t: f32) {
     sgl.load_pipeline(state.pip_3d)
 
     sgl.enable_texture()
-    sgl.texture(state.img, state.smp)
+    sgl.texture(state.tex_view, state.smp)
 
     sgl.matrix_mode_projection()
     sgl.perspective(sgl.rad(45.0), 1.0, 0.1, 100.0)

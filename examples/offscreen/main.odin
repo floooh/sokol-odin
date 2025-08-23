@@ -15,15 +15,16 @@ import sshape "../../sokol/shape"
 import m "../math"
 
 OFFSCREEN_SAMPLE_COUNT :: 1
+OFFSCREEN_WIDTH :: 256
+OFFSCREEN_HEIGHT :: 256
 
 state: struct {
     offscreen: struct {
-        pass_action: sg.Pass_Action,
-        attachments: sg.Attachments,
+        pass: sg.Pass,
         pip: sg.Pipeline,
         bind: sg.Bindings,
     },
-    default: struct {
+    display: struct {
         pass_action: sg.Pass_Action,
         pip: sg.Pipeline,
         bind: sg.Bindings,
@@ -43,33 +44,42 @@ init :: proc "c" () {
     })
 
     // default pass action: clear to blue-ish
-    state.default.pass_action = {
+    state.display.pass_action = {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0.25, 0.45, 0.65, 1.0 } } },
     }
 
     // offscreen pass action: clear to grey
-    state.offscreen.pass_action = {
+    state.offscreen.pass.action = {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0.25, 0.25, 0.25, 1.0 } } },
     }
 
-    // a render pass with one color- and one depth-attachment image
-    img_desc := sg.Image_Desc {
-        usage = { render_attachment = true },
-        width = 256,
-        height = 256,
+    // setup the color- and depth-stencil-attachment images and views
+    color_img := sg.make_image({
+        usage = { color_attachment = true },
+        width = OFFSCREEN_WIDTH,
+        height = OFFSCREEN_HEIGHT,
         pixel_format = .RGBA8,
         sample_count = OFFSCREEN_SAMPLE_COUNT,
-    }
-    color_img := sg.make_image(img_desc)
-    img_desc.pixel_format = .DEPTH
-    depth_img := sg.make_image(img_desc)
-    state.offscreen.attachments = sg.make_attachments({
-        colors = {
-            0 = { image = color_img },
-        },
-        depth_stencil = {
-            image = depth_img,
-        },
+    })
+    depth_img := sg.make_image({
+        usage = { depth_stencil_attachment = true },
+        width = OFFSCREEN_WIDTH,
+        height = OFFSCREEN_HEIGHT,
+        sample_count = OFFSCREEN_SAMPLE_COUNT,
+        pixel_format = .DEPTH,
+    })
+
+    // the offscreen render passes need a color- and depth-stencil-attachment view
+    state.offscreen.pass.attachments.colors[0] = sg.make_view({
+        color_attachment = { image = color_img },
+    })
+    state.offscreen.pass.attachments.depth_stencil = sg.make_view({
+        depth_stencil_attachment = { image = depth_img },
+    })
+
+    // the display render pass needs a texture view on the color image
+    state.display.bind.views[VIEW_tex] = sg.make_view({
+        texture = { image = color_img },
     })
 
     // a donut shape which is rendered into the offscreen render target, and
@@ -95,7 +105,11 @@ init :: proc "c" () {
     state.sphere = sshape.element_range(buf)
 
     vbuf := sg.make_buffer(sshape.vertex_buffer_desc(buf))
+    state.offscreen.bind.vertex_buffers[0] = vbuf
+    state.display.bind.vertex_buffers[0] = vbuf
     ibuf := sg.make_buffer(sshape.index_buffer_desc(buf))
+    state.offscreen.bind.index_buffer = ibuf
+    state.display.bind.index_buffer = ibuf
 
     // pipeline-state-object for offscreen-rendered donut, don't need texture coord here
     state.offscreen.pip = sg.make_pipeline({
@@ -123,7 +137,7 @@ init :: proc "c" () {
     })
 
     // and another pipeline-state-object for the default pass
-    state.default.pip = sg.make_pipeline({
+    state.display.pip = sg.make_pipeline({
         shader = sg.make_shader(default_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
@@ -144,30 +158,12 @@ init :: proc "c" () {
     })
 
     // a sampler object for sampling the render target as texture
-    smp := sg.make_sampler({
+    state.display.bind.samplers[SMP_smp] = sg.make_sampler({
         min_filter = .LINEAR,
         mag_filter = .LINEAR,
         wrap_u = .REPEAT,
         wrap_v = .REPEAT,
     })
-
-    // the resource bindings for rendering a non-textured cube into offscreen render target
-    state.offscreen.bind = {
-        vertex_buffers = {
-            0 = vbuf,
-        },
-        index_buffer = ibuf,
-    }
-
-    // resource bindings to render a textured shape, using the offscreen render target as texture
-    state.default.bind = {
-        vertex_buffers = {
-            0 = vbuf,
-        },
-        index_buffer = ibuf,
-        images = { IMG_tex = color_img },
-        samplers = { SMP_smp = smp },
-    }
 }
 
 frame :: proc "c" () {
@@ -180,7 +176,7 @@ frame :: proc "c" () {
     vs_params := Vs_Params {
         mvp = compute_mvp(rx = state.rx, ry = state.ry, aspect = 1.0, eye_dist = 2.5),
     }
-    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
+    sg.begin_pass(state.offscreen.pass)
     sg.apply_pipeline(state.offscreen.pip)
     sg.apply_bindings(state.offscreen.bind)
     sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
@@ -197,9 +193,9 @@ frame :: proc "c" () {
             eye_dist = 2.0,
         ),
     }
-    sg.begin_pass({ action = state.default.pass_action, swapchain = sglue.swapchain() })
-    sg.apply_pipeline(state.default.pip)
-    sg.apply_bindings(state.default.bind)
+    sg.begin_pass({ action = state.display.pass_action, swapchain = sglue.swapchain() })
+    sg.apply_pipeline(state.display.pip)
+    sg.apply_bindings(state.display.bind)
     sg.apply_uniforms(UB_vs_params, { ptr = &vs_params, size = size_of(vs_params) })
     sg.draw(int(state.sphere.base_element), int(state.sphere.num_elements), 1)
     sg.end_pass()

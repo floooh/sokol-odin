@@ -16,13 +16,12 @@ import sgl "../../sokol/gl"
 
 state: struct {
     offscreen: struct {
-        pass_action: sg.Pass_Action,
-        attachments: sg.Attachments,
-        img: sg.Image,
+        pass: sg.Pass,
         sgl_ctx: sgl.Context,
     },
     display: struct {
         pass_action: sg.Pass_Action,
+        tex_view: sg.View,
         smp: sg.Sampler,
         sgl_pip: sgl.Pipeline,
     },
@@ -71,20 +70,19 @@ init :: proc "c" () {
         sample_count = OFFSCREEN_SAMPLECOUNT,
     })
 
-    // create an offscreen render target texture, pass, and pass_action
-    state.offscreen.img = sg.make_image({
-        usage = { render_attachment = true },
+    // create an color-attachment image for the offscreen pass and associated views
+    img := sg.make_image({
+        usage = { color_attachment = true },
         width = OFFSCREEN_WIDTH,
         height = OFFSCREEN_HEIGHT,
         pixel_format = OFFSCREEN_PIXELFORMAT,
         sample_count = OFFSCREEN_SAMPLECOUNT,
     })
-    state.offscreen.attachments = sg.make_attachments({
-        colors = {
-            0 = { image = state.offscreen.img },
-        },
-    })
-    state.offscreen.pass_action = {
+    state.offscreen.pass.attachments.colors[0] = sg.make_view({ color_attachment = { image = img } })
+    state.display.tex_view = sg.make_view({ texture = { image = img } })
+
+    // the offscreen render pass clear color
+    state.offscreen.pass.action = {
         colors = {
             0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } },
         },
@@ -115,7 +113,7 @@ frame :: proc "c" () {
     sgl.set_context(sgl.default_context())
     sgl.defaults()
     sgl.enable_texture()
-    sgl.texture(state.offscreen.img, state.display.smp)
+    sgl.texture(state.display.tex_view, state.display.smp)
     sgl.load_pipeline(state.display.sgl_pip)
     sgl.matrix_mode_projection()
     sgl.perspective(sgl.rad(45.0), sapp.widthf()/sapp.heightf(), 0.1, 100.0)
@@ -125,7 +123,7 @@ frame :: proc "c" () {
     draw_cube()
 
     // do the actual offscreen and display rendering in sokol-gfx passes
-    sg.begin_pass({ action = state.offscreen.pass_action, attachments = state.offscreen.attachments })
+    sg.begin_pass(state.offscreen.pass)
     sgl.context_draw(state.offscreen.sgl_ctx)
     sg.end_pass()
     sg.begin_pass({ action = state.display.pass_action, swapchain = sglue.swapchain() })
