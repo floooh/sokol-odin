@@ -1408,6 +1408,10 @@ foreign sokol_app_clib {
     set_mouse_cursor :: proc(cursor: Mouse_Cursor)  ---
     // get current mouse cursor type
     get_mouse_cursor :: proc() -> Mouse_Cursor ---
+    // associate a custom mouse cursor image to a sapp_mouse_cursor enum entry
+    bind_mouse_cursor_image :: proc(cursor: Mouse_Cursor, #by_ptr desc: Image_Desc) -> Mouse_Cursor ---
+    // restore the sapp_mouse_cursor enum entry to it's default system appearance
+    unbind_mouse_cursor_image :: proc(cursor: Mouse_Cursor)  ---
     // return the userdata pointer optionally provided in sapp_desc
     userdata :: proc() -> rawptr ---
     // return a copy of the sapp_desc structure
@@ -1775,16 +1779,18 @@ Range :: struct {
 /*
     sapp_image_desc
 
-    This is used to describe image data to sokol_app.h (at first, window
-    icons, later maybe cursor images).
+    This is used to describe image data to sokol_app.h (window icons and cursor images).
 
-    Note that the actual image pixel format depends on the use case:
+    The pixel format is RGBA8.
 
-    - window icon pixels are RGBA8
+    cursor_hotspot_x and _y are used only for cursors, to define which pixel
+    of the image should be aligned with the mouse position.
 */
 Image_Desc :: struct {
     width : c.int,
     height : c.int,
+    cursor_hotspot_x : c.int,
+    cursor_hotspot_y : c.int,
     pixels : Range,
 }
 
@@ -1852,6 +1858,7 @@ Log_Item :: enum i32 {
     WIN32_REGISTER_RAW_INPUT_DEVICES_FAILED_MOUSE_LOCK,
     WIN32_REGISTER_RAW_INPUT_DEVICES_FAILED_MOUSE_UNLOCK,
     WIN32_GET_RAW_INPUT_DATA_FAILED,
+    WIN32_DESTROYICON_FOR_CURSOR_FAILED,
     LINUX_GLX_LOAD_LIBGL_FAILED,
     LINUX_GLX_LOAD_ENTRY_POINTS_FAILED,
     LINUX_GLX_EXTENSION_NOT_FOUND,
@@ -2036,5 +2043,21 @@ Mouse_Cursor :: enum i32 {
     RESIZE_NESW,
     RESIZE_ALL,
     NOT_ALLOWED,
+    CUSTOM_0,
+    CUSTOM_1,
+    CUSTOM_2,
+    CUSTOM_3,
+    CUSTOM_4,
+    CUSTOM_5,
+    CUSTOM_6,
+    CUSTOM_7,
+    CUSTOM_8,
+    CUSTOM_9,
+    CUSTOM_10,
+    CUSTOM_11,
+    CUSTOM_12,
+    CUSTOM_13,
+    CUSTOM_14,
+    CUSTOM_15,
 }
 
