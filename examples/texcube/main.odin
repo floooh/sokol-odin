@@ -102,10 +102,8 @@ init :: proc "c" () {
                 width = 4,
                 height = 4,
                 data = {
-                    subimage = {
-                        0 = {
-                            0 = { ptr = &pixels, size = size_of(pixels) },
-                        },
+                    mip_levels = {
+                        0 = { ptr = &pixels, size = size_of(pixels) },
                     },
                 },
             }),
