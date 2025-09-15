@@ -2257,7 +2257,6 @@ MAX_COLOR_ATTACHMENTS :: 4
 MAX_UNIFORMBLOCK_MEMBERS :: 16
 MAX_VERTEX_ATTRIBUTES :: 16
 MAX_MIPMAPS :: 16
-MAX_TEXTUREARRAY_LAYERS :: 128
 MAX_VERTEXBUFFER_BINDSLOTS :: 8
 MAX_UNIFORMBLOCK_BINDSLOTS :: 8
 MAX_VIEW_BINDSLOTS :: 28
@@ -2559,21 +2558,6 @@ Sampler_Type :: enum i32 {
     FILTERING,
     NONFILTERING,
     COMPARISON,
-}
-
-/*
-    sg_cube_face
-
-    The cubemap faces. Use these as indices in the sg_image_desc.content
-    array.
-*/
-Cube_Face :: enum i32 {
-    POS_X,
-    NEG_X,
-    POS_Y,
-    NEG_Y,
-    POS_Z,
-    NEG_Z,
 }
 
 /*
@@ -3469,12 +3453,33 @@ View_Type :: enum i32 {
 /*
     sg_image_data
 
-    Defines the content of an image through a 2D array of sg_range structs.
-    The first array dimension is the cubemap face, and the second array
-    dimension the mipmap level.
+    Defines the content of an image through an array of sg_range struct,
+    each range pointing to one mip-level. For array-, cubemap- and 3D-images
+    each mip-level contains all slice-surfaces for that mip-level in a single
+    tightly packed memory block.
+
+    The size of a single surface in a mip-level for a regular 2D texture
+    can be computed via:
+
+        sg_query_surface_pitch(pixel_format, width, height, 1);
+
+    For array- and 3d-images the size of a single miplevel is:
+
+        num_slices * sg_query_surface_pitch(pixel_format, width, height, 1);
+
+    For cubemap-images the size of a single mip-level is:
+
+        6 * sg_query_surface_pitch(pixel_format, width, height, 1);
+
+    The order of cubemap-faces is:
+
+        slice   direction
+        0, 1 => +X, -X
+        2, 3 => +Y, -Y
+        4, 5 => +Z, -Z
 */
 Image_Data :: struct {
-    subimage : [6][16]Range,
+    mip_levels : [16]Range,
 }
 
 /*
@@ -4478,6 +4483,11 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDATA_DATA_SIZE,
     VALIDATE_IMAGEDESC_CANARY,
     VALIDATE_IMAGEDESC_IMMUTABLE_DYNAMIC_STREAM,
+    VALIDATE_IMAGEDESC_IMAGETYPE_2D_NUMSLICES,
+    VALIDATE_IMAGEDESC_IMAGETYPE_CUBE_NUMSLICES,
+    VALIDATE_IMAGEDESC_IMAGETYPE_ARRAY_NUMSLICES,
+    VALIDATE_IMAGEDESC_IMAGETYPE_3D_NUMSLICES,
+    VALIDATE_IMAGEDESC_NUMSLICES,
     VALIDATE_IMAGEDESC_WIDTH,
     VALIDATE_IMAGEDESC_HEIGHT,
     VALIDATE_IMAGEDESC_NONRT_PIXELFORMAT,
