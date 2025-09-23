@@ -4319,6 +4319,15 @@ Frame_Stats_Wgpu :: struct {
     bindings : Frame_Stats_Wgpu_Bindings,
 }
 
+Resource_Stats :: struct {
+    total_alive : u32,
+    total_free : u32,
+    allocated : u32,
+    deallocated : u32,
+    inited : u32,
+    uninited : u32,
+}
+
 Frame_Stats :: struct {
     frame_index : u32,
     num_passes : u32,
@@ -4336,6 +4345,12 @@ Frame_Stats :: struct {
     size_update_buffer : u32,
     size_append_buffer : u32,
     size_update_image : u32,
+    buffers : Resource_Stats,
+    images : Resource_Stats,
+    samplers : Resource_Stats,
+    views : Resource_Stats,
+    shaders : Resource_Stats,
+    pipelines : Resource_Stats,
     gl : Frame_Stats_Gl,
     d3d11 : Frame_Stats_D3d11,
     metal : Frame_Stats_Metal,
