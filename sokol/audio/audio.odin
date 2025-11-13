@@ -44,6 +44,7 @@ package sokol_audio
     - on Windows with MSVC or Clang toolchain: no action needed, libs are defined in-source via pragma-comment-lib
     - on Windows with MINGW/MSYS2 gcc: compile with '-mwin32' and link with -lole32
     - on Vita: SceAudio
+    - on 3DS: NDSP (libctru)
 
     FEATURE OVERVIEW
     ================
@@ -58,6 +59,7 @@ package sokol_audio
     - emscripten: WebAudio with ScriptProcessorNode
     - Android: AAudio
     - Vita: SceAudio
+    - 3DS: NDSP (libctru)
 
     Sokol Audio will not do any buffer mixing or volume control, if you have
     multiple independent input streams of sample data you need to perform the
@@ -401,6 +403,33 @@ package sokol_audio
     You need to link with the 'SceAudio' library, and the <psp2/audioout.h>
     header must be present (usually both are installed with the vitasdk).
 
+    THE 3DS BACKEND
+    ================
+    The 3DS backend is automatically selected when compiling with libctru
+    ('__3DS__' is defined).
+
+    Running a separate thread on the older 3ds is not a good idea and I
+    was not able to get it working without slowing down the main thread
+    too much (it has a single core available with cooperative threads).
+
+    The NDSP seems to work better by using its ndspSetCallback method.
+
+    You may use any supported sample rate you wish, but all audio MUST
+    match the same sample rate you choose or it will sound slowed down
+    or sped up.
+
+    The queue size and other NDSP specific parameters can be chosen by
+    the provided 'saudio_n3ds_desc' type. Defaults will be used if
+    nothing is provided.
+
+    There is a known issue of a noticeable delay when starting a new
+    sound on emulators. I was not able to improve this to my liking
+    and ~300ms can be expected. This can be improved by using a lower
+    buffer size than the 2048 default but I would not suggest under
+    1536. It may crash under 1408, and they must be in multiples of 128.
+    Note: I was NOT able to reproduce this issue on a real device and
+    the audio worked perfectly.
+
 
     MEMORY ALLOCATION OVERRIDE
     ==========================
@@ -630,6 +659,7 @@ Log_Item :: enum i32 {
     BACKEND_BUFFER_SIZE_ISNT_MULTIPLE_OF_PACKET_SIZE,
     VITA_SCEAUDIO_OPEN_FAILED,
     VITA_PTHREAD_CREATE_FAILED,
+    N3DS_NDSP_OPEN_FAILED,
 }
 
 /*
@@ -657,6 +687,18 @@ Allocator :: struct {
     user_data : rawptr,
 }
 
+N3ds_Ndspinterptype :: enum i32 {
+    DSP_INTERP_POLYPHASE = 0,
+    DSP_INTERP_LINEAR = 1,
+    DSP_INTERP_NONE = 2,
+}
+
+N3ds_Desc :: struct {
+    queue_count : c.int,
+    interpolation_type : N3ds_Ndspinterptype,
+    channel_id : c.int,
+}
+
 Desc :: struct {
     sample_rate : c.int,
     num_channels : c.int,
@@ -666,6 +708,7 @@ Desc :: struct {
     stream_cb : proc "c" (a0: ^f32, a1: c.int, a2: c.int),
     stream_userdata_cb : proc "c" (a0: ^f32, a1: c.int, a2: c.int, a3: rawptr),
     user_data : rawptr,
+    n3ds : N3ds_Desc,
     allocator : Allocator,
     logger : Logger,
 }
