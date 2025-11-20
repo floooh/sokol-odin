@@ -41,7 +41,7 @@ package sokol_app
     Optionally define the following to force debug checks and validations
     even in release mode:
 
-        SOKOL_DEBUG         - by default this is defined if _DEBUG is defined
+        SOKOL_DEBUG         - by default this is defined if NDEBUG is not defined
 
     If sokol_app.h is compiled as a DLL, define the following before
     including the declaration or implementation:
@@ -1207,6 +1207,11 @@ package sokol_app
             doesn't matter if the application is started from the command
             line or via double-click.
 
+            NOTE: setting both win32_console_attach and win32_console_create
+            to true also makes sense and has the effect that output
+            will appear in the existing terminal when started from the cmdline, and
+            otherwise (when started via double-click) will open a console window.
+
     MEMORY ALLOCATION OVERRIDE
     ==========================
     You can override the memory allocation functions at initialization time
@@ -1404,9 +1409,9 @@ foreign sokol_app_clib {
     // same as sapp_height(), but returns float
     heightf :: proc() -> f32 ---
     // get default framebuffer color pixel format
-    color_format :: proc() -> c.int ---
+    color_format :: proc() -> Pixel_Format ---
     // get default framebuffer depth pixel format
-    depth_format :: proc() -> c.int ---
+    depth_format :: proc() -> Pixel_Format ---
     // get default framebuffer sample count
     sample_count :: proc() -> c.int ---
     // returns true when high_dpi was requested and actually running in a high-dpi scenario
@@ -1467,6 +1472,10 @@ foreign sokol_app_clib {
     get_dropped_file_path :: proc(#any_int index: c.int) -> cstring ---
     // special run-function for SOKOL_NO_ENTRY (in standard mode this is an empty stub)
     run :: proc(#by_ptr desc: Desc)  ---
+    // get runtime environment information
+    get_environment :: proc() -> Environment ---
+    // get current frame's swapchain information (call once per frame!)
+    get_swapchain :: proc() -> Swapchain ---
     // EGL: get EGLDisplay object
     egl_get_display :: proc() -> rawptr ---
     // EGL: get EGLContext object
@@ -1477,42 +1486,14 @@ foreign sokol_app_clib {
     html5_get_dropped_file_size :: proc(#any_int index: c.int) -> u32 ---
     // HTML5: asynchronously load the content of a dropped file
     html5_fetch_dropped_file :: proc(#by_ptr request: Html5_Fetch_Request)  ---
-    // Metal: get bridged pointer to Metal device object
-    metal_get_device :: proc() -> rawptr ---
-    // Metal: get bridged pointer to MTKView's current drawable of type CAMetalDrawable
-    metal_get_current_drawable :: proc() -> rawptr ---
-    // Metal: get bridged pointer to MTKView's depth-stencil texture of type MTLTexture
-    metal_get_depth_stencil_texture :: proc() -> rawptr ---
-    // Metal: get bridged pointer to MTKView's msaa-color-texture of type MTLTexture (may be null)
-    metal_get_msaa_color_texture :: proc() -> rawptr ---
     // macOS: get bridged pointer to macOS NSWindow
     macos_get_window :: proc() -> rawptr ---
     // iOS: get bridged pointer to iOS UIWindow
     ios_get_window :: proc() -> rawptr ---
-    // D3D11: get pointer to ID3D11Device object
-    d3d11_get_device :: proc() -> rawptr ---
-    // D3D11: get pointer to ID3D11DeviceContext object
-    d3d11_get_device_context :: proc() -> rawptr ---
     // D3D11: get pointer to IDXGISwapChain object
     d3d11_get_swap_chain :: proc() -> rawptr ---
-    // D3D11: get pointer to ID3D11RenderTargetView object for rendering
-    d3d11_get_render_view :: proc() -> rawptr ---
-    // D3D11: get pointer ID3D11RenderTargetView object for msaa-resolve (may return null)
-    d3d11_get_resolve_view :: proc() -> rawptr ---
-    // D3D11: get pointer ID3D11DepthStencilView
-    d3d11_get_depth_stencil_view :: proc() -> rawptr ---
     // Win32: get the HWND window handle
     win32_get_hwnd :: proc() -> rawptr ---
-    // WebGPU: get WGPUDevice handle
-    wgpu_get_device :: proc() -> rawptr ---
-    // WebGPU: get swapchain's WGPUTextureView handle for rendering
-    wgpu_get_render_view :: proc() -> rawptr ---
-    // WebGPU: get swapchain's MSAA-resolve WGPUTextureView (may return null)
-    wgpu_get_resolve_view :: proc() -> rawptr ---
-    // WebGPU: get swapchain's WGPUTextureView for the depth-stencil surface
-    wgpu_get_depth_stencil_view :: proc() -> rawptr ---
-    // GL: get framebuffer object
-    gl_get_framebuffer :: proc() -> u32 ---
     // GL: get major version
     gl_get_major_version :: proc() -> c.int ---
     // GL: get minor version
@@ -1958,9 +1939,152 @@ Log_Item :: enum i32 {
     WGPU_REQUEST_ADAPTER_STATUS_ERROR,
     WGPU_REQUEST_ADAPTER_STATUS_UNKNOWN,
     WGPU_CREATE_INSTANCE_FAILED,
+    VULKAN_ALLOC_DEVICE_MEMORY_NO_SUITABLE_MEMORY_TYPE,
+    VULKAN_ALLOCATE_MEMORY_FAILED,
+    VULKAN_CREATE_INSTANCE_FAILED,
+    VULKAN_ENUMERATE_PHYSICAL_DEVICES_FAILED,
+    VULKAN_NO_PHYSICAL_DEVICES_FOUND,
+    VULKAN_NO_SUITABLE_PHYSICAL_DEVICE_FOUND,
+    VULKAN_CREATE_DEVICE_FAILED_EXTENSION_NOT_PRESENT,
+    VULKAN_CREATE_DEVICE_FAILED_FEATURE_NOT_PRESENT,
+    VULKAN_CREATE_DEVICE_FAILED_INITIALIZATION_FAILED,
+    VULKAN_CREATE_DEVICE_FAILED_OTHER,
+    VULKAN_CREATE_SURFACE_FAILED,
+    VULKAN_CREATE_SWAPCHAIN_FAILED,
+    VULKAN_SWAPCHAIN_CREATE_IMAGE_VIEW_FAILED,
+    VULKAN_SWAPCHAIN_CREATE_IMAGE_FAILED,
+    VULKAN_SWAPCHAIN_ALLOC_IMAGE_DEVICE_MEMORY_FAILED,
+    VULKAN_SWAPCHAIN_BIND_IMAGE_MEMORY_FAILED,
+    VULKAN_ACQUIRE_NEXT_IMAGE_FAILED,
+    VULKAN_QUEUE_PRESENT_FAILED,
     IMAGE_DATA_SIZE_MISMATCH,
     DROPPED_FILE_PATH_TOO_LONG,
     CLIPBOARD_STRING_TOO_BIG,
+}
+
+/*
+    sapp_pixel_format
+
+    Defines the pixel format for swapchain surfaces.
+
+    NOTE: when using sokol_gfx.h do not assume that the underlying
+    values are compatible with sg_pixel_format!
+*/
+Pixel_Format :: enum i32 {
+    DEFAULT,
+    NONE,
+    RGBA8,
+    SRGB8A8,
+    BGRA8,
+    SBGRA8,
+    DEPTH,
+    DEPTH_STENCIL,
+}
+
+/*
+    sapp_environment
+
+    Used to provide runtime environment information to the
+    outside world (like default pixel formats and the backend
+    3D API device pointer) via a call to sapp_get_environment().
+
+    NOTE: when using sokol_gfx.h, don't assume that sapp_environment
+    is binary compatible with sg_environment! Always use a translation
+    function like sglue_environment() to populate sg_environment
+    from sapp_environment!
+*/
+Environment_Defaults :: struct {
+    color_format : Pixel_Format,
+    depth_format : Pixel_Format,
+    sample_count : c.int,
+}
+
+Metal_Environment :: struct {
+    device : rawptr,
+}
+
+D3d11_Environment :: struct {
+    device : rawptr,
+    device_context : rawptr,
+}
+
+Wgpu_Environment :: struct {
+    device : rawptr,
+}
+
+Vulkan_Environment :: struct {
+    physical_device : rawptr,
+    device : rawptr,
+    queue : rawptr,
+    queue_family_index : u32,
+}
+
+Environment :: struct {
+    defaults : Environment_Defaults,
+    metal : Metal_Environment,
+    d3d11 : D3d11_Environment,
+    wgpu : Wgpu_Environment,
+    vulkan : Vulkan_Environment,
+}
+
+/*
+    sapp_swapchain
+
+    Provides swapchain information for the current frame to the outside
+    world via a call to sapp_get_swapchain().
+
+    NOTE: sapp_get_swapchain() must be called exactly once per frame since
+    on some backends it will also acquire the next swapchain image.
+
+    NOTE: when using sokol_gfx.h, don't assume that the sapp_swapchain struct
+    has the same memory layout as sg_swapchain! Use the sokol_log.h helper
+    function sglue_swapchain() to translate sapp_swapchain into a
+    sg_swapchain instead.
+*/
+Metal_Swapchain :: struct {
+    current_drawable : rawptr,
+    depth_stencil_texture : rawptr,
+    msaa_color_texture : rawptr,
+}
+
+D3d11_Swapchain :: struct {
+    render_view : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_view : rawptr,
+}
+
+Wgpu_Swapchain :: struct {
+    render_view : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_view : rawptr,
+}
+
+Vulkan_Swapchain :: struct {
+    render_image : rawptr,
+    render_view : rawptr,
+    resolve_image : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_image : rawptr,
+    depth_stencil_view : rawptr,
+    render_finished_semaphore : rawptr,
+    present_complete_semaphore : rawptr,
+}
+
+Gl_Swapchain :: struct {
+    framebuffer : u32,
+}
+
+Swapchain :: struct {
+    width : c.int,
+    height : c.int,
+    sample_count : c.int,
+    color_format : Pixel_Format,
+    depth_format : Pixel_Format,
+    metal : Metal_Swapchain,
+    d3d11 : D3d11_Swapchain,
+    wgpu : Wgpu_Swapchain,
+    vulkan : Vulkan_Swapchain,
+    gl : Gl_Swapchain,
 }
 
 /*
@@ -1981,6 +2105,37 @@ Logger :: struct {
     sokol-app initialization options, used as return value of sokol_main()
     or sapp_run() argument.
 */
+Gl_Desc :: struct {
+    major_version : c.int,
+    minor_version : c.int,
+}
+
+Win32_Desc :: struct {
+    console_utf8 : bool,
+    console_create : bool,
+    console_attach : bool,
+}
+
+Html5_Desc :: struct {
+    canvas_selector : cstring,
+    canvas_resize : bool,
+    preserve_drawing_buffer : bool,
+    premultiplied_alpha : bool,
+    ask_leave_site : bool,
+    update_document_title : bool,
+    bubble_mouse_events : bool,
+    bubble_touch_events : bool,
+    bubble_wheel_events : bool,
+    bubble_key_events : bool,
+    bubble_char_events : bool,
+    use_emsc_set_main_loop : bool,
+    emsc_set_main_loop_simulate_infinite_loop : bool,
+}
+
+Ios_Desc :: struct {
+    keyboard_resizes_canvas : bool,
+}
+
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -2007,25 +2162,10 @@ Desc :: struct {
     icon : Icon_Desc,
     allocator : Allocator,
     logger : Logger,
-    gl_major_version : c.int,
-    gl_minor_version : c.int,
-    win32_console_utf8 : bool,
-    win32_console_create : bool,
-    win32_console_attach : bool,
-    html5_canvas_selector : cstring,
-    html5_canvas_resize : bool,
-    html5_preserve_drawing_buffer : bool,
-    html5_premultiplied_alpha : bool,
-    html5_ask_leave_site : bool,
-    html5_update_document_title : bool,
-    html5_bubble_mouse_events : bool,
-    html5_bubble_touch_events : bool,
-    html5_bubble_wheel_events : bool,
-    html5_bubble_key_events : bool,
-    html5_bubble_char_events : bool,
-    html5_use_emsc_set_main_loop : bool,
-    html5_emsc_set_main_loop_simulate_infinite_loop : bool,
-    ios_keyboard_resizes_canvas : bool,
+    gl : Gl_Desc,
+    win32 : Win32_Desc,
+    html5 : Html5_Desc,
+    ios : Ios_Desc,
 }
 
 /*

@@ -23,6 +23,7 @@ package sokol_gfx
         #define SOKOL_D3D11
         #define SOKOL_METAL
         #define SOKOL_WGPU
+        #define SOKOL_VULKAN
         #define SOKOL_DUMMY_BACKEND
 
     I.e. for the desktop GL it should look like this:
@@ -57,15 +58,10 @@ package sokol_gfx
     On Windows, SOKOL_DLL will define SOKOL_GFX_API_DECL as __declspec(dllexport)
     or __declspec(dllimport) as needed.
 
-    If you want to compile without deprecated structs and functions,
-    define:
-
-    SOKOL_NO_DEPRECATED
-
     Optionally define the following to force debug checks and validations
     even in release mode:
 
-    SOKOL_DEBUG - by default this is defined if _DEBUG is defined
+    SOKOL_DEBUG - by default this is defined if NDEBUG is not defined
 
     Link with the following system libraries (note that sokol_app.h has
     additional linker requirements):
@@ -211,6 +207,23 @@ package sokol_gfx
         must be setup for instancing (see sg_pipeline_desc below), a separate vertex buffer
         containing per-instance data must be bound, and the num_instances parameter
         must be > 1.
+
+        Alternatively, call:
+
+            sg_draw_ex(...)
+
+        to provide a base-vertex and/or base-instance which allows to render
+        from different sections of a vertex buffer without rebinding the
+        vertex buffer with a different offset. Note that the `sg_draw_ex()`
+        only has limited portability on OpenGL, check the sg_limits struct
+        members .draw_base_vertex and .draw_base_instance for runtime support,
+        those are generally true on non-GL-backends, and on GL the feature
+        flags are set according to the GL version:
+
+            - on GL base_instance != 0 is only supported since GL 4.2
+            - on GLES3.x, base_instance != 0 is not supported
+            - on GLES3.x, base_vertex is only supported since GLES3.2
+              (e.g. not supported on WebGL2)
 
     --- ...or kick of a dispatch call to invoke a compute shader workload:
 
@@ -754,7 +767,7 @@ package sokol_gfx
 
     Next start the render pass with all attachment-views, as soon as a
     resolve-attachment-view is provided, an MSAA resolve operation will happen
-    at the end of the pass. Also note that the content of the MSAA color-attachemnt-image
+    at the end of the pass. Also note that the content of the MSAA color-attachment-image
     doesn't need to be preserved, since it's only needed until the MSAA-resolve
     at the end of the pass, so the .store_action should be set to "don't care":
 
@@ -902,7 +915,7 @@ package sokol_gfx
       compute-shader-stage:
         - for the desktop GL backend, source code can be provided in '#version 410' or
           '#version 430', version 430 is required when using storage buffers and
-          compute shaders support, but note that this is not available on macOS
+          compute shaders, but note that this is not available on macOS
         - for the GLES3 backend, source code must be provided in '#version 300 es' or
           '#version 310 es' syntax (version 310 is required for storage buffer and
           compute shader support, but note that this is not supported on WebGL2)
@@ -921,7 +934,7 @@ package sokol_gfx
     - Information about the input vertex attributes used by the vertex shader,
       most of that backend-specific:
         - An optional 'base type' (float, signed-/unsigned-int) for each vertex
-          attribute. When provided, this used by the validation layer to check
+          attribute. When provided, this is used by the validation layer to check
           that the CPU-side input vertex format is compatible with the input
           vertex declaration of the vertex shader.
         - Metal: no location information needed since vertex attributes are always bound
@@ -989,9 +1002,9 @@ package sokol_gfx
                 - SG_IMAGESAMPLETYPE_UNFILTERABLE_FLOAT
             - a flag whether the texture is expected to be multisampled
             - a backend-specific bind slot:
-                - D3D11/HLSL: the texture register N (`register(tN)`) where N is 0..23
+                - D3D11/HLSL: the texture register N (`register(tN)`) where N is 0..31
                 (in HLSL, readonly storage buffers and texture share the same bind space)
-                - Metal/MSL: the texture bind slot N (`[[texture(N)]]`) where N is 0..19
+                - Metal/MSL: the texture bind slot N (`[[texture(N)]]`) where N is 0..31
                 (the bind slot must not collide with storage image bindings on the same stage)
                 - WebGPU/WGSL: the binding N in `@group(0) @binding(N)` where N is 0..127
 
@@ -1005,15 +1018,16 @@ package sokol_gfx
             - a backend-specific bind slot:
                 - D3D11/HLSL:
                     - for readonly storage buffer bindings: the texture register N
-                    (`register(tN)`) where N is 0..23 (in HLSL, readonly storage
+                    (`register(tN)`) where N is 0..31 (in HLSL, readonly storage
                     buffers and textures share the same bind space for
                     'shader resource views')
                     - for read/write storage buffer buffer bindings: the UAV register N
-                    (`register(uN)`) where N is 0..11 (in HLSL, readwrite storage
+                    (`register(uN)`) where N is 0..31 (in HLSL, readwrite storage
                     buffers use their own bind space for 'unordered access views')
-                - Metal/MSL: the buffer bind slot N (`[[buffer(N)]]`) where N is 8..15
+                - Metal/MSL: the buffer bind slot N (`[[buffer(N)]]`) where N is 8..23
                 - WebGPU/WGSL: the binding N in `@group(0) @binding(N)` where N is 0..127
-                - GL/GLSL: the buffer binding N in `layout(binding=N)` where N is 0..7
+                - GL/GLSL: the buffer binding N in `layout(binding=N)`
+                  where N is 0..sg_limits.max_storage_buffer_bindings_per_stage
             - note that storage buffer bindings are not supported on all backends
             and platforms
 
@@ -1033,13 +1047,14 @@ package sokol_gfx
                 - SG_PIXELFORMAT_RGBA32UI/SI/F
             - the access type (readwrite or writeonly)
             - a backend-specific bind slot:
-                - D3D11/HLSL: the UAV register N (`register(uN)` where N is 0..11, the
+                - D3D11/HLSL: the UAV register N (`register(uN)` where N is 0..31, the
                 bind slot must not collide with UAV storage buffer bindings
-                - Metal/MSL: the texture bind slot N (`[[texture(N)]])` where N is 0..19,
+                - Metal/MSL: the texture bind slot N (`[[texture(N)]])` where N is 0..31,
                 the bind slot must not collide with other texture bindings on the same
                 stage
                 - WebGPU/WGSL: the binding N in `@group(1) @binding(N)` where N is 0..127
-                - GL/GLSL: the buffer binding N in `layout(binding=N)` where N is 0..3
+                - GL/GLSL: the buffer binding N in `layout(binding=N)`
+                  where N is 0.._sg.max_storage_image_bindings_per_stage
             - note that storage image bindings are not supported on all backends and platforms
 
     - A description of each sampler used in the shader:
@@ -1049,8 +1064,8 @@ package sokol_gfx
             - SG_SAMPLERTYPE_NONFILTERING,
             - SG_SAMPLERTYPE_COMPARISON,
         - a backend-specific bind slot:
-            - D3D11/HLSL: the sampler register N (`register(sN)`) where N is 0..15
-            - Metal/MSL: the sampler bind slot N (`[[sampler(N)]]`) where N is 0..15
+            - D3D11/HLSL: the sampler register N (`register(sN)`) where N is 0..SG_MAX_SAMPLER_BINDINGS
+            - Metal/MSL: the sampler bind slot N (`[[sampler(N)]]`) where N is 0..SG_MAX_SAMPLER_BINDINGS
             - WebGPU/WGSL: the binding N in `@group(0) @binding(N)` where N is 0..127
 
     - An array of 'texture-sampler-pairs' used by the shader to sample textures,
@@ -1075,24 +1090,24 @@ package sokol_gfx
         - D3D11/HLSL:
             - separate bindslot space per shader stage
             - uniform block bindings (as cbuffer): `register(b0..b7)`
-            - texture- and readonly storage buffer bindings: `register(t0..t23)`
-            - read/write storage buffer and storage image bindings: `register(u0..u11)`
-            - samplers: `register(s0..s15)`
+            - texture- and readonly storage buffer bindings: `register(t0..t31)`
+            - read/write storage buffer and storage image bindings: `register(u0..u31)`
+            - samplers: `register(s0..s11)`
         - Metal/MSL:
             - separate bindslot space per shader stage
             - uniform blocks: `[[buffer(0..7)]]`
-            - storage buffers: `[[buffer(8..15)]]`
-            - textures and storage image bindings: `[[texture(0..19)]]`
-            - samplers: `[[sampler(0..15)]]`
+            - storage buffers: `[[buffer(8..23)]]`
+            - textures and storage image bindings: `[[texture(0..31)]]`
+            - samplers: `[[sampler(0..11)]]`
         - WebGPU/WGSL:
             - common bindslot space across shader stages
             - uniform blocks: `@group(0) @binding(0..15)`
             - textures, storage-images, storage-buffers and sampler: `@group(1) @binding(0..127)`
         - GL/GLSL:
             - uniforms and image-samplers are bound by name
-            - storage buffer bindings: `layout(std430, binding=0..7)` (common
+            - storage buffer bindings: `layout(std430, binding=0..sg_limits.max_storage_buffer_bindings_per_stage` (common
               bindslot space across shader stages)
-            - storage image bindings: `layout(binding=0..3, [access_format])`
+            - storage image bindings: `layout(binding=0..sg_limits.max_storage_image_bindings_per_stage, [access_format])`
 
     For example code of how to create backend-specific shader objects,
     please refer to the following samples:
@@ -1447,7 +1462,7 @@ package sokol_gfx
         GL:
             - the GL backend doesn't use name-lookup to find storage buffer bindings, this
               means you must annotate buffers with `layout(std430, binding=N)` in GLSL
-            - ...where N is 0..7 in the vertex shader, and 8..15 in the fragment shader
+            - ...where N is 0..sg_limits.max_storage_buffer_bindings_per_stage.
 
         WebGPU:
             - in WGSL, textures, samplers and storage buffers all use a shared
@@ -1854,7 +1869,7 @@ package sokol_gfx
     - sg_apply_bindings(): the sokol-gfx WebGPU backend implements a bindgroup
       cache to prevent excessive creation and destruction of BindGroup objects
       when calling sg_apply_bindings(). The number of slots in the bindgroups
-      cache is defined in sg_desc.wgpu_bindgroups_cache_size when calling
+      cache is defined in sg_desc.wgpu.bindgroups_cache_size when calling
       sg_setup. The cache size must be a power-of-2 number, with the default being
       1024. The bindgroups cache behaviour can be observed by calling the new
       function sg_query_frame_stats(), where the following struct items are
@@ -2037,6 +2052,7 @@ foreign sokol_gfx_clib {
     apply_bindings :: proc(#by_ptr bindings: Bindings)  ---
     apply_uniforms :: proc(#any_int ub_slot: c.int, #by_ptr data: Range)  ---
     draw :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int)  ---
+    draw_ex :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int, #any_int base_vertex: c.int, #any_int base_instance: c.int)  ---
     dispatch :: proc(#any_int num_groups_x: c.int, #any_int num_groups_y: c.int, #any_int num_groups_z: c.int)  ---
     end_pass :: proc()  ---
     commit :: proc()  ---
@@ -2253,15 +2269,19 @@ Range :: struct {
 // various compile-time constants in the public API
 INVALID_ID :: 0
 NUM_INFLIGHT_FRAMES :: 2
-MAX_COLOR_ATTACHMENTS :: 4
+MAX_COLOR_ATTACHMENTS :: 8
 MAX_UNIFORMBLOCK_MEMBERS :: 16
 MAX_VERTEX_ATTRIBUTES :: 16
 MAX_MIPMAPS :: 16
 MAX_VERTEXBUFFER_BINDSLOTS :: 8
 MAX_UNIFORMBLOCK_BINDSLOTS :: 8
-MAX_VIEW_BINDSLOTS :: 28
-MAX_SAMPLER_BINDSLOTS :: 16
-MAX_TEXTURE_SAMPLER_PAIRS :: 16
+MAX_VIEW_BINDSLOTS :: 32
+MAX_SAMPLER_BINDSLOTS :: 12
+MAX_TEXTURE_SAMPLER_PAIRS :: 32
+MAX_PORTABLE_COLOR_ATTACHMENTS :: 4
+MAX_PORTABLE_TEXTURE_BINDINGS_PER_STAGE :: 16
+MAX_PORTABLE_STORAGEBUFFER_BINDINGS_PER_STAGE :: 8
+MAX_PORTABLE_STORAGEIMAGE_BINDINGS_PER_STAGE :: 4
 
 /*
     sg_color
@@ -2289,6 +2309,7 @@ Backend :: enum i32 {
     METAL_MACOS,
     METAL_SIMULATOR,
     WGPU,
+    VULKAN,
     DUMMY,
 }
 
@@ -2428,6 +2449,8 @@ Features :: struct {
     compute : bool,
     msaa_texture_bindings : bool,
     separate_buffer_types : bool,
+    draw_base_vertex : bool,
+    draw_base_instance : bool,
     gl_texture_views : bool,
 }
 
@@ -2439,8 +2462,14 @@ Limits :: struct {
     max_image_size_array : c.int,
     max_image_array_layers : c.int,
     max_vertex_attrs : c.int,
+    max_color_attachments : c.int,
+    max_texture_bindings_per_stage : c.int,
+    max_storage_buffer_bindings_per_stage : c.int,
+    max_storage_image_bindings_per_stage : c.int,
     gl_max_vertex_uniform_components : c.int,
     gl_max_combined_texture_image_units : c.int,
+    d3d11_max_unordered_access_views : c.int,
+    vk_min_uniform_buffer_offset_alignment : c.int,
 }
 
 /*
@@ -3016,7 +3045,7 @@ Stencil_Attachment_Action :: struct {
 }
 
 Pass_Action :: struct {
-    colors : [4]Color_Attachment_Action,
+    colors : [8]Color_Attachment_Action,
     depth : Depth_Attachment_Action,
     stencil : Stencil_Attachment_Action,
 }
@@ -3082,7 +3111,7 @@ Pass_Action :: struct {
     On all other backends you shouldn't need to mess with the reference count.
 
     It's a good practice to write a helper function which returns an initialized
-    sg_swapchain structs, which can then be plugged directly into
+    sg_swapchain struct, which can then be plugged directly into
     sg_pass.swapchain. Look at the function sglue_swapchain() in the sokol_glue.h
     as an example.
 */
@@ -3104,6 +3133,17 @@ Wgpu_Swapchain :: struct {
     depth_stencil_view : rawptr,
 }
 
+Vulkan_Swapchain :: struct {
+    render_image : rawptr,
+    render_view : rawptr,
+    resolve_image : rawptr,
+    resolve_view : rawptr,
+    depth_stencil_image : rawptr,
+    depth_stencil_view : rawptr,
+    render_finished_semaphore : rawptr,
+    present_complete_semaphore : rawptr,
+}
+
 Gl_Swapchain :: struct {
     framebuffer : u32,
 }
@@ -3117,6 +3157,7 @@ Swapchain :: struct {
     metal : Metal_Swapchain,
     d3d11 : D3d11_Swapchain,
     wgpu : Wgpu_Swapchain,
+    vulkan : Vulkan_Swapchain,
     gl : Gl_Swapchain,
 }
 
@@ -3148,8 +3189,8 @@ Swapchain :: struct {
         });
 */
 Attachments :: struct {
-    colors : [4]View,
-    resolves : [4]View,
+    colors : [8]View,
+    resolves : [8]View,
     depth_stencil : View,
 }
 
@@ -3199,7 +3240,6 @@ Pass :: struct {
 
 /*
     sg_bindings
-
 
     The sg_bindings structure defines the resource bindings for
     the next draw call.
@@ -3289,8 +3329,8 @@ Bindings :: struct {
     vertex_buffer_offsets : [8]c.int,
     index_buffer : Buffer,
     index_buffer_offset : c.int,
-    views : [28]View,
-    samplers : [16]Sampler,
+    views : [32]View,
+    samplers : [12]Sampler,
     _ : u32,
 }
 
@@ -3300,11 +3340,11 @@ Bindings :: struct {
     Describes how a buffer object is going to be used:
 
     .vertex_buffer (default: true)
-        the buffer will bound as vertex buffer via sg_bindings.vertex_buffers[]
+        the buffer will be bound as vertex buffer via sg_bindings.vertex_buffers[]
     .index_buffer (default: false)
-        the buffer will bound as index buffer via sg_bindings.index_buffer
+        the buffer will be bound as index buffer via sg_bindings.index_buffer
     .storage_buffer (default: false)
-        the buffer will bound as storage buffer via storage-buffer-view
+        the buffer will be bound as storage buffer via storage-buffer-view
         in sg_bindings.views[]
     .immutable (default: true)
         the buffer content will never be updated from the CPU side (but
@@ -3331,7 +3371,7 @@ Buffer_Usage :: struct {
     The default configuration is:
 
     .size:      0       (*must* be >0 for buffers without data)
-    .usage              .vertex_buffer = true, .immutable = true
+    .usage      { .vertex_buffer = true, .immutable = true }
     .data.ptr   0       (*must* be valid for immutable buffers without storage buffer usage)
     .data.size  0       (*must* be > 0 for immutable buffers without storage buffer usage)
     .label      0       (optional string label)
@@ -3453,30 +3493,32 @@ View_Type :: enum i32 {
 /*
     sg_image_data
 
-    Defines the content of an image through an array of sg_range struct,
-    each range pointing to one mip-level. For array-, cubemap- and 3D-images
-    each mip-level contains all slice-surfaces for that mip-level in a single
-    tightly packed memory block.
+    Defines the content of an image through an array of sg_range structs, each
+    range pointing to the pixel data for one mip-level. For array-, cubemap- and
+    3D-images each mip-level contains all slice-surfaces for that mip-level in a
+    single tightly packed memory block.
 
     The size of a single surface in a mip-level for a regular 2D texture
     can be computed via:
 
-        sg_query_surface_pitch(pixel_format, width, height, 1);
+        sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
 
     For array- and 3d-images the size of a single miplevel is:
 
-        num_slices * sg_query_surface_pitch(pixel_format, width, height, 1);
+        num_slices * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
 
     For cubemap-images the size of a single mip-level is:
 
-        6 * sg_query_surface_pitch(pixel_format, width, height, 1);
+        6 * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
 
-    The order of cubemap-faces is:
+    The order of cubemap-faces is in a mip-level data chunk is:
 
-        slice   direction
-        0, 1 => +X, -X
-        2, 3 => +Y, -Y
-        4, 5 => +Z, -Z
+        [0] => +X
+        [1] => -X
+        [2] => +Y
+        [3] => -Y
+        [4] => +Z
+        [5] => -Z
 */
 Image_Data :: struct {
     mip_levels : [16]Range,
@@ -3665,8 +3707,8 @@ Sampler_Desc :: struct {
         - the image-sample type (SG_IMAGESAMPLETYPE_*)
         - whether the texture is multisampled
         - backend specific bindslots:
-            - HLSL: the texture register `register(t0..23)`
-            - MSL: the texture attribute `[[texture(0..19)]]`
+            - HLSL: the texture register `register(t0..31)`
+            - MSL: the texture attribute `[[texture(0..31)]]`
             - WGSL: the binding in `@group(1) @binding(0..127)`
 
     - storage-buffer bindings must provide the following information:
@@ -3674,11 +3716,11 @@ Sampler_Desc :: struct {
         - whether the storage buffer is readonly
         - backend specific bindslots:
             - HLSL:
-                - for readonly storage buffer bindings: `register(t0..23)`
-                - for read/write storage buffer bindings: `register(u0..11)`
-            - MSL: the buffer attribute `[[buffer(8..15)]]`
+                - for storage buffer bindings: `register(t0..31)`
+                - for read/write storage buffer bindings: `register(u0..31)`
+            - MSL: the buffer attribute `[[buffer(8..23)]]`
             - WGSL: the binding in `@group(1) @binding(0..127)`
-            - GL: the binding in `layout(binding=0..7)`
+            - GL: the binding in `layout(binding=0..sg_limits.max_storage_buffer_bindings_per_stage)`
 
     - storage-image bindings must provide the following information:
         - the shader stage (*must* be SG_SHADERSTAGE_COMPUTE)
@@ -3689,17 +3731,17 @@ Sampler_Desc :: struct {
           note that only a subset of pixel formats is allowed for storage image
           bindings
         - backend specific bindslots:
-            - HLSL: the UAV register `register(u0..11)`
-            - MSL: the texture attribute `[[texture(0..19)]]`
+            - HLSL: the UAV register `register(u0..31)`
+            - MSL: the texture attribute `[[texture(0..31)]]`
             - WGSL: the binding in `@group(1) @binding(0..127)`
-            - GLSL: the binding in `layout(binding=0..3, [access_format])`
+            - GLSL: the binding in `layout(binding=0..sg_imits.max_storage_buffer_bindings_per_stage, [access_format])`
 
     - reflection information for each sampler used by the shader:
         - the shader stage the sampler appears in (SG_SHADERSTAGE_*)
         - the sampler type (SG_SAMPLERTYPE_*)
         - backend specific bindslots:
-            - HLSL: the sampler register `register(s0..15)`
-            - MSL: the sampler attribute `[[sampler(0..15)]]`
+            - HLSL: the sampler register `register(s0..11)`
+            - MSL: the sampler attribute `[[sampler(0..11)]]`
             - WGSL: the binding in `@group(0) @binding(0..127)`
 
     - reflection information for each texture-sampler pair used by
@@ -3780,6 +3822,7 @@ Shader_Uniform_Block :: struct {
     hlsl_register_b_n : u8,
     msl_buffer_n : u8,
     wgsl_group0_binding_n : u8,
+    spirv_set0_binding_n : u8,
     layout : Uniform_Layout,
     glsl_uniforms : [16]Glsl_Shader_Uniform,
 }
@@ -3792,6 +3835,7 @@ Shader_Texture_View :: struct {
     hlsl_register_t_n : u8,
     msl_texture_n : u8,
     wgsl_group1_binding_n : u8,
+    spirv_set1_binding_n : u8,
 }
 
 Shader_Storage_Buffer_View :: struct {
@@ -3801,6 +3845,7 @@ Shader_Storage_Buffer_View :: struct {
     hlsl_register_u_n : u8,
     msl_buffer_n : u8,
     wgsl_group1_binding_n : u8,
+    spirv_set1_binding_n : u8,
     glsl_binding_n : u8,
 }
 
@@ -3812,6 +3857,7 @@ Shader_Storage_Image_View :: struct {
     hlsl_register_u_n : u8,
     msl_texture_n : u8,
     wgsl_group1_binding_n : u8,
+    spirv_set1_binding_n : u8,
     glsl_binding_n : u8,
 }
 
@@ -3827,6 +3873,7 @@ Shader_Sampler :: struct {
     hlsl_register_s_n : u8,
     msl_sampler_n : u8,
     wgsl_group1_binding_n : u8,
+    spirv_set1_binding_n : u8,
 }
 
 Shader_Texture_Sampler_Pair :: struct {
@@ -3849,9 +3896,9 @@ Shader_Desc :: struct {
     compute_func : Shader_Function,
     attrs : [16]Shader_Vertex_Attr,
     uniform_blocks : [8]Shader_Uniform_Block,
-    views : [28]Shader_View,
-    samplers : [16]Shader_Sampler,
-    texture_sampler_pairs : [16]Shader_Texture_Sampler_Pair,
+    views : [32]Shader_View,
+    samplers : [12]Shader_Sampler,
+    texture_sampler_pairs : [32]Shader_Texture_Sampler_Pair,
     mtl_threads_per_threadgroup : Mtl_Shader_Threads_Per_Threadgroup,
     label : cstring,
     _ : u32,
@@ -4006,7 +4053,7 @@ Pipeline_Desc :: struct {
     depth : Depth_State,
     stencil : Stencil_State,
     color_count : c.int,
-    colors : [4]Color_Target_State,
+    colors : [8]Color_Target_State,
     primitive_type : Primitive_Type,
     index_type : Index_Type,
     cull_mode : Cull_Mode,
@@ -4323,6 +4370,28 @@ Frame_Stats_Wgpu :: struct {
     bindings : Frame_Stats_Wgpu_Bindings,
 }
 
+Frame_Stats_Vk :: struct {
+    num_cmd_pipeline_barrier : u32,
+    num_allocate_memory : u32,
+    num_free_memory : u32,
+    size_allocate_memory : u32,
+    num_delete_queue_added : u32,
+    num_delete_queue_collected : u32,
+    num_cmd_copy_buffer : u32,
+    num_cmd_copy_buffer_to_image : u32,
+    num_cmd_set_descriptor_buffer_offsets : u32,
+    size_descriptor_buffer_writes : u32,
+}
+
+Resource_Stats :: struct {
+    total_alive : u32,
+    total_free : u32,
+    allocated : u32,
+    deallocated : u32,
+    inited : u32,
+    uninited : u32,
+}
+
 Frame_Stats :: struct {
     frame_index : u32,
     num_passes : u32,
@@ -4332,6 +4401,7 @@ Frame_Stats :: struct {
     num_apply_bindings : u32,
     num_apply_uniforms : u32,
     num_draw : u32,
+    num_draw_ex : u32,
     num_dispatch : u32,
     num_update_buffer : u32,
     num_append_buffer : u32,
@@ -4340,10 +4410,17 @@ Frame_Stats :: struct {
     size_update_buffer : u32,
     size_append_buffer : u32,
     size_update_image : u32,
+    buffers : Resource_Stats,
+    images : Resource_Stats,
+    samplers : Resource_Stats,
+    views : Resource_Stats,
+    shaders : Resource_Stats,
+    pipelines : Resource_Stats,
     gl : Frame_Stats_Gl,
     d3d11 : Frame_Stats_D3d11,
     metal : Frame_Stats_Metal,
     wgpu : Frame_Stats_Wgpu,
+    vk : Frame_Stats_Vk,
 }
 
 Log_Item :: enum i32 {
@@ -4365,6 +4442,7 @@ Log_Item :: enum i32 {
     GL_FRAMEBUFFER_STATUS_UNSUPPORTED,
     GL_FRAMEBUFFER_STATUS_INCOMPLETE_MULTISAMPLE,
     GL_FRAMEBUFFER_STATUS_UNKNOWN,
+    D3D11_FEATURE_LEVEL_0_DETECTED,
     D3D11_CREATE_BUFFER_FAILED,
     D3D11_CREATE_BUFFER_SRV_FAILED,
     D3D11_CREATE_BUFFER_UAV_FAILED,
@@ -4434,6 +4512,41 @@ Log_Item :: enum i32 {
     WGPU_CREATE_PIPELINE_LAYOUT_FAILED,
     WGPU_CREATE_RENDER_PIPELINE_FAILED,
     WGPU_CREATE_COMPUTE_PIPELINE_FAILED,
+    VULKAN_REQUIRED_EXTENSION_FUNCTION_MISSING,
+    VULKAN_ALLOC_DEVICE_MEMORY_NO_SUITABLE_MEMORY_TYPE,
+    VULKAN_ALLOCATE_MEMORY_FAILED,
+    VULKAN_ALLOC_BUFFER_DEVICE_MEMORY_FAILED,
+    VULKAN_ALLOC_IMAGE_DEVICE_MEMORY_FAILED,
+    VULKAN_DELETE_QUEUE_EXHAUSTED,
+    VULKAN_STAGING_CREATE_BUFFER_FAILED,
+    VULKAN_STAGING_ALLOCATE_MEMORY_FAILED,
+    VULKAN_STAGING_BIND_BUFFER_MEMORY_FAILED,
+    VULKAN_STAGING_STREAM_BUFFER_OVERFLOW,
+    VULKAN_CREATE_SHARED_BUFFER_FAILED,
+    VULKAN_ALLOCATE_SHARED_BUFFER_MEMORY_FAILED,
+    VULKAN_BIND_SHARED_BUFFER_MEMORY_FAILED,
+    VULKAN_MAP_SHARED_BUFFER_MEMORY_FAILED,
+    VULKAN_CREATE_BUFFER_FAILED,
+    VULKAN_BIND_BUFFER_MEMORY_FAILED,
+    VULKAN_CREATE_IMAGE_FAILED,
+    VULKAN_BIND_IMAGE_MEMORY_FAILED,
+    VULKAN_CREATE_SHADER_MODULE_FAILED,
+    VULKAN_UNIFORMBLOCK_SPIRV_SET0_BINDING_OUT_OF_RANGE,
+    VULKAN_TEXTURE_SPIRV_SET1_BINDING_OUT_OF_RANGE,
+    VULKAN_STORAGEBUFFER_SPIRV_SET1_BINDING_OUT_OF_RANGE,
+    VULKAN_STORAGEIMAGE_SPIRV_SET1_BINDING_OUT_OF_RANGE,
+    VULKAN_SAMPLER_SPIRV_SET1_BINDING_OUT_OF_RANGE,
+    VULKAN_CREATE_DESCRIPTOR_SET_LAYOUT_FAILED,
+    VULKAN_CREATE_PIPELINE_LAYOUT_FAILED,
+    VULKAN_CREATE_GRAPHICS_PIPELINE_FAILED,
+    VULKAN_CREATE_COMPUTE_PIPELINE_FAILED,
+    VULKAN_CREATE_IMAGE_VIEW_FAILED,
+    VULKAN_VIEW_MAX_DESCRIPTOR_SIZE,
+    VULKAN_CREATE_SAMPLER_FAILED,
+    VULKAN_SAMPLER_MAX_DESCRIPTOR_SIZE,
+    VULKAN_WAIT_FOR_FENCE_FAILED,
+    VULKAN_UNIFORM_BUFFER_OVERFLOW,
+    VULKAN_DESCRIPTOR_BUFFER_OVERFLOW,
     IDENTICAL_COMMIT_LISTENER,
     COMMIT_LISTENER_ARRAY_FULL,
     TRACE_HOOKS_NOT_ENABLED,
@@ -4467,8 +4580,22 @@ Log_Item :: enum i32 {
     SHADER_POOL_EXHAUSTED,
     PIPELINE_POOL_EXHAUSTED,
     VIEW_POOL_EXHAUSTED,
+    BEGINPASS_TOO_MANY_COLOR_ATTACHMENTS,
+    BEGINPASS_TOO_MANY_RESOLVE_ATTACHMENTS,
     BEGINPASS_ATTACHMENTS_ALIVE,
     DRAW_WITHOUT_BINDINGS,
+    SHADERDESC_TOO_MANY_VERTEXSTAGE_TEXTURES,
+    SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURES,
+    SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURES,
+    SHADERDESC_TOO_MANY_VERTEXSTAGE_STORAGEBUFFERS,
+    SHADERDESC_TOO_MANY_FRAGMENTSTAGE_STORAGEBUFFERS,
+    SHADERDESC_TOO_MANY_COMPUTESTAGE_STORAGEBUFFERS,
+    SHADERDESC_TOO_MANY_VERTEXSTAGE_STORAGEIMAGES,
+    SHADERDESC_TOO_MANY_FRAGMENTSTAGE_STORAGEIMAGES,
+    SHADERDESC_TOO_MANY_COMPUTESTAGE_STORAGEIMAGES,
+    SHADERDESC_TOO_MANY_VERTEXSTAGE_TEXTURESAMPLERPAIRS,
+    SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURESAMPLERPAIRS,
+    SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURESAMPLERPAIRS,
     VALIDATE_BUFFERDESC_CANARY,
     VALIDATE_BUFFERDESC_IMMUTABLE_DYNAMIC_STREAM,
     VALIDATE_BUFFERDESC_SEPARATE_BUFFER_TYPES,
@@ -4522,48 +4649,35 @@ Log_Item :: enum i32 {
     VALIDATE_SHADERDESC_METAL_THREADS_PER_THREADGROUP_MULTIPLE_32,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_NO_CONT_MEMBERS,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_SIZE_IS_ZERO,
-    VALIDATE_SHADERDESC_UNIFORMBLOCK_METAL_BUFFER_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_METAL_BUFFER_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_UNIFORMBLOCK_HLSL_REGISTER_B_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_HLSL_REGISTER_B_COLLISION,
-    VALIDATE_SHADERDESC_UNIFORMBLOCK_WGSL_GROUP0_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_WGSL_GROUP0_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_UNIFORMBLOCK_SPIRV_SET0_BINDING_COLLISION,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_NO_MEMBERS,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_UNIFORM_GLSL_NAME,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_SIZE_MISMATCH,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_ARRAY_COUNT,
     VALIDATE_SHADERDESC_UNIFORMBLOCK_STD140_ARRAY_TYPE,
-    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_METAL_BUFFER_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_METAL_BUFFER_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_T_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_T_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_U_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_HLSL_REGISTER_U_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_GLSL_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_GLSL_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_VIEW_STORAGEBUFFER_SPIRV_SET1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_EXPECT_COMPUTE_STAGE,
-    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_METAL_TEXTURE_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_HLSL_REGISTER_U_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_HLSL_REGISTER_U_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_GLSL_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_GLSL_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_WGSL_GROUP1_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_TEXTURE_METAL_TEXTURE_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_STORAGEIMAGE_SPIRV_SET1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_VIEW_TEXTURE_METAL_TEXTURE_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_TEXTURE_HLSL_REGISTER_T_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_TEXTURE_HLSL_REGISTER_T_COLLISION,
-    VALIDATE_SHADERDESC_VIEW_TEXTURE_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_VIEW_TEXTURE_WGSL_GROUP1_BINDING_COLLISION,
-    VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_OUT_OF_RANGE,
+    VALIDATE_SHADERDESC_VIEW_TEXTURE_SPIRV_SET1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_SAMPLER_METAL_SAMPLER_SLOT_COLLISION,
-    VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_SAMPLER_HLSL_REGISTER_S_COLLISION,
-    VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_SAMPLER_WGSL_GROUP1_BINDING_COLLISION,
+    VALIDATE_SHADERDESC_SAMPLER_SPIRV_SET1_BINDING_COLLISION,
     VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_VIEW_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_SAMPLER_SLOT_OUT_OF_RANGE,
     VALIDATE_SHADERDESC_TEXTURE_SAMPLER_PAIR_TEXTURE_STAGE_MISMATCH,
@@ -4649,7 +4763,8 @@ Log_Item :: enum i32 {
     VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_IMAGE_ALIVE,
     VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_IMAGE_VALID,
     VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SIZES,
-    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SAMPLECOUNTS,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SAMPLECOUNT,
+    VALIDATE_BEGINPASS_COLORATTACHMENTVIEW_SAMPLECOUNTS_EQUAL,
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_NO_COLORATTACHMENTVIEW,
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_ALIVE,
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_VALID,
@@ -4740,9 +4855,18 @@ Log_Item :: enum i32 {
     VALIDATE_AU_NO_UNIFORMBLOCK_AT_SLOT,
     VALIDATE_AU_SIZE,
     VALIDATE_DRAW_RENDERPASS_EXPECTED,
-    VALIDATE_DRAW_BASEELEMENT,
-    VALIDATE_DRAW_NUMELEMENTS,
-    VALIDATE_DRAW_NUMINSTANCES,
+    VALIDATE_DRAW_BASEELEMENT_GE_ZERO,
+    VALIDATE_DRAW_NUMELEMENTS_GE_ZERO,
+    VALIDATE_DRAW_NUMINSTANCES_GE_ZERO,
+    VALIDATE_DRAW_EX_RENDERPASS_EXPECTED,
+    VALIDATE_DRAW_EX_BASEELEMENT_GE_ZERO,
+    VALIDATE_DRAW_EX_NUMELEMENTS_GE_ZERO,
+    VALIDATE_DRAW_EX_NUMINSTANCES_GE_ZERO,
+    VALIDATE_DRAW_EX_BASEINSTANCE_GE_ZERO,
+    VALIDATE_DRAW_EX_BASEVERTEX_VS_INDEXED,
+    VALIDATE_DRAW_EX_BASEINSTANCE_VS_INSTANCED,
+    VALIDATE_DRAW_EX_BASEVERTEX_NOT_SUPPORTED,
+    VALIDATE_DRAW_EX_BASEINSTANCE_NOT_SUPPORTED,
     VALIDATE_DRAW_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
     VALIDATE_DISPATCH_COMPUTEPASS_EXPECTED,
     VALIDATE_DISPATCH_NUMGROUPSX,
@@ -4769,18 +4893,22 @@ Log_Item :: enum i32 {
 
     The default configuration is:
 
-    .buffer_pool_size               128
-    .image_pool_size                128
-    .sampler_pool_size              64
-    .shader_pool_size               32
-    .pipeline_pool_size             64
-    .view_pool_size                 256
-    .uniform_buffer_size            4 MB (4*1024*1024)
-    .max_commit_listeners           1024
-    .disable_validation             false
-    .mtl_force_managed_storage_mode false
-    .wgpu_disable_bindgroups_cache  false
-    .wgpu_bindgroups_cache_size     1024
+    .buffer_pool_size                   128
+    .image_pool_size                    128
+    .sampler_pool_size                  64
+    .shader_pool_size                   32
+    .pipeline_pool_size                 64
+    .view_pool_size                     256
+    .uniform_buffer_size                4 MB (4*1024*1024)
+    .max_commit_listeners               1024
+    .disable_validation                 false
+    .metal.force_managed_storage_mode   false
+    .metal.use_command_buffer_with_retained_references  false
+    .wgpu.disable_bindgroups_cache      false
+    .wgpu.bindgroups_cache_size         1024
+    .vulkan.copy_staging_buffer_size    4 MB
+    .vulkan.stream_staging_buffer_size  16 MB
+    .vulkan.descriptor_buffer_size      16 MB
 
     .allocator.alloc_fn     0 (in this case, malloc() will be called)
     .allocator.free_fn      0 (in this case, free() will be called)
@@ -4801,11 +4929,11 @@ Log_Item :: enum i32 {
         must hold a strong reference to the Objective-C object until sg_setup()
         returns.
 
-        .mtl_force_managed_storage_mode
+        .metal.force_managed_storage_mode
             when enabled, Metal buffers and texture resources are created in managed storage
             mode, otherwise sokol-gfx will decide whether to create buffers and
             textures in managed or shared storage mode (this is mainly a debugging option)
-        .mtl_use_command_buffer_with_retained_references
+        .metal.use_command_buffer_with_retained_references
             when true, the sokol-gfx Metal backend will use Metal command buffers which
             bump the reference count of resource objects as long as they are inflight,
             this is slower than the default command-buffer-with-unretained-references
@@ -4820,7 +4948,7 @@ Log_Item :: enum i32 {
             before sg_setup() is called
         .environment.d3d11.device_context
             a pointer to the ID3D11DeviceContext object
-        .d3d11_shader_debugging
+        .d3d11.shader_debugging
             set this to true to compile shaders which are provided as HLSL source
             code with debug information and without optimization, this allows
             shader debugging in tools like RenderDoc, to output source code
@@ -4828,11 +4956,11 @@ Log_Item :: enum i32 {
             option
 
     WebGPU specific:
-        .wgpu_disable_bindgroups_cache
+        .wgpu.disable_bindgroups_cache
             When this is true, the WebGPU backend will create and immediately
             release a BindGroup object in the sg_apply_bindings() call, only
             use this for debugging purposes.
-        .wgpu_bindgroups_cache_size
+        .wgpu.bindgroups_cache_size
             The size of the bindgroups cache for re-using BindGroup objects
             between sg_apply_bindings() calls. The smaller the cache size,
             the more likely are cache slot collisions which will cause
@@ -4843,6 +4971,29 @@ Log_Item :: enum i32 {
             NOTE: wgpu_bindgroups_cache_size must be a power-of-2 number!
         .environment.wgpu.device
             a WGPUDevice handle
+
+    Vulkan specific:
+        .vulkan.copy_staging_buffer_size
+            Size of the staging buffer in bytes for uploading the initial
+            content of buffers and images, and for updating
+            .usage.dynamic_update resources. The default is 4 MB,
+            bigger resource updates are split into multiple chunks
+            of the staging buffer size
+        .vulkan.stream_staging_buffer_size
+            Size of the staging buffer in bytes for updating .usage.stream_update
+            resources. The default is 16 MB. The size must be big enough
+            to accomodate all update into .usage.stream_update resources.
+            Any additional data will cause an error log message and
+            incomplete rendering. Note that the actually allocated size
+            will be twice as much because the stream-staging-buffer is
+            double-buffered.
+        .vulkan.descriptor_buffer_size
+            Size of the descriptor-upload buffer in bytes. The default
+            size is 16 bytes. The size must be big enough to accomodate
+            all unifrom-block, view- and sampler-bindings in a single
+            frame (assume a worst-case of 256 bytes per binding). Note
+            that the actually allocated size will be twice as much
+            because the descriptor-buffer is double-buffered.
 
     When using sokol_gfx.h and sokol_app.h together, consider using the
     helper function sglue_environment() in the sokol_glue.h header to
@@ -4869,11 +5020,19 @@ Wgpu_Environment :: struct {
     device : rawptr,
 }
 
+Vulkan_Environment :: struct {
+    physical_device : rawptr,
+    device : rawptr,
+    queue : rawptr,
+    queue_family_index : u32,
+}
+
 Environment :: struct {
     defaults : Environment_Defaults,
     metal : Metal_Environment,
     d3d11 : D3d11_Environment,
     wgpu : Wgpu_Environment,
+    vulkan : Vulkan_Environment,
 }
 
 /*
@@ -4920,6 +5079,26 @@ Logger :: struct {
     user_data : rawptr,
 }
 
+D3d11_Desc :: struct {
+    shader_debugging : bool,
+}
+
+Metal_Desc :: struct {
+    force_managed_storage_mode : bool,
+    use_command_buffer_with_retained_references : bool,
+}
+
+Wgpu_Desc :: struct {
+    disable_bindgroups_cache : bool,
+    bindgroups_cache_size : c.int,
+}
+
+Vulkan_Desc :: struct {
+    copy_staging_buffer_size : c.int,
+    stream_staging_buffer_size : c.int,
+    descriptor_buffer_size : c.int,
+}
+
 Desc :: struct {
     _ : u32,
     buffer_pool_size : c.int,
@@ -4931,11 +5110,11 @@ Desc :: struct {
     uniform_buffer_size : c.int,
     max_commit_listeners : c.int,
     disable_validation : bool,
-    d3d11_shader_debugging : bool,
-    mtl_force_managed_storage_mode : bool,
-    mtl_use_command_buffer_with_retained_references : bool,
-    wgpu_disable_bindgroups_cache : bool,
-    wgpu_bindgroups_cache_size : c.int,
+    enforce_portable_limits : bool,
+    d3d11 : D3d11_Desc,
+    metal : Metal_Desc,
+    wgpu : Wgpu_Desc,
+    vulkan : Vulkan_Desc,
     allocator : Allocator,
     logger : Logger,
     environment : Environment,

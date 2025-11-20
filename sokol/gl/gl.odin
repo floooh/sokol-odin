@@ -23,6 +23,7 @@ package sokol_gl
     SOKOL_D3D11
     SOKOL_METAL
     SOKOL_WGPU
+    SOKOL_VULKAN
 
     ...optionally provide the following macros to override defaults:
 

@@ -26,7 +26,7 @@ package sokol_log
 
     Optionally define the following for verbose output:
 
-    SOKOL_DEBUG         - by default this is defined if _DEBUG is defined
+    SOKOL_DEBUG         - by default this is defined if NDEBUG is not defined
 
 
     OVERVIEW
