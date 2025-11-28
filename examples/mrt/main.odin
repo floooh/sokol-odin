@@ -14,7 +14,7 @@ import sapp "../../sokol/app"
 import sglue "../../sokol/glue"
 import m "../math"
 
-OFFSCREEN_SAMPLE_COUNT :: 1
+OFFSCREEN_SAMPLE_COUNT :: 4
 NUM_MRTS :: 3
 
 state: struct {

@@ -28,6 +28,7 @@ init :: proc "c" () {
     case .GLCORE, .GLES3: fmt.println(">> using GL backend")
     case .METAL_MACOS, .METAL_IOS, .METAL_SIMULATOR: fmt.println(">> using Metal backend")
     case .WGPU: fmt.println(">> using WebGPU backend")
+    case .VULKAN: fmt.println(">> using Vulkan backend")
     case .DUMMY: fmt.println(">> using dummy backend")
     }
 }
