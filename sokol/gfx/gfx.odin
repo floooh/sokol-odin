@@ -418,12 +418,12 @@ package sokol_gfx
             sg_image sg_query_view_image(sg_view view)
             sg_buffer sg_query_view_buffer(sg_view view)
 
-    --- you can query frame stats and control stats collection via:
+    --- you can query stats and control stats collection via:
 
-            sg_query_frame_stats()
-            sg_enable_frame_stats()
-            sg_disable_frame_stats()
-            sg_frame_stats_enabled()
+            sg_query_stats()
+            sg_enable_stats()
+            sg_disable_stats()
+            sg_stats_enabled()
 
     --- you can ask at runtime what backend sokol_gfx.h has been compiled for:
 
@@ -1872,7 +1872,7 @@ package sokol_gfx
       cache is defined in sg_desc.wgpu.bindgroups_cache_size when calling
       sg_setup. The cache size must be a power-of-2 number, with the default being
       1024. The bindgroups cache behaviour can be observed by calling the new
-      function sg_query_frame_stats(), where the following struct items are
+      function sg_query_stats(), where the following struct items are
       of interest:
 
         .wgpu.num_bindgroup_cache_hits
@@ -2137,11 +2137,11 @@ foreign sokol_gfx_clib {
     fail_shader :: proc(shd: Shader)  ---
     fail_pipeline :: proc(pip: Pipeline)  ---
     fail_view :: proc(view: View)  ---
-    // frame stats
-    enable_frame_stats :: proc()  ---
-    disable_frame_stats :: proc()  ---
-    frame_stats_enabled :: proc() -> bool ---
-    query_frame_stats :: proc() -> Frame_Stats ---
+    // frame and total stats
+    enable_stats :: proc()  ---
+    disable_stats :: proc()  ---
+    stats_enabled :: proc() -> bool ---
+    query_stats :: proc() -> Stats ---
     // D3D11: return ID3D11Device
     d3d11_device :: proc() -> rawptr ---
     // D3D11: return ID3D11DeviceContext
@@ -4215,11 +4215,10 @@ View_Info :: struct {
 }
 
 /*
-    sg_frame_stats
+    sg_stats
 
-    Allows to track generic and backend-specific stats about a
-    render frame. Obtained by calling sg_query_frame_stats(). The returned
-    struct contains information about the *previous* frame.
+    Allows to track generic and backend-specific rendering stats,
+    obtained via sg_query_stats().
 */
 Frame_Stats_Gl :: struct {
     num_bind_buffer : u32,
@@ -4383,13 +4382,29 @@ Frame_Stats_Vk :: struct {
     size_descriptor_buffer_writes : u32,
 }
 
-Resource_Stats :: struct {
-    total_alive : u32,
-    total_free : u32,
+Frame_Resource_Stats :: struct {
     allocated : u32,
     deallocated : u32,
     inited : u32,
     uninited : u32,
+}
+
+Total_Resource_Stats :: struct {
+    alive : u32,
+    free : u32,
+    allocated : u32,
+    deallocated : u32,
+    inited : u32,
+    uninited : u32,
+}
+
+Total_Stats :: struct {
+    buffers : Total_Resource_Stats,
+    images : Total_Resource_Stats,
+    samplers : Total_Resource_Stats,
+    views : Total_Resource_Stats,
+    shaders : Total_Resource_Stats,
+    pipelines : Total_Resource_Stats,
 }
 
 Frame_Stats :: struct {
@@ -4410,17 +4425,23 @@ Frame_Stats :: struct {
     size_update_buffer : u32,
     size_append_buffer : u32,
     size_update_image : u32,
-    buffers : Resource_Stats,
-    images : Resource_Stats,
-    samplers : Resource_Stats,
-    views : Resource_Stats,
-    shaders : Resource_Stats,
-    pipelines : Resource_Stats,
+    buffers : Frame_Resource_Stats,
+    images : Frame_Resource_Stats,
+    samplers : Frame_Resource_Stats,
+    views : Frame_Resource_Stats,
+    shaders : Frame_Resource_Stats,
+    pipelines : Frame_Resource_Stats,
     gl : Frame_Stats_Gl,
     d3d11 : Frame_Stats_D3d11,
     metal : Frame_Stats_Metal,
     wgpu : Frame_Stats_Wgpu,
     vk : Frame_Stats_Vk,
+}
+
+Stats :: struct {
+    prev_frame : Frame_Stats,
+    cur_frame : Frame_Stats,
+    total : Total_Stats,
 }
 
 Log_Item :: enum i32 {
