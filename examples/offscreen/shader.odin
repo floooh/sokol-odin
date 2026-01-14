@@ -813,7 +813,7 @@ fs_default_source_metal_macos := [611]u8 {
     0x20,0x20,0x20,0x72,0x65,0x74,0x75,0x72,0x6e,0x20,0x6f,0x75,0x74,0x3b,0x0a,0x7d,
     0x0a,0x0a,0x00,
 }
-default_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+default_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "default_shader"
     #partial switch backend {
@@ -901,7 +901,7 @@ default_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     }
     return desc
 }
-offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+offscreen_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "offscreen_shader"
     #partial switch backend {

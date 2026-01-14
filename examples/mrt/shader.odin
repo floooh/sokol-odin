@@ -1224,7 +1224,7 @@ fs_dbg_source_metal_macos := [408]u8 {
     0x30,0x29,0x3b,0x0a,0x20,0x20,0x20,0x20,0x72,0x65,0x74,0x75,0x72,0x6e,0x20,0x6f,
     0x75,0x74,0x3b,0x0a,0x7d,0x0a,0x0a,0x00,
 }
-dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+dbg_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "dbg_shader"
     #partial switch backend {
@@ -1286,7 +1286,7 @@ dbg_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     }
     return desc
 }
-fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+fsq_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "fsq_shader"
     #partial switch backend {
@@ -1410,7 +1410,7 @@ fsq_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     }
     return desc
 }
-offscreen_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+offscreen_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "offscreen_shader"
     #partial switch backend {

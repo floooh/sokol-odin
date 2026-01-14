@@ -1148,7 +1148,7 @@ fs_source_metal_macos := [315]u8 {
     0x63,0x6f,0x6c,0x6f,0x72,0x3b,0x0a,0x20,0x20,0x20,0x20,0x72,0x65,0x74,0x75,0x72,
     0x6e,0x20,0x6f,0x75,0x74,0x3b,0x0a,0x7d,0x0a,0x0a,0x00,
 }
-display_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+display_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "display_shader"
     #partial switch backend {
@@ -1207,7 +1207,7 @@ display_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     }
     return desc
 }
-init_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+init_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "init_shader"
     #partial switch backend {
@@ -1236,7 +1236,7 @@ init_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
     }
     return desc
 }
-update_shader_desc :: proc (backend: sg.Backend) -> sg.Shader_Desc {
+update_shader_desc :: proc "c" (backend: sg.Backend) -> sg.Shader_Desc {
     desc: sg.Shader_Desc
     desc.label = "update_shader"
     #partial switch backend {
