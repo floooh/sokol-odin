@@ -2178,6 +2178,8 @@ foreign sokol_gfx_clib {
     mtl_render_command_encoder :: proc() -> rawptr ---
     // Metal: return __bridge-casted MTLComputeCommandEncoder when inside compute pass (otherwise zero)
     mtl_compute_command_encoder :: proc() -> rawptr ---
+    // Metal: return __bridge-casted MTLCommandQueue
+    mtl_command_queue :: proc() -> rawptr ---
     // Metal: get internal __bridge-casted buffer resource objects
     mtl_query_buffer_info :: proc(buf: Buffer) -> Mtl_Buffer_Info ---
     // Metal: get internal __bridge-casted image resource objects
