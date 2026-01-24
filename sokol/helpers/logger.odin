@@ -2,8 +2,6 @@ package sokol_helpers
 
 // Pass sokol logs into native odin logging system
 
-import sapp "../app"
-import sg "../gfx"
 import "base:runtime"
 import "core:log"
 
