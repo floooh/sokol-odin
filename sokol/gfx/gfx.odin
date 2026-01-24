@@ -5058,6 +5058,7 @@ Wgpu_Environment :: struct {
 }
 
 Vulkan_Environment :: struct {
+    instance : rawptr,
     physical_device : rawptr,
     device : rawptr,
     queue : rawptr,

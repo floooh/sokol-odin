@@ -1953,6 +1953,7 @@ Log_Item :: enum i32 {
     WGPU_REQUEST_ADAPTER_STATUS_ERROR,
     WGPU_REQUEST_ADAPTER_STATUS_UNKNOWN,
     WGPU_CREATE_INSTANCE_FAILED,
+    VULKAN_REQUIRED_INSTANCE_EXTENSION_FUNCTION_MISSING,
     VULKAN_ALLOC_DEVICE_MEMORY_NO_SUITABLE_MEMORY_TYPE,
     VULKAN_ALLOCATE_MEMORY_FAILED,
     VULKAN_CREATE_INSTANCE_FAILED,
@@ -2027,6 +2028,7 @@ Wgpu_Environment :: struct {
 }
 
 Vulkan_Environment :: struct {
+    instance : rawptr,
     physical_device : rawptr,
     device : rawptr,
     queue : rawptr,
