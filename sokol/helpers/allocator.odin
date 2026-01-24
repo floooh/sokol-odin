@@ -2,8 +2,6 @@ package sokol_helpers
 
 // Use native odin allocators in sokol allocator interface
 
-import sapp "../app"
-import sg "../gfx"
 import "base:runtime"
 import "core:c"
 
