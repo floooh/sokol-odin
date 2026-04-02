@@ -289,8 +289,11 @@ package sokol_app
             in more strongly typed languages than C and C++.
 
         double sapp_frame_duration(void)
-            Returns the frame duration in seconds averaged over a number of
-            frames to smooth out any jittering spikes.
+            Returns a smoothed frame duration.
+
+        double sapp_frame_duration_unfiltered(void)
+            Returns the unfiltered frame duration with varying degree of
+            jitter (depending on platform and backend).
 
         int sapp_color_format(void)
         int sapp_depth_format(void)
@@ -1472,6 +1475,8 @@ foreign sokol_app_clib {
     frame_count :: proc() -> u64 ---
     // get an averaged/smoothed frame duration in seconds
     frame_duration :: proc() -> f64 ---
+    // get 'raw' unfiltered frame duration in seconds
+    frame_duration_unfiltered :: proc() -> f64 ---
     // write string into clipboard
     set_clipboard_string :: proc(str: cstring)  ---
     // read string from clipboard (usually during SAPP_EVENTTYPE_CLIPBOARD_PASTED)
