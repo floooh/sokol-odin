@@ -73,7 +73,7 @@ package sokol_app
         - with SOKOL_GLCORE: OpenGL
         - with SOKOL_WGPU: a WebGPU implementation library (tested with webgpu_dawn)
     - on iOS:
-        - all backends: UIKit, QuartzCore
+        - all backends: Foundation, UIKit, QuartzCore
         - with SOKOL_METAL: Metal
         - with SOKOL_GLES3: OpenGLES, GLKit
     - on Linux:
