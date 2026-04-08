@@ -23,8 +23,6 @@ package sokol_audio
     SOKOL_API_IMPL      - public function implementation prefix (default: -)
 
     SAUDIO_RING_MAX_SLOTS           - max number of slots in the push-audio ring buffer (default 1024)
-    SAUDIO_OSX_USE_SYSTEM_HEADERS   - define this to force inclusion of system headers on
-                                      macOS instead of using embedded CoreAudio declarations
 
     If sokol_audio.h is compiled as a DLL, define the following before
     including the declaration or implementation:
@@ -360,6 +358,14 @@ package sokol_audio
     (_WIN32 is defined).
 
     For thread synchronisation a Win32 critical section is used.
+
+    By default, the WASAPI backend calls CoInitializeEx(0, COINIT_MULTITHREADED)
+    in saudio_setup() and CoUninitialize() in saudio_shutdown(). This can be
+    disabled with the setup option `saudio_desc.win32.skip_coinitialize`. In that
+    case the library user must make sure to initialize COM before calling
+    saudio_setup() (FWIW though, at least on Win11 it looks like CoInitializeEx
+    isn't needed at all for sokol_audio.h, take that info with a huge grain of salt
+    though).
 
     WASAPI may use a different size for its own streaming buffer then requested,
     so the base latency may be slightly bigger. The current backend implementation
@@ -699,6 +705,10 @@ N3ds_Desc :: struct {
     channel_id : c.int,
 }
 
+Win32_Desc :: struct {
+    skip_coinitialize : bool,
+}
+
 Desc :: struct {
     sample_rate : c.int,
     num_channels : c.int,
@@ -708,6 +718,7 @@ Desc :: struct {
     stream_cb : proc "c" (a0: ^f32, a1: c.int, a2: c.int),
     stream_userdata_cb : proc "c" (a0: ^f32, a1: c.int, a2: c.int, a3: rawptr),
     user_data : rawptr,
+    win32 : Win32_Desc,
     n3ds : N3ds_Desc,
     allocator : Allocator,
     logger : Logger,
