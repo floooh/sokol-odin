@@ -2100,6 +2100,7 @@ Gl_Swapchain :: struct {
 }
 
 Swapchain :: struct {
+    invalid : bool,
     width : c.int,
     height : c.int,
     sample_count : c.int,
