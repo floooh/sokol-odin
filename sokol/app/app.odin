@@ -378,8 +378,9 @@ package sokol_app
             whether the GL context is a GLES context
 
         const void* sapp_android_get_native_activity(void);
-            On Android, get the native activity ANativeActivity pointer, otherwise
-            a null pointer.
+        const void* sapp_android_get_native_window(void);
+            On Android, get the native activity ANativeActivity pointer,
+            or native window ANativeWindow pointer, otherwise a null pointer.
 
     --- Implement the frame-callback function, this function will be called
         on the same thread as the init callback, but might be on a different
@@ -1525,6 +1526,8 @@ foreign sokol_app_clib {
     x11_get_display :: proc() -> rawptr ---
     // Android: get native activity handle
     android_get_native_activity :: proc() -> rawptr ---
+    // Android: get native window handle
+    android_get_native_window :: proc() -> rawptr ---
 }
 
 // misc constants
