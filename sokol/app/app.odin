@@ -74,7 +74,7 @@ package sokol_app
         - with SOKOL_WGPU: a WebGPU implementation library (tested with webgpu_dawn)
     - on iOS:
         - all backends: Foundation, UIKit, QuartzCore
-        - with SOKOL_METAL: Metal
+        - with SOKOL_METAL: Metal, CoreGraphics
         - with SOKOL_GLES3: OpenGLES, GLKit
     - on Linux:
         - all backends: X11, Xi, Xcursor, dl, pthread, m
@@ -128,55 +128,57 @@ package sokol_app
 
     FEATURE/PLATFORM MATRIX
     =======================
-                        | Windows | macOS | Linux |  iOS  | Android |  HTML5
-    --------------------+---------+-------+-------+-------+---------+--------
-    gl 4.x              | YES     | YES   | YES   | ---   | ---     |  ---
-    gles3/webgl2        | ---     | ---   | YES(2)| YES   | YES     |  YES
-    metal               | ---     | YES   | ---   | YES   | ---     |  ---
-    d3d11               | YES     | ---   | ---   | ---   | ---     |  ---
-    webgpu              | YES(4)  | YES(4)| YES(4)| NO    | NO      |  YES
-    noapi               | YES     | TODO  | TODO  | ---   | TODO    |  ---
-    KEY_DOWN            | YES     | YES   | YES   | SOME  | TODO    |  YES
-    KEY_UP              | YES     | YES   | YES   | SOME  | TODO    |  YES
-    CHAR                | YES     | YES   | YES   | YES   | TODO    |  YES
-    MOUSE_DOWN          | YES     | YES   | YES   | ---   | ---     |  YES
-    MOUSE_UP            | YES     | YES   | YES   | ---   | ---     |  YES
-    MOUSE_SCROLL        | YES     | YES   | YES   | ---   | ---     |  YES
-    MOUSE_MOVE          | YES     | YES   | YES   | ---   | ---     |  YES
-    MOUSE_ENTER         | YES     | YES   | YES   | ---   | ---     |  YES
-    MOUSE_LEAVE         | YES     | YES   | YES   | ---   | ---     |  YES
-    TOUCHES_BEGAN       | ---     | ---   | ---   | YES   | YES     |  YES
-    TOUCHES_MOVED       | ---     | ---   | ---   | YES   | YES     |  YES
-    TOUCHES_ENDED       | ---     | ---   | ---   | YES   | YES     |  YES
-    TOUCHES_CANCELLED   | ---     | ---   | ---   | YES   | YES     |  YES
-    RESIZED             | YES     | YES   | YES   | YES   | YES     |  YES
-    ICONIFIED           | YES     | YES   | YES   | ---   | ---     |  ---
-    RESTORED            | YES     | YES   | YES   | ---   | ---     |  ---
-    FOCUSED             | YES     | YES   | YES   | ---   | ---     |  YES
-    UNFOCUSED           | YES     | YES   | YES   | ---   | ---     |  YES
-    SUSPENDED           | ---     | ---   | ---   | YES   | YES     |  TODO
-    RESUMED             | ---     | ---   | ---   | YES   | YES     |  TODO
-    QUIT_REQUESTED      | YES     | YES   | YES   | ---   | ---     |  YES
-    IME                 | TODO    | TODO? | TODO  | ???   | TODO    |  ???
-    key repeat flag     | YES     | YES   | YES   | ---   | ---     |  YES
-    windowed            | YES     | YES   | YES   | ---   | ---     |  YES
-    fullscreen          | YES     | YES   | YES   | YES   | YES     |  YES(3)
-    mouse hide          | YES     | YES   | YES   | ---   | ---     |  YES
-    mouse lock          | YES     | YES   | YES   | ---   | ---     |  YES
-    set cursor type     | YES     | YES   | YES   | ---   | ---     |  YES
-    screen keyboard     | ---     | ---   | ---   | YES   | TODO    |  YES
-    swap interval       | YES     | YES   | YES   | YES   | TODO    |  YES
-    high-dpi            | YES     | YES   | TODO  | YES   | YES     |  YES
-    clipboard           | YES     | YES   | YES   | ---   | ---     |  YES
-    MSAA                | YES     | YES   | YES   | YES   | YES     |  YES
-    drag'n'drop         | YES     | YES   | YES   | ---   | ---     |  YES
-    window icon         | YES     | YES(1)| YES   | ---   | ---     |  YES
+                        | Windows | macOS | Linux  |  iOS  | Android | HTML5
+    --------------------+---------+-------+--------+-------+---------+-------
+    gl 4.x              | YES     | YES   | YES    | ---   | ---     | ---
+    gles3/webgl2        | ---     | ---   | YES(2) | YES   | YES     | YES
+    metal               | ---     | YES   | ---    | YES   | ---     | ---
+    d3d11               | YES     | ---   | ---    | ---   | ---     | ---
+    webgpu              | YES(4)  | YES(4)| YES(4) | ---   | ---     | YES
+    vulkan              | YES(7)  | ---   | YES(7) | ---   | ---     | ---
+    noapi               | YES     | TODO  | TODO   | ---   | ---     | ---
+    key+char events     | YES     | YES   | YES    | ---   | ---     | YES
+    mouse events        | YES     | YES   | YES    | ---   | ---     | YES
+    touch events        | ---     | ---   | ---    | YES   | YES     | TES
+    resized event       | YES     | YES   | YES    | YES   | YES     | YES
+    iconifed/restored   | YES     | YES   | YES    | ---   | ---     | ---
+    focused/unfocused   | YES     | YES   | YES    | ---   | ---     | YES
+    suspended/resumed   | ---     | ---   | ---    | YES   | YES     | TODO
+    programmatic quit   | YES     | YES   | YES    | ---   | ---     | YES
+    key repeat flag     | YES     | YES   | YES    | ---   | ---     | YES
+    windowed            | YES     | YES   | YES    | ---   | ---     | YES
+    fullscreen          | YES     | YES   | YES    | YES   | YES     | YES(3)
+    depth format        | YES     | YES   | YES    | YES   | YES     | YES
+    mouse hide          | YES     | YES   | YES    | ---   | ---     | YES
+    mouse lock          | YES     | YES   | YES    | ---   | ---     | YES
+    set cursor type     | YES     | YES   | YES    | ---   | ---     | YES
+    screen keyboard     | ---     | ---   | ---    | YES   | ---     | YES
+    high-dpi            | YES     | YES   | TODO   | YES   | YES     | YES
+    clipboard           | YES     | YES   | YES    | ---   | ---     | YES
+    MSAA                | YES     | YES   | YES    | YES   | YES     | YES
+    drag'n'drop         | YES     | YES   | YES    | ---   | ---     | YES
+    window icon         | YES     | YES(1)| YES    | ---   | ---     | YES
+    srgb framebuffer    | YES     | YES   | YES    | YES   | YES     | YES(5)
+    hdr framebuffer     | ---     | YES(6)| ---    | YES(6)| ---     | YES(5)
+    composite mode      | ---     | YES(6)| ---    | ---   | ---     | YES
+    disable vsync       | YES     | ---(8)| YES    | ---   | ---     | ---
+    swap interval       | YES(10) | YES(9)| YES(10)| YES   | ---     |
 
     (1) macOS has no regular window icons, instead the dock icon is changed
     (2) supported with EGL only (not GLX)
     (3) fullscreen in the browser not supported on iphones
     (4) WebGPU on native desktop platforms should be considered experimental
         and mainly useful for debugging and benchmarking
+    (5) only supported on WebGPU, but not WebGL2
+    (6) only supported on Metal, but not GL/GLES3
+    (7) Vulkan support is highly experimental and has serious frame pacing
+        issues on Windows+NVIDIA with FIFO presentation mode
+    (8) on macOS+Metal, rendering is currently always vsync-throttled
+        because CADisplayLink drives the frame loop, and this doesn't allow
+        running faster than vsync, on macOS+GL, setting the swap interval
+        has no effect since macOS 13
+    (9) on macOS+GL, setting the swap interval has no effect since macOS 13
+    (10) swap interval not supported on Vulkan
 
     STEP BY STEP
     ============
@@ -1416,6 +1418,10 @@ when ODIN_OS == .Windows {
 
 @(default_calling_convention="c", link_prefix="sapp_")
 foreign sokol_app_clib {
+    // get runtime environment information
+    get_environment :: proc() -> Environment ---
+    // acquire swapchain info for the next swapchain render pass, call exactly once per frame
+    acquire_swapchain :: proc() -> Swapchain ---
     // returns true after sokol-app has been initialized
     isvalid :: proc() -> bool ---
     // returns the current framebuffer width in pixels
@@ -1492,10 +1498,6 @@ foreign sokol_app_clib {
     get_dropped_file_path :: proc(#any_int index: c.int) -> cstring ---
     // special run-function for SOKOL_NO_ENTRY (in standard mode this is an empty stub)
     run :: proc(#by_ptr desc: Desc)  ---
-    // get runtime environment information
-    get_environment :: proc() -> Environment ---
-    // get current frame's swapchain information (call once per frame!)
-    get_swapchain :: proc() -> Swapchain ---
     // EGL: get EGLDisplay object
     egl_get_display :: proc() -> rawptr ---
     // EGL: get EGLContext object
@@ -1862,6 +1864,7 @@ Allocator :: struct {
 Log_Item :: enum i32 {
     OK,
     MALLOC_FAILED,
+    SWAPCHAIN_DEPTHFORMAT_INVALID,
     MACOS_INVALID_NSOPENGL_PROFILE,
     METAL_CREATE_SWAPCHAIN_DEPTH_TEXTURE_FAILED,
     METAL_CREATE_SWAPCHAIN_MSAA_TEXTURE_FAILED,
@@ -1994,8 +1997,8 @@ Log_Item :: enum i32 {
 
     Defines the pixel format for swapchain surfaces.
 
-    NOTE: when using sokol_gfx.h do not assume that the underlying
-    values are compatible with sg_pixel_format!
+    NOTE: DO NOT directly cast this enum to sokol_gfx.h's sg_pixel_format,
+    the enum values are totally different!
 */
 Pixel_Format :: enum i32 {
     DEFAULT,
@@ -2003,7 +2006,8 @@ Pixel_Format :: enum i32 {
     RGBA8,
     SRGB8A8,
     BGRA8,
-    SBGRA8,
+    SBGR8A8,
+    RGBA16F,
     DEPTH,
     DEPTH_STENCIL,
 }
@@ -2058,11 +2062,12 @@ Environment :: struct {
 /*
     sapp_swapchain
 
-    Provides swapchain information for the current frame to the outside
-    world via a call to sapp_get_swapchain().
+    Provides swapchain information for the next swapchain render pass,
+    result of sapp_acquire_swapchain()
 
-    NOTE: sapp_get_swapchain() must be called exactly once per frame since
-    on some backends it will also acquire the next swapchain image.
+    NOTE: sapp_acquire_swapchain() must be called exactly once per frame,
+    and ideally right before the swapchain render pass (e.g. not earlier
+    in the frame).
 
     NOTE: when using sokol_gfx.h, don't assume that the sapp_swapchain struct
     has the same memory layout as sg_swapchain! Use the sokol_log.h helper
@@ -2117,6 +2122,19 @@ Swapchain :: struct {
 }
 
 /*
+    sapp_composite_mode
+
+    Preferred composition mode for the framebuffer surface with background.
+    This is a highly optional feature and may only be fully implemented
+    on the web APIs (WebGL2 and WebGPU)
+*/
+Composite_Mode :: enum i32 {
+    DEFAULT,
+    OPAQUE,
+    PREMULTIPLIED,
+}
+
+/*
     sapp_logger
 
     Used in sapp_desc to provide a logging function. Please be aware that
@@ -2149,7 +2167,6 @@ Html5_Desc :: struct {
     canvas_selector : cstring,
     canvas_resize : bool,
     preserve_drawing_buffer : bool,
-    premultiplied_alpha : bool,
     ask_leave_site : bool,
     update_document_title : bool,
     bubble_mouse_events : bool,
@@ -2165,6 +2182,10 @@ Ios_Desc :: struct {
     keyboard_resizes_canvas : bool,
 }
 
+Metal_Desc :: struct {
+    disable_display_sync : bool,
+}
+
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -2177,11 +2198,15 @@ Desc :: struct {
     event_userdata_cb : proc "c" (a0: ^Event, a1: rawptr),
     width : c.int,
     height : c.int,
+    depth_format : Pixel_Format,
+    composite_mode : Composite_Mode,
     sample_count : c.int,
     swap_interval : c.int,
+    srgb : bool,
+    hdr : bool,
+    disable_vsync : bool,
     high_dpi : bool,
     fullscreen : bool,
-    alpha : bool,
     window_title : cstring,
     enable_clipboard : bool,
     clipboard_size : c.int,
@@ -2192,6 +2217,7 @@ Desc :: struct {
     allocator : Allocator,
     logger : Logger,
     gl : Gl_Desc,
+    metal : Metal_Desc,
     win32 : Win32_Desc,
     html5 : Html5_Desc,
     ios : Ios_Desc,
