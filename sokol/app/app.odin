@@ -2186,6 +2186,10 @@ Metal_Desc :: struct {
     disable_display_sync : bool,
 }
 
+Android_Desc :: struct {
+    native_event_cb : proc "c" (a0: rawptr) -> bool,
+}
+
 Desc :: struct {
     init_cb : proc "c" (),
     frame_cb : proc "c" (),
@@ -2221,6 +2225,7 @@ Desc :: struct {
     win32 : Win32_Desc,
     html5 : Html5_Desc,
     ios : Ios_Desc,
+    android : Android_Desc,
 }
 
 /*
