@@ -438,26 +438,28 @@ when ODIN_OS == .Windows {
 @(default_calling_convention="c", link_prefix="sshape_")
 foreign sokol_shape_clib {
     // shape builder functions
-    build_plane :: proc(#by_ptr buf: Buffer, #by_ptr params: Plane) -> Buffer ---
-    build_box :: proc(#by_ptr buf: Buffer, #by_ptr params: Box) -> Buffer ---
-    build_sphere :: proc(#by_ptr buf: Buffer, #by_ptr params: Sphere) -> Buffer ---
-    build_cylinder :: proc(#by_ptr buf: Buffer, #by_ptr params: Cylinder) -> Buffer ---
-    build_torus :: proc(#by_ptr buf: Buffer, #by_ptr params: Torus) -> Buffer ---
+    build_plane :: proc(state: ^State, #by_ptr params: Plane)  ---
+    build_box :: proc(state: ^State, #by_ptr params: Box)  ---
+    build_sphere :: proc(state: ^State, #by_ptr params: Sphere)  ---
+    build_cylinder :: proc(state: ^State, #by_ptr params: Cylinder)  ---
+    build_torus :: proc(state: ^State, #by_ptr params: Torus)  ---
+    // compute size of vertex given optional components
+    vertex_size :: proc(#by_ptr components: Optional_Components) -> c.size_t ---
     // query required vertex- and index-buffer sizes in bytes
-    plane_sizes :: proc(tiles: u32) -> Sizes ---
-    box_sizes :: proc(tiles: u32) -> Sizes ---
-    sphere_sizes :: proc(slices: u32, stacks: u32) -> Sizes ---
-    cylinder_sizes :: proc(slices: u32, stacks: u32) -> Sizes ---
-    torus_sizes :: proc(sides: u32, rings: u32) -> Sizes ---
+    plane_sizes :: proc(tiles: u32, vertex_size: c.size_t) -> Sizes ---
+    box_sizes :: proc(tiles: u32, vetrex_size: c.size_t) -> Sizes ---
+    sphere_sizes :: proc(slices: u32, stacks: u32, vertex_size: c.size_t) -> Sizes ---
+    cylinder_sizes :: proc(slices: u32, stacks: u32, vertex_size: c.size_t) -> Sizes ---
+    torus_sizes :: proc(sides: u32, rings: u32, vertex_size: c.size_t) -> Sizes ---
     // extract sokol-gfx desc structs and primitive ranges from build state
-    element_range :: proc(#by_ptr buf: Buffer) -> Element_Range ---
-    vertex_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
-    index_buffer_desc :: proc(#by_ptr buf: Buffer) -> sg.Buffer_Desc ---
-    vertex_buffer_layout_state :: proc() -> sg.Vertex_Buffer_Layout_State ---
-    position_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
-    normal_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
-    texcoord_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
-    color_vertex_attr_state :: proc() -> sg.Vertex_Attr_State ---
+    element_range :: proc(#by_ptr state: State) -> Element_Range ---
+    vertex_buffer_desc :: proc(#by_ptr state: State) -> sg.Buffer_Desc ---
+    index_buffer_desc :: proc(#by_ptr state: State) -> sg.Buffer_Desc ---
+    vertex_buffer_layout_state :: proc(#by_ptr state: State) -> sg.Vertex_Buffer_Layout_State ---
+    position_vertex_attr_state :: proc(#by_ptr state: State) -> sg.Vertex_Attr_State ---
+    normal_vertex_attr_state :: proc(#by_ptr state: State) -> sg.Vertex_Attr_State ---
+    texcoord_vertex_attr_state :: proc(#by_ptr state: State) -> sg.Vertex_Attr_State ---
+    color_vertex_attr_state :: proc(#by_ptr state: State) -> sg.Vertex_Attr_State ---
     // helper functions to build packed color value from floats or bytes
     color_4f :: proc(r: f32, g: f32, b: f32, a: f32) -> u32 ---
     color_3f :: proc(r: f32, g: f32, b: f32) -> u32 ---
@@ -479,20 +481,19 @@ Range :: struct {
     size : c.size_t,
 }
 
+MIN_VERTEX_SIZE :: 12
+MAX_VERTEX_SIZE :: 24
+
 // a 4x4 matrix wrapper struct
 Mat4 :: struct {
     m : [4][4]f32,
 }
 
-// vertex layout of the generated geometry
-Vertex :: struct {
-    x : f32,
-    y : f32,
-    z : f32,
-    normal : u32,
-    u : u16,
-    v : u16,
-    color : u32,
+// a struct for configuring optional vertex components
+Optional_Components :: struct {
+    normals : bool,
+    texcoords : bool,
+    colors : bool,
 }
 
 // a range of draw-elements (sg_draw(int base_element, int num_element, ...))
@@ -519,8 +520,9 @@ Buffer_Item :: struct {
     shape_offset : c.size_t,
 }
 
-Buffer :: struct {
+State :: struct {
     valid : bool,
+    disable : Optional_Components,
     vertices : Buffer_Item,
     indices : Buffer_Item,
 }
