@@ -20,7 +20,7 @@ Shape :: struct {
 
 // putting those on the stack triggers a stack overflow compiler warning
 // FIXME: is there a way to increase the default stack size?
-vertices: [6 * 1024]sshape.Vertex
+vertices: [sshape.MAX_VERTEX_SIZE * 6 * 1024]u8
 indices: [16 * 1024]u16
 
 BOX :: 0
@@ -56,18 +56,78 @@ init :: proc "c" () {
         colors = { 0 = { load_action = .CLEAR, clear_value = { 0, 0, 0, 1 } } },
     }
 
+    // shape positions
+    state.shapes[BOX].pos = { -1.0, 1.0, 0.0 }
+    state.shapes[PLANE].pos = { 1.0, 1.0, 0.0 }
+    state.shapes[SPHERE].pos = { -2.0, -1.0, 0.0 }
+    state.shapes[CYLINDER].pos = { 2.0, -1.0, 0.0 }
+    state.shapes[TORUS].pos = { 0.0, -1.0, 0.0 }
+
+    // generate shape geometries
+    shp := sshape.State {
+        vertices = { buffer = { ptr = &vertices, size = size_of(vertices) } },
+        indices  = { buffer = { ptr = &indices, size = size_of(indices) } },
+    }
+
+    sshape.build_box(&shp, {
+        width = 1.0,
+        height = 1.0,
+        depth = 1.0,
+        tiles = 10,
+        random_colors = true,
+    })
+    state.shapes[BOX].draw = sshape.element_range(shp)
+
+    sshape.build_plane(&shp, {
+        width = 1.0,
+        depth = 1.0,
+        tiles = 10,
+        random_colors = true,
+    })
+    state.shapes[PLANE].draw = sshape.element_range(shp)
+
+    sshape.build_sphere(&shp, {
+        radius = 0.75,
+        slices = 36,
+        stacks = 20,
+        random_colors = true,
+    })
+    state.shapes[SPHERE].draw = sshape.element_range(shp)
+
+    sshape.build_cylinder(&shp, {
+        radius = 0.5,
+        height = 1.5,
+        slices = 36,
+        stacks = 10,
+        random_colors = true,
+    })
+    state.shapes[CYLINDER].draw = sshape.element_range(shp)
+
+    sshape.build_torus(&shp, {
+        radius = 0.5,
+        ring_radius = 0.3,
+        rings = 36,
+        sides = 18,
+        random_colors = true,
+    })
+    state.shapes[TORUS].draw = sshape.element_range(shp)
+
+    // one vertex-/index-buffer pair for all shapes
+    state.vbuf = sg.make_buffer(sshape.vertex_buffer_desc(shp))
+    state.ibuf = sg.make_buffer(sshape.index_buffer_desc(shp))
+
     // shader and pipeline object
     state.pip = sg.make_pipeline({
         shader = sg.make_shader(shapes_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.vertex_buffer_layout_state(),
+                0 = sshape.vertex_buffer_layout_state(shp),
             },
             attrs = {
-                ATTR_shapes_position = sshape.position_vertex_attr_state(),
-                ATTR_shapes_normal   = sshape.normal_vertex_attr_state(),
-                ATTR_shapes_texcoord = sshape.texcoord_vertex_attr_state(),
-                ATTR_shapes_color0   = sshape.color_vertex_attr_state(),
+                ATTR_shapes_position = sshape.position_vertex_attr_state(shp),
+                ATTR_shapes_normal   = sshape.normal_vertex_attr_state(shp),
+                ATTR_shapes_texcoord = sshape.texcoord_vertex_attr_state(shp),
+                ATTR_shapes_color0   = sshape.color_vertex_attr_state(shp),
             },
         },
         index_type = .UINT16,
@@ -78,65 +138,6 @@ init :: proc "c" () {
         },
     })
 
-    // shape positions
-    state.shapes[BOX].pos = { -1.0, 1.0, 0.0 }
-    state.shapes[PLANE].pos = { 1.0, 1.0, 0.0 }
-    state.shapes[SPHERE].pos = { -2.0, -1.0, 0.0 }
-    state.shapes[CYLINDER].pos = { 2.0, -1.0, 0.0 }
-    state.shapes[TORUS].pos = { 0.0, -1.0, 0.0 }
-
-    // generate shape geometries
-    buf := sshape.Buffer {
-        vertices = { buffer = { ptr = &vertices, size = size_of(vertices) } },
-        indices  = { buffer = { ptr = &indices, size = size_of(indices) } },
-    }
-
-    buf = sshape.build_box(buf, {
-        width = 1.0,
-        height = 1.0,
-        depth = 1.0,
-        tiles = 10,
-        random_colors = true,
-    })
-    state.shapes[BOX].draw = sshape.element_range(buf)
-
-    buf = sshape.build_plane(buf, {
-        width = 1.0,
-        depth = 1.0,
-        tiles = 10,
-        random_colors = true,
-    })
-    state.shapes[PLANE].draw = sshape.element_range(buf)
-
-    buf = sshape.build_sphere(buf, {
-        radius = 0.75,
-        slices = 36,
-        stacks = 20,
-        random_colors = true,
-    })
-    state.shapes[SPHERE].draw = sshape.element_range(buf)
-
-    buf = sshape.build_cylinder(buf, {
-        radius = 0.5,
-        height = 1.5,
-        slices = 36,
-        stacks = 10,
-        random_colors = true,
-    })
-    state.shapes[CYLINDER].draw = sshape.element_range(buf)
-
-    buf = sshape.build_torus(buf, {
-        radius = 0.5,
-        ring_radius = 0.3,
-        rings = 36,
-        sides = 18,
-        random_colors = true,
-    })
-    state.shapes[TORUS].draw = sshape.element_range(buf)
-
-    // one vertex-/index-buffer pair for all shapes
-    state.vbuf = sg.make_buffer(sshape.vertex_buffer_desc(buf))
-    state.ibuf = sg.make_buffer(sshape.index_buffer_desc(buf))
 }
 
 frame :: proc "c" () {

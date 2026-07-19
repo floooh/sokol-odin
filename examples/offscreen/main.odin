@@ -32,7 +32,7 @@ state: struct {
     donut: sshape.Element_Range,
     sphere: sshape.Element_Range,
     rx, ry: f32,
-    vertices: [4000]sshape.Vertex,
+    vertices: [4000 * sshape.MAX_VERTEX_SIZE]u8,
     indices: [24000]u16,
 }
 
@@ -84,30 +84,30 @@ init :: proc "c" () {
 
     // a donut shape which is rendered into the offscreen render target, and
     // a sphere shape which is rendered into the default framebuffer
-    buf := sshape.Buffer {
+    shp := sshape.State {
         vertices = { buffer = { ptr = &state.vertices, size = size_of(state.vertices) } },
         indices  = { buffer = { ptr = &state.indices, size = size_of(state.indices) } },
     }
 
-    buf = sshape.build_torus(buf, {
+    sshape.build_torus(&shp, {
         radius = 0.5,
         ring_radius = 0.3,
         sides = 20,
         rings = 30,
     })
-    state.donut = sshape.element_range(buf)
+    state.donut = sshape.element_range(shp)
 
-    buf = sshape.build_sphere(buf, {
+    sshape.build_sphere(&shp, {
         radius = 0.5,
         slices = 72,
         stacks = 40,
     })
-    state.sphere = sshape.element_range(buf)
+    state.sphere = sshape.element_range(shp)
 
-    vbuf := sg.make_buffer(sshape.vertex_buffer_desc(buf))
+    vbuf := sg.make_buffer(sshape.vertex_buffer_desc(shp))
     state.offscreen.bind.vertex_buffers[0] = vbuf
     state.display.bind.vertex_buffers[0] = vbuf
-    ibuf := sg.make_buffer(sshape.index_buffer_desc(buf))
+    ibuf := sg.make_buffer(sshape.index_buffer_desc(shp))
     state.offscreen.bind.index_buffer = ibuf
     state.display.bind.index_buffer = ibuf
 
@@ -116,11 +116,11 @@ init :: proc "c" () {
         shader = sg.make_shader(offscreen_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.vertex_buffer_layout_state(),
+                0 = sshape.vertex_buffer_layout_state(shp),
             },
             attrs = {
-                ATTR_offscreen_position = sshape.position_vertex_attr_state(),
-                ATTR_offscreen_normal = sshape.normal_vertex_attr_state(),
+                ATTR_offscreen_position = sshape.position_vertex_attr_state(shp),
+                ATTR_offscreen_normal = sshape.normal_vertex_attr_state(shp),
             },
         },
         index_type = .UINT16,
@@ -141,12 +141,12 @@ init :: proc "c" () {
         shader = sg.make_shader(default_shader_desc(sg.query_backend())),
         layout = {
             buffers = {
-                0 = sshape.vertex_buffer_layout_state(),
+                0 = sshape.vertex_buffer_layout_state(shp),
             },
             attrs = {
-                ATTR_default_position = sshape.position_vertex_attr_state(),
-                ATTR_default_normal = sshape.normal_vertex_attr_state(),
-                ATTR_default_texcoord0 = sshape.texcoord_vertex_attr_state(),
+                ATTR_default_position = sshape.position_vertex_attr_state(shp),
+                ATTR_default_normal = sshape.normal_vertex_attr_state(shp),
+                ATTR_default_texcoord0 = sshape.texcoord_vertex_attr_state(shp),
             },
         },
         index_type = .UINT16,
