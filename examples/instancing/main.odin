@@ -67,7 +67,7 @@ init :: proc "c" () {
     // empty, dynamic instance-data vertex buffer, goes into vertex-buffer-slot 1
     state.bind.vertex_buffers[1] = sg.make_buffer({
         size = MAX_PARTICLES * size_of(m.vec3),
-        usage = { stream_update = true },
+        usage = { write_transient = true },
     })
 
     // a shader and pipeline object
@@ -121,8 +121,9 @@ frame :: proc "c" () {
     }
 
     // update instance data
-    sg.update_buffer(state.bind.vertex_buffers[1], {
-        ptr = &state.pos,
+    sg.write_buffer_transient({
+        dst = { buffer = state.bind.vertex_buffers[1] },
+        src = { data = { ptr = &state.pos, size = size_of(state.pos) } },
         size = c.size_t(state.cur_num_particles * size_of(m.vec3)),
     })
 
