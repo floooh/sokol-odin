@@ -305,13 +305,37 @@
         resource from unsealed into valid state. For more details see the
         doc section `ON POPULATING IMMUTABLE RESOURCES` below.
 
-    --- to update (overwrite) the content of buffer and image resources, call:
+    --- to update the content of buffer and image resources:
+
+        For data that's written by the CPU and consumed by the GPU in the
+        *same frame* and doesn't need to survive into the next frame, call:
+
+            sg_write_buffer_transient(const sg_write_buffer_desc* desc);
+            sg_write_image_transient(const sg_write_image_desc* desc);
+
+        The buffer and image objects which are the destination of
+        write-transient calls must have been created with
+        `.usage.write_transient = true` and cannot be pass attachments.
+
+        Multiple calls to the write-transient functions are allowed in a frame
+        to incrementally populate the resource, but only until the resource is bound.
+        After a resource has been used in a frame it cannot be written to until
+        the next frame.
+
+        Expect that data written with the write-transient functions will not
+        survive into the next frame, e.g. all data written by the CPU is expected
+        to be 'consumed' by the GPU in the same frame. Trying to bind a write-transient
+        buffer or image that hasn't been written to in the same frame is a validation
+        layer error. Calling a write-transient function on a resource that isn't
+        used for rendering in the same frame is allowed but pointless.
+
+        For data that needs to persist across frames, call:
 
             sg_update_buffer(sg_buffer buf, const sg_range* data)
             sg_update_image(sg_image img, const sg_image_data* data)
 
         Buffers and images to be updated must have been created with
-        sg_buffer_desc.usage.dynamic_update or .stream_update.
+        sg_buffer_desc.usage.dynamic_update.
 
         Only one update per frame is allowed for buffer and image resources when
         using the sg_update_*() functions. The rationale is to have a simple
@@ -322,60 +346,8 @@
         operation only references the valid (updated) data in the
         buffer or image.
 
-    --- to append a chunk of data to a buffer resource, call:
-
-            int sg_append_buffer(sg_buffer buf, const sg_range* data)
-
-        The difference to sg_update_buffer() is that sg_append_buffer()
-        can be called multiple times per frame to append new data to the
-        buffer piece by piece, optionally interleaved with draw calls referencing
-        the previously written data.
-
-        sg_append_buffer() returns a byte offset to the start of the
-        written data, this offset can be assigned to
-        sg_bindings.vertex_buffer_offsets[n] or
-        sg_bindings.index_buffer_offset
-
-        Code example:
-
-        for (...) {
-            const void* data = ...;
-            const int num_bytes = ...;
-            int offset = sg_append_buffer(buf, &(sg_range) { .ptr=data, .size=num_bytes });
-            bindings.vertex_buffer_offsets[0] = offset;
-            sg_apply_pipeline(pip);
-            sg_apply_bindings(&bindings);
-            sg_apply_uniforms(...);
-            sg_draw(...);
-        }
-
-        A buffer to be used with sg_append_buffer() must have been created
-        with sg_buffer_desc.usage.dynamic_update or .stream_update.
-
-        If the application appends more data to the buffer then fits into
-        the buffer, the buffer will go into the "overflow" state for the
-        rest of the frame.
-
-        Any draw calls attempting to render an overflown buffer will be
-        silently dropped (in debug mode this will also result in a
-        validation error).
-
-        You can also check manually if a buffer is in overflow-state by calling
-
-            bool sg_query_buffer_overflow(sg_buffer buf)
-
-        You can manually check to see if an overflow would occur before adding
-        any data to a buffer by calling
-
-            bool sg_query_buffer_will_overflow(sg_buffer buf, size_t size)
-
-        NOTE: Due to restrictions in underlying 3D-APIs, appended chunks of
-        data will be 4-byte aligned in the destination buffer. This means
-        that there will be gaps in index buffers containing 16-bit indices
-        when the number of indices in a call to sg_append_buffer() is
-        odd. This isn't a problem when each call to sg_append_buffer()
-        is associated with one draw call, but will be problematic when
-        a single indexed draw call spans several appended chunks of indices.
+        NOTE: the update functions will be replaced with more flexible
+        'write-persistent' functions in the next resource API update!
 
     --- to check at runtime for optional features, limits and pixelformat support,
         call:
@@ -462,7 +434,7 @@
     --- call the following helper functions to compute the number of
         bytes in a texture row or surface for a specific pixel format.
         These functions might be helpful when preparing image data for consumption
-        by sg_make_image() or sg_update_image():
+        by sg_make_image() or the sg_write_image_*() functions:
 
             int sg_query_row_pitch(sg_pixel_format fmt, int width, int int row_align_bytes);
             int sg_query_surface_pitch(sg_pixel_format fmt, int width, int height, int row_align_bytes);
@@ -2186,7 +2158,7 @@ typedef struct sg_range {
     size_t size;
 } sg_range;
 
-// disabling this for every includer isn't great, but the warnings are also quite pointless
+// NOTE: disabling these warnings for every includer isn't great, but the warnings are also quite pointless
 #if defined(_MSC_VER)
 #pragma warning(disable:4221)   // /W4 only: nonstandard extension used: 'x': cannot be initialized using address of automatic variable 'y'
 #pragma warning(disable:4204)   // VS2015: nonstandard extension used: non-constant aggregate initializer
@@ -2278,7 +2250,7 @@ typedef enum sg_backend {
 
     The default pixel format for texture images is SG_PIXELFORMAT_RGBA8.
 
-    The default pixel format for render target images is platform-dependent
+    The default pixel format for pass attachment images is platform-dependent
     and taken from the sg_environment struct passed into sg_setup(). Typically
     the default formats are:
 
@@ -3364,11 +3336,15 @@ typedef struct sg_bindings {
         calling `sg_seal_buffer()` which transitions from 'unsealed'
         to 'valid' resource state
     .write_transient (default: false)
-        TODO: docs
+        the buffer is going to be used as destination in
+        sg_write_buffer_transient() calls, write-transient buffers are used for
+        scenarios where data that's written from the CPU side is consumed in the
+        same frame by the GPU-side and doesn't need to survive into the next
+        frame
     .dynamic_update (default: false)
         the buffer content will be infrequently updated from the CPU side
-    .stream_update (deprecated, default: false)
-        the buffer content will be updated each frame from the CPU side
+        NOTE: dynamic_update is deprecated and will be replaced with a
+        .write_persistent flag in one of the next updates
 */
 typedef struct sg_buffer_usage {
     bool vertex_buffer;
@@ -3377,6 +3353,7 @@ typedef struct sg_buffer_usage {
     bool immutable;
     bool write_unsealed;
     bool write_transient;
+    // deprecated:
     bool dynamic_update;
 } sg_buffer_usage;
 
@@ -3397,17 +3374,14 @@ typedef struct sg_buffer_usage {
     keep the .size item zero-initialized, and set the size together with the
     pointer to the initial data in the .data item.
 
-    For immutable or mutable buffers without initial data, keep the .data item
-    zero-initialized, and set the buffer size in the .size item instead.
+    For buffers without initial data, keep the .data item zero-initialized, and
+    set the buffer size in the .size item instead.
 
-    You can also set both size values, but currently both size values must
-    be identical (this may change in the future when the dynamic resource
-    management may become more flexible).
+    You can also set both size values, but both size values must
+    be identical.
 
-    NOTE: Immutable buffers without storage-buffer-usage *must* be created
-    with initial content, this restriction doesn't apply to storage buffer usage,
-    because storage buffers may also get their initial content by running
-    a compute shader on them.
+    NOTE: Immutable buffers that are neither storage-buffers or have
+    write-unsealed usage *must* be created with initial data.
 
     NOTE: Buffers without initial data will have undefined content, e.g.
     do *not* expect the buffer to be zero-initialized!
@@ -3420,12 +3394,13 @@ typedef struct sg_buffer_usage {
     .gl_buffers[SG_NUM_INFLIGHT_FRAMES]
     .mtl_buffers[SG_NUM_INFLIGHT_FRAMES]
     .d3d11_buffer
+    .wgpu_buffer
 
     You must still provide all other struct items except the .data item, and
     these must match the creation parameters of the native buffers you provide.
     For sg_buffer_desc.usage.immutable buffers, only provide a single native
     3D-API buffer, otherwise you need to provide SG_NUM_INFLIGHT_FRAMES buffers
-    (only for GL and Metal, not D3D11). Providing multiple buffers for GL and
+    (only for GL and Metal, not D3D11 or WebGPU). Providing multiple buffers for GL and
     Metal is necessary because sokol_gfx will rotate through them when calling
     sg_update_buffer() to prevent lock-stalls.
 
@@ -3481,9 +3456,15 @@ typedef struct sg_buffer_desc {
         calling `sg_seal_image()` which transitions from 'unsealed'
         to 'valid' resource state
     .write_transient (default: false)
-        TODO: docs
+        the image is going to be used as destination in
+        sg_write_image_transient() calls, write-transient images are used for
+        scenarios where data that's written from the CPU side is consumed in the
+        same frame by the GPU-side and doesn't need to survive into the next
+        frame
     .dynamic_update (default: false)
         the image content is updated infrequently by the CPU via sg_update_image()
+        NOTE: dynamic_update is deprecated and will be replaced with a
+        .write_persistent flag in one of the next updates
 
     Note that creating a texture view from the image to be used for
     texture-sampling in vertex-, fragment- or compute-shaders
@@ -3581,7 +3562,7 @@ typedef struct sg_image_location {
     Describes the data to be written from CPU memory into an image:
 
     .data
-        Pointer to and size of the data in CPU memory
+        Pointer to and size (in bytes) of the data in CPU memory
     .offset
         Optional offset that's added to data.ptr
     .bytes_per_row
@@ -3597,6 +3578,10 @@ typedef struct sg_image_location {
         slices, can be left zero-initialized when the image data is tightly
         packed (e.g. no gaps between slices). Must be a multiple of
         .bytes_per_row
+
+    NOTE: use the helper functions sg_query_row_pitch() and sg_query_surface_pitch()
+    to compute values compatible with the .bytes_per_row and .bytes_per_slice
+    restrictions.
 */
 typedef struct sg_write_image_source {
     sg_range data;
@@ -3609,7 +3594,7 @@ typedef struct sg_write_image_source {
     sg_write_image_desc
 
     Describes a write operation into a single mipmap from CPU memory into
-    an image object.
+    an image object. Parameter of the sg_write_image_*() functions.
 
     .src
         Defines the location and layout of the source data in CPU memory.
@@ -3631,7 +3616,7 @@ typedef struct sg_write_image_source {
     .src.bytes_per_slice
         Same as above, default-zero indicates that the source data is layed
         out as a tightly packed complete mip-map (e.g. when writing data into
-        miplevel 0 of a 256x256 image, .src.bytes_per_slice will be 256*1024).
+        miplevel 0 of a 256x256 image, .src.bytes_per_slice will be 256*256*4).
     .size.width, .size.height, .size.num_slices
         Default-zero means 'the remaining width, height and num_slices' taking
         .dst.x/y/slice into account. E.g. when .dst.x/y/num_slices are all zero,
@@ -3648,6 +3633,8 @@ typedef struct sg_write_image_desc {
     sg_buffer_location
 
     Describes the source or destination location in a buffer.
+
+    NOTE: .offset must be 4-byte aligned (ensured by the validation layer)
 */
 typedef struct sg_buffer_location {
     sg_buffer buffer;
@@ -3657,7 +3644,7 @@ typedef struct sg_buffer_location {
 /*
     sg_write_buffer_source
 
-    Describes the data to be written from CPU memory into a buffer.
+    Describes the CPU-side source data to be written into a buffer.
 
     .data
         Pointer to and size of the data in CPU memory
@@ -3673,7 +3660,7 @@ typedef struct sg_write_buffer_source {
     sg_write_buffer_desc
 
     Describes a write operation into a buffer from CPU memory into
-    a buffer object.
+    a buffer object. Parameter of the sg_write_buffer_*() functions.
 
     .src
         Defines the location of the source data in CPU memory.
@@ -4433,19 +4420,21 @@ typedef struct sg_slot_info {
 
 typedef struct sg_buffer_info {
     sg_slot_info slot;              // resource pool slot info
+    int num_slots;                  // number of renaming-slots for dynamically updated buffers
+    int active_slot;                // currently active write-slot for dynamically updated buffers
+    // deprecated
     uint32_t update_frame_index;    // frame index of last sg_update_buffer()
     uint32_t append_frame_index;    // frame index of last sg_append_buffer()
     int append_pos;                 // current position in buffer for sg_append_buffer()
     bool append_overflow;           // is buffer in overflow state (due to sg_append_buffer)
-    int num_slots;                  // number of renaming-slots for dynamically updated buffers
-    int active_slot;                // currently active write-slot for dynamically updated buffers
 } sg_buffer_info;
 
 typedef struct sg_image_info {
     sg_slot_info slot;              // resource pool slot info
-    uint32_t upd_frame_index;       // frame index of last sg_update_image()
     int num_slots;                  // number of renaming-slots for dynamically updated images
     int active_slot;                // currently active write-slot for dynamically updated images
+    // deprecated
+    uint32_t upd_frame_index;       // frame index of last sg_update_image()
 } sg_image_info;
 
 typedef struct sg_sampler_info {
@@ -4810,7 +4799,7 @@ typedef struct sg_stats {
     _SG_LOGITEM_XMACRO(VULKAN_STAGING_CREATE_BUFFER_FAILED, "vulkan: vkCreateBuffer() failed for staging buffer") \
     _SG_LOGITEM_XMACRO(VULKAN_STAGING_ALLOCATE_MEMORY_FAILED, "vulkan: allocating device memory for staging buffer failed") \
     _SG_LOGITEM_XMACRO(VULKAN_STAGING_BIND_BUFFER_MEMORY_FAILED, "vulkan: vkBindBufferMemory() failed for staging buffer") \
-    _SG_LOGITEM_XMACRO(VULKAN_STAGING_STREAM_BUFFER_OVERFLOW, "vulkan: per-frame stream staging buffer has overflown (sg_desc.vulkan.stream_staging_buffer_size)") \
+    _SG_LOGITEM_XMACRO(VULKAN_STAGING_TRANSIENT_BUFFER_OVERFLOW, "vulkan: per-frame transient staging buffer has overflown (sg_desc.vulkan.transient_staging_buffer_size)") \
     _SG_LOGITEM_XMACRO(VULKAN_STAGING_IMAGE_ROW_PITCH_GREATER_STAGING_BUFFER, "vulkan: the row-pitch of an image update operation is greater than the staging buffer size (increase sg_desc.vulkan.copy_staging_buffer_size)") \
     _SG_LOGITEM_XMACRO(VULKAN_CREATE_SHARED_BUFFER_FAILED, "vulkan: vkCreateBuffer() failed for cpu/gpu-shared buffer") \
     _SG_LOGITEM_XMACRO(VULKAN_ALLOCATE_SHARED_BUFFER_MEMORY_FAILED, "vulkan: allocating device memory for cpu/gpu-shared buffer failed") \
@@ -4908,8 +4897,10 @@ typedef struct sg_stats {
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDATA_DATA_SIZE, "sg_image_data: data size doesn't match expected surface size") \
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_CANARY, "sg_image_desc not initialized") \
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_IMMUTABLE_VS_WRITABLE, "sg_image_desc.usage: only one of .immutable, .dynamic_update, .write_transient can be true") \
-    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_UNSEALED_VS_IMMUTABLE, "sg_image_desc.usage: .write_unsealed only allowed for .immutable images") \
-    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_UNSEALED_VS_ATTACHMENT, "sg_image_desc.usage: .write_unsealed not allowed for images with attachment usage") \
+    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_IMMUTABLE, "sg_image_desc.usage: .write_unsealed only allowed for .immutable images") \
+    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_ATTACHMENT, "sg_image_desc.usage: .write_unsealed not allowed for images with attachment usage") \
+    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_WRITE_TRANSIENT_VS_ATTACHMENT, "sg_image_desc.usage: .write_transient not allowed for images with attachment usage") \
+    _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_DYNAMIC_UPDATE_VS_ATTACHMENT, "sg_image_desc.usage: .dynamic_update not allowed for images with attachment usage") \
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_ATTACHMENT_COLOR_DEPTH_STENCIL, "sg_image_desc.usage: only one of .color_attachment and .depth_stencil_attachment can be true") \
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_IMAGETYPE_2D_NUMSLICES, "sg_image_desc.num_slices must be exactly 1 for SG_IMAGETYPE_2D") \
     _SG_LOGITEM_XMACRO(VALIDATE_IMAGEDESC_IMAGETYPE_CUBE_NUMSLICES, "sg_image_desc.num_slices must be exactly 6 for SG_IMAGETYPE_CUBE") \
@@ -5272,7 +5263,7 @@ typedef enum sg_log_item {
     .wgpu.disable_bindgroups_cache      false
     .wgpu.bindgroups_cache_size         1024
     .vulkan.copy_staging_buffer_size    4 MB
-    .vulkan.stream_staging_buffer_size  16 MB
+    .vulkan.transient_staging_buffer_size  16 MB
     .vulkan.descriptor_buffer_size      16 MB
 
     .allocator.alloc_fn     0 (in this case, malloc() will be called)
@@ -5344,13 +5335,13 @@ typedef enum sg_log_item {
             .usage.dynamic_update resources. The default is 4 MB,
             bigger resource updates are split into multiple chunks
             of the staging buffer size
-        .vulkan.stream_staging_buffer_size
-            Size of the staging buffer in bytes for updating .usage.stream_update
+        .vulkan.transient_staging_buffer_size
+            Size of the staging buffer in bytes for updating .usage.write_transient
             resources. The default is 16 MB. The size must be big enough
-            to accomodate all update into .usage.stream_update resources.
+            to accomodate all writes into .usage.write_transient resources.
             Any additional data will cause an error log message and
             incomplete rendering. Note that the actually allocated size
-            will be twice as much because the stream-staging-buffer is
+            will be twice as much because the transient-staging-buffer is
             double-buffered.
         .vulkan.descriptor_buffer_size
             Size of the descriptor-upload buffer in bytes. The default
@@ -5467,9 +5458,9 @@ typedef struct sg_wgpu_desc {
 } sg_wgpu_desc;
 
 typedef struct sg_vulkan_desc {
-    int copy_staging_buffer_size;    // size of staging buffer for immutable and dynamic resources (default: 4 MB)
-    int stream_staging_buffer_size;  // size of per-frame staging buffer for updating streaming resources (default: 16 MB)
-    int descriptor_buffer_size;      // size of per-frame descriptor buffer for updating resource bindings (default: 16 MB)
+    int copy_staging_buffer_size;       // size of staging buffer for immutable and dynamic resources (default: 4 MB)
+    int transient_staging_buffer_size;  // size of per-frame staging buffer for write-transient resources (default: 16 MB)
+    int descriptor_buffer_size;         // size of per-frame descriptor buffer for updating resource bindings (default: 16 MB)
 } sg_vulkan_desc;
 
 typedef struct sg_desc {
@@ -6619,7 +6610,7 @@ enum {
     _SG_DEFAULT_MAX_COMMIT_LISTENERS = 1024,
     _SG_DEFAULT_WGPU_BINDGROUP_CACHE_SIZE = 1024,
     _SG_DEFAULT_VK_COPY_STAGING_SIZE = (4 * 1024 * 1024),
-    _SG_DEFAULT_VK_STREAM_STAGING_SIZE = (16 * 1024 * 1024),
+    _SG_DEFAULT_VK_TRANSIENT_STAGING_SIZE = (16 * 1024 * 1024),
     _SG_DEFAULT_VK_DESCRIPTOR_BUFFER_SIZE = (16 * 1024 * 1024),
     _SG_MAX_STORAGEBUFFER_BINDINGS_PER_STAGE = SG_MAX_VIEW_BINDSLOTS,
     _SG_MAX_STORAGEIMAGE_BINDINGS_PER_STAGE = SG_MAX_VIEW_BINDSLOTS,
@@ -6636,7 +6627,7 @@ typedef struct {
     int size;
     int num_slots;
     int active_slot;
-    uint32_t bind_frame_index;  // last frame index buffer was bound
+    uint32_t bind_frame_index;  // last frame index the buffer was bound
     uint32_t write_transient_frame_index; // last frame index when written to
     sg_buffer_usage usage;
     // deprecated
@@ -6649,7 +6640,7 @@ typedef struct {
 typedef struct {
     int num_slots;
     int active_slot;
-    uint32_t bind_frame_index;  // last frame index buffer was bound
+    uint32_t bind_frame_index;  // last frame index the image was bound
     uint32_t write_transient_frame_index; // last frame index when written to
     sg_image_type type;
     int width;
@@ -12897,7 +12888,7 @@ _SOKOL_PRIVATE void _sg_gl_write_buffer_unsealed(_sg_buffer_t* buf, const sg_wri
     SOKOL_ASSERT(buf && desc);
     SOKOL_ASSERT(SG_RESOURCESTATE_UNSEALED == buf->slot.state);
     SOKOL_ASSERT(buf->cmn.usage.write_unsealed);
-    SOKOL_ASSERT(0 == buf->gl.buf[buf->cmn.active_slot]);
+    SOKOL_ASSERT(buf->gl.buf[buf->cmn.active_slot]);
     _sg_gl_write_buffer_common(buf, desc);
 }
 
@@ -21083,11 +21074,11 @@ _SOKOL_PRIVATE void _sg_vk_staging_copy_image_data(_sg_image_t* img, const sg_im
     }
 }
 
-// staging system for non-blocking streaming updates with a max per-frame data limit
+// staging system for non-blocking streaming (aka transient) updates with a max per-frame data limit
 _SOKOL_PRIVATE void _sg_vk_staging_stream_init(void) {
-    SOKOL_ASSERT(_sg.desc.vulkan.stream_staging_buffer_size > 0);
+    SOKOL_ASSERT(_sg.desc.vulkan.transient_staging_buffer_size > 0);
     _sg_vk_shared_buffer_init(&_sg.vk.stage.stream,
-        (uint32_t)_sg.desc.vulkan.stream_staging_buffer_size,
+        (uint32_t)_sg.desc.vulkan.transient_staging_buffer_size,
         16, // NOTE: arbitrary alignment (FIXME?)
         _SG_VK_MEMTYPE_STAGING_STREAM,
         "shared-stream-buffer");
@@ -21117,7 +21108,7 @@ _SOKOL_PRIVATE void _sg_vk_staging_stream_buffer_data(_sg_buffer_t* buf, const s
     const uint8_t* src_ptr = (const uint8_t*)src_data->ptr + src_offset;
     const VkDeviceSize vk_stage_offset = _sg_vk_shared_buffer_memcpy(&_sg.vk.stage.stream, src_ptr, (uint32_t)copy_size);
     if (vk_stage_offset == _SG_VK_SHARED_BUFFER_OVERFLOW_RESULT) {
-        _SG_ERROR(VULKAN_STAGING_STREAM_BUFFER_OVERFLOW);
+        _SG_ERROR(VULKAN_STAGING_TRANSIENT_BUFFER_OVERFLOW);
         return;
     }
     VkCommandBuffer cmd_buf = _sg.vk.frame.stream_cmd_buf;
@@ -21136,7 +21127,7 @@ _SOKOL_PRIVATE void _sg_vk_staging_stream_buffer_data(_sg_buffer_t* buf, const s
     _sg_vk_buffer_barrier(cmd_buf, buf, _SG_VK_ACCESS_VERTEXBUFFER|_SG_VK_ACCESS_INDEXBUFFER|_SG_VK_ACCESS_STORAGEBUFFER_RO);
 }
 
-_SOKOL_PRIVATE bool _sg_vk_staging_stream_miplevel_data(_sg_image_t* img,
+_SOKOL_PRIVATE void _sg_vk_staging_stream_miplevel_data(_sg_image_t* img,
     const uint8_t* src_ptr,
     size_t src_size,
     size_t src_offset,
@@ -21193,13 +21184,12 @@ _SOKOL_PRIVATE bool _sg_vk_staging_stream_miplevel_data(_sg_image_t* img,
     const size_t vk_size = (size_t)src_bytes_per_slice * (size_t)num_slices;
     const uint32_t vk_src_offset = (uint32_t)_sg_vk_shared_buffer_memcpy(&_sg.vk.stage.stream, vk_src_ptr, (uint32_t)vk_size);
     if (vk_src_offset == _SG_VK_SHARED_BUFFER_OVERFLOW_RESULT) {
-        _SG_ERROR(VULKAN_STAGING_STREAM_BUFFER_OVERFLOW);
-        return false;
+        _SG_ERROR(VULKAN_STAGING_TRANSIENT_BUFFER_OVERFLOW);
+        return;
     }
     region.bufferOffset = vk_src_offset;
     vkCmdCopyBufferToImage2(cmd_buf, &copy_info);
     _sg_stats_inc(vk.num_cmd_copy_buffer_to_image);
-    return true;
 }
 
 // uniform data system
@@ -23904,7 +23894,7 @@ _SOKOL_PRIVATE bool _sg_validate_end(void) {
 #endif
 
 _SOKOL_PRIVATE bool _sg_one(bool b0, bool b1, bool b2) {
-    return (b0 + b1 + b2) == 1;
+    return ((int)b0 + (int)b1 + (int)b2) == 1;
 }
 
 _SOKOL_PRIVATE bool _sg_validate_buffer_desc(const sg_buffer_desc* desc) {
@@ -24039,8 +24029,14 @@ _SOKOL_PRIVATE bool _sg_validate_image_desc(const sg_image_desc* desc) {
             _SG_VALIDATE(desc->sample_count == 1, VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_NO_MSAA);
         }
         if (usg->write_unsealed) {
-            _SG_VALIDATE(usg->immutable, VALIDATE_IMAGEDESC_UNSEALED_VS_IMMUTABLE);
-            _SG_VALIDATE(!any_attachment, VALIDATE_IMAGEDESC_UNSEALED_VS_ATTACHMENT);
+            _SG_VALIDATE(usg->immutable, VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_IMMUTABLE);
+            _SG_VALIDATE(!any_attachment, VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_ATTACHMENT);
+        }
+        if (usg->write_transient) {
+            _SG_VALIDATE(!any_attachment, VALIDATE_IMAGEDESC_WRITE_TRANSIENT_VS_ATTACHMENT);
+        }
+        if (usg->dynamic_update) {
+            _SG_VALIDATE(!any_attachment, VALIDATE_IMAGEDESC_DYNAMIC_UPDATE_VS_ATTACHMENT);
         }
         if (!any_attachment && !usg->storage_image) {
             _SG_VALIDATE(desc->sample_count == 1, VALIDATE_IMAGEDESC_MSAA_BUT_NO_ATTACHMENT);
@@ -26293,7 +26289,7 @@ _SOKOL_PRIVATE sg_desc _sg_desc_defaults(const sg_desc* desc) {
     res.max_commit_listeners = _sg_def(res.max_commit_listeners, _SG_DEFAULT_MAX_COMMIT_LISTENERS);
     res.wgpu.bindgroups_cache_size = _sg_def(res.wgpu.bindgroups_cache_size, _SG_DEFAULT_WGPU_BINDGROUP_CACHE_SIZE);
     res.vulkan.copy_staging_buffer_size = _sg_def(res.vulkan.copy_staging_buffer_size, _SG_DEFAULT_VK_COPY_STAGING_SIZE);
-    res.vulkan.stream_staging_buffer_size = _sg_def(res.vulkan.stream_staging_buffer_size, _SG_DEFAULT_VK_STREAM_STAGING_SIZE);
+    res.vulkan.transient_staging_buffer_size = _sg_def(res.vulkan.transient_staging_buffer_size, _SG_DEFAULT_VK_TRANSIENT_STAGING_SIZE);
     res.vulkan.descriptor_buffer_size = _sg_def(res.vulkan.descriptor_buffer_size, _SG_DEFAULT_VK_DESCRIPTOR_BUFFER_SIZE);
     return res;
 }
@@ -27562,6 +27558,7 @@ SOKOL_API_IMPL void sg_write_buffer_transient(const sg_write_buffer_desc* desc) 
 SOKOL_API_IMPL void sg_write_image_transient(const sg_write_image_desc* desc) {
     SOKOL_ASSERT(_sg.valid);
     SOKOL_ASSERT(desc);
+    _sg_stats_inc(num_write_image_transient);
     _sg_image_t* img = _sg_lookup_image(desc->dst.image.id);
     if (img) {
         sg_write_image_desc desc_def = _sg_write_image_desc_defaults(img, desc);
