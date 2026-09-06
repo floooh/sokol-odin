@@ -14,3 +14,6 @@
 #include "sokol_gl.h"
 #include "sokol_shape.h"
 #include "sokol_debugtext.h"
+#include "sokol_framebuffer.h"
+#include "sokol_letterbox.h"
+#include "sokol_cmdbuf.h"
