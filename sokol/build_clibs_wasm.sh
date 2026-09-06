@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-declare -a libs=("log" "gfx" "app" "glue" "time" "audio" "debugtext" "shape" "gl")
+declare -a libs=("log" "gfx" "app" "glue" "time" "audio" "debugtext" "shape" "gl" "framebuffer" "letterbox" "cmdbuf")
 
 for l in "${libs[@]}"
 do

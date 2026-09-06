@@ -36,6 +36,9 @@ build_lib_x64_release sokol_audio       audio/sokol_audio_linux_x64_gl_release S
 build_lib_x64_release sokol_debugtext   debugtext/sokol_debugtext_linux_x64_gl_release SOKOL_GLCORE
 build_lib_x64_release sokol_shape       shape/sokol_shape_linux_x64_gl_release SOKOL_GLCORE
 build_lib_x64_release sokol_gl          gl/sokol_gl_linux_x64_gl_release SOKOL_GLCORE
+build_lib_x64_release sokol_framebuffer framebuffer/sokol_framebuffer_linux_x64_gl_release SOKOL_GLCORE
+build_lib_x64_release sokol_letterbox   letterbox/sokol_letterbox_linux_x64_gl_release SOKOL_GLCORE
+build_lib_x64_release sokol_cmdbuf      cmdbuf/sokol_cmdbuf_linux_x64_gl_release SOKOL_GLCORE
 
 # x64 + GL + Debug
 build_lib_x64_debug sokol_log           log/sokol_log_linux_x64_gl_debug SOKOL_GLCORE
@@ -47,5 +50,8 @@ build_lib_x64_debug sokol_audio         audio/sokol_audio_linux_x64_gl_debug SOK
 build_lib_x64_debug sokol_debugtext     debugtext/sokol_debugtext_linux_x64_gl_debug SOKOL_GLCORE
 build_lib_x64_debug sokol_shape         shape/sokol_shape_linux_x64_gl_debug SOKOL_GLCORE
 build_lib_x64_debug sokol_gl            gl/sokol_gl_linux_x64_gl_debug SOKOL_GLCORE
+build_lib_x64_debug sokol_framebuffer   framebuffer/sokol_framebuffer_linux_x64_gl_debug SOKOL_GLCORE
+build_lib_x64_debug sokol_letterbox     letterbox/sokol_letterbox_linux_x64_gl_debug SOKOL_GLCORE
+build_lib_x64_debug sokol_cmdbuf        cmdbuf/sokol_cmdbuf_linux_x64_gl_debug SOKOL_GLCORE
 
 rm *.o
