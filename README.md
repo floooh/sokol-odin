@@ -79,3 +79,51 @@ On Linux install the following packages: libglu1-mesa-dev, mesa-common-dev, xorg
     ```
     odin build ../examples/clear -subsystem:windows
     ```
+
+## Dear ImGui integration
+
+> _The section below is LLM-generated._
+
+sokol-odin ships bindings for `sokol_imgui.h`, `sokol_gfx_imgui.h` and
+`sokol_app_imgui.h` under the Odin packages `sokol/imgui`, `sokol/gfximgui`
+and `sokol/appimgui`. `build_clibs_*.sh` / `.cmd` intentionally do **not**
+build the corresponding C archives — they need Dear ImGui (C++), which you
+must supply.
+
+Steps to use them:
+
+1. Clone [dcimgui](https://github.com/floooh/dcimgui) (an all-in-one Dear
+   ImGui + `cimgui.h` C-API drop) and build it into a static library your
+   Odin build can link — regular flavour:
+
+    ```bash
+    cd path/to/dcimgui
+    c++ -c -O2 -std=c++17 src/*.cpp
+    ar rcs libimgui.a *.o
+    ```
+
+    Use `src-docking/` instead for the docking flavour.
+
+2. Compile `sokol/c/sokol_imgui.c` (and the others as needed) once per
+   config × backend, dropping the resulting `.a` files where the Odin
+   `foreign import` block expects them (mirror the naming used by the
+   other `sokol/<module>/*.a` archives). The backend define
+   (`-DSOKOL_METAL` below, or `-DSOKOL_D3D11`/`-DSOKOL_GLCORE`/
+   `-DSOKOL_GLES3`) must match the one used when the corresponding
+   `sokol_gfx_*_*.a` archive was built — otherwise the imgui renderer
+   picks a different backend than sokol-gfx. Example (macOS arm64 Metal
+   debug):
+
+    ```bash
+    MACOSX_DEPLOYMENT_TARGET=14.0 cc -c -g -x objective-c -arch arm64 \
+        -std=c11 -DIMPL -DSOKOL_METAL \
+        -I path/to/dcimgui/src \
+        sokol/c/sokol_imgui.c
+    ar rcs sokol/imgui/sokol_imgui_macos_arm64_metal_debug.a sokol_imgui.o
+    ```
+
+3. `import sokol_imgui "sokol/imgui"` and use `sokol_imgui.setup(...)` as
+   normal. Add `libimgui.a` and `-lc++` (macOS) or `-lstdc++` (Linux) to
+   your Odin build's `extra-linker-flags`.
+
+The same flow applies to `sokol/gfximgui` and `sokol/appimgui`.
