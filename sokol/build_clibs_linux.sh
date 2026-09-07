@@ -39,6 +39,7 @@ build_lib_x64_release sokol_gl          gl/sokol_gl_linux_x64_gl_release SOKOL_G
 build_lib_x64_release sokol_framebuffer framebuffer/sokol_framebuffer_linux_x64_gl_release SOKOL_GLCORE
 build_lib_x64_release sokol_letterbox   letterbox/sokol_letterbox_linux_x64_gl_release SOKOL_GLCORE
 build_lib_x64_release sokol_cmdbuf      cmdbuf/sokol_cmdbuf_linux_x64_gl_release SOKOL_GLCORE
+build_lib_x64_release sokol_fetch       fetch/sokol_fetch_linux_x64_gl_release SOKOL_GLCORE
 
 # x64 + GL + Debug
 build_lib_x64_debug sokol_log           log/sokol_log_linux_x64_gl_debug SOKOL_GLCORE
@@ -53,5 +54,6 @@ build_lib_x64_debug sokol_gl            gl/sokol_gl_linux_x64_gl_debug SOKOL_GLC
 build_lib_x64_debug sokol_framebuffer   framebuffer/sokol_framebuffer_linux_x64_gl_debug SOKOL_GLCORE
 build_lib_x64_debug sokol_letterbox     letterbox/sokol_letterbox_linux_x64_gl_debug SOKOL_GLCORE
 build_lib_x64_debug sokol_cmdbuf        cmdbuf/sokol_cmdbuf_linux_x64_gl_debug SOKOL_GLCORE
+build_lib_x64_debug sokol_fetch         fetch/sokol_fetch_linux_x64_gl_debug SOKOL_GLCORE
 
 rm *.o

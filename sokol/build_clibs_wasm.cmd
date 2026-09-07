@@ -1,6 +1,6 @@
 @echo off
 
-set sources=log app gfx glue time audio debugtext shape gl
+set sources=log app gfx glue time audio debugtext shape gl framebuffer letterbox cmdbuf fetch
 
 REM Debug
 for %%s in (%sources%) do (
