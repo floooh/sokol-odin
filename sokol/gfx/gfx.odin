@@ -306,10 +306,9 @@ package sokol_gfx
         resource from unsealed into valid state. For more details see the
         doc section `ON POPULATING IMMUTABLE RESOURCES` below.
 
-    --- to update the content of buffer and image resources:
-
-        For data that's written by the CPU and consumed by the GPU in the
-        *same frame* and doesn't need to survive into the next frame, call:
+    --- to write 'transient' data from the CPU side that's 'consumed'
+        in the same frame by the GPU side (e.g. the data doesn't need
+        to survive into the next frame):
 
             sg_write_buffer_transient(const sg_write_buffer_desc* desc);
             sg_write_image_transient(const sg_write_image_desc* desc);
@@ -319,7 +318,8 @@ package sokol_gfx
         `.usage.write_transient = true` and cannot be pass attachments.
 
         Multiple calls to the write-transient functions are allowed in a frame
-        to incrementally populate the resource, but only until the resource is bound.
+        to incrementally populate the resource, but only until the resource is bound
+        or used as a copy source.
         After a resource has been used in a frame it cannot be written to until
         the next frame.
 
@@ -330,25 +330,24 @@ package sokol_gfx
         layer error. Calling a write-transient function on a resource that isn't
         used for rendering in the same frame is allowed but pointless.
 
-        For data that needs to persist across frames, call:
+    --- to copy data between resources, call one of the `sg_copy_*` funcs:
 
-            sg_update_buffer(sg_buffer buf, const sg_range* data)
-            sg_update_image(sg_image img, const sg_image_data* data)
+            sg_copy_buffer_to_buffer(const sg_copy_buffer_to_buffer_desc* desc);
+            sg_copy_buffer_to_image(const sg_copy_buffer_to_image_desc* desc);
 
-        Buffers and images to be updated must have been created with
-        sg_buffer_desc.usage.dynamic_update.
+        The source resource must have been created with usage .copy_src and
+        the destination resource must have been created with usage .copy_dst.
 
-        Only one update per frame is allowed for buffer and image resources when
-        using the sg_update_*() functions. The rationale is to have a simple
-        protection from the CPU scribbling over data the GPU is currently
-        using, or the CPU having to wait for the GPU
+        There are a few backend-specific caveats, for more information see
+        the section ON COPYING DATA BETWEEN RESOURCES.
 
-        Buffer and image updates can be partial, as long as a rendering
-        operation only references the valid (updated) data in the
-        buffer or image.
+    --- to write CPU-side data persistently into buffer and image resources,
+        use a combination of sg_write_buffer_transient() into a 'staging buffer',
+        followed by an sg_copy_* call to perform a copy from the staging
+        buffer into the destination resource.
 
-        NOTE: the update functions will be replaced with more flexible
-        'write-persistent' functions in the next resource API update!
+        For more information on uploading data persistently into resources see
+        the section ON UPLOADING PERSISTENT DATA INTO RESOURCES.
 
     --- to check at runtime for optional features, limits and pixelformat support,
         call:
@@ -437,7 +436,7 @@ package sokol_gfx
         These functions might be helpful when preparing image data for consumption
         by sg_make_image() or the sg_write_image_*() functions:
 
-            int sg_query_row_pitch(sg_pixel_format fmt, int width, int int row_align_bytes);
+            int sg_query_row_pitch(sg_pixel_format fmt, int width, int row_align_bytes);
             int sg_query_surface_pitch(sg_pixel_format fmt, int width, int height, int row_align_bytes);
 
         Width and height are generally in number pixels, but note that 'row' has different meaning
@@ -447,10 +446,8 @@ package sokol_gfx
         This is why calling sg_query_surface_pitch() for a compressed pixel format and height
         N, N+1, N+2, ... may return the same result.
 
-        The row_align_bytes parameter is for added flexibility. For image data that goes into
-        the sg_make_image() or sg_update_image() this should generally be 1, because these
-        functions take tightly packed image data as input no matter what alignment restrictions
-        exist in the backend 3D APIs.
+        The row_align_bytes parameter is for added flexibility. For tightly packed image
+        this should generally be 1, otherwise the row pitch in bytes.
 
     ON INITIALIZATION:
     ==================
@@ -466,8 +463,8 @@ package sokol_gfx
                 - the max overall size of uniform data that can be
                   updated per frame, including a worst-case alignment
                   per uniform update (this worst-case alignment is 256 bytes)
-                - the max size of all dynamic resource updates (sg_update_buffer,
-                  sg_append_buffer and sg_update_image) per frame
+                - the max size of all transient resource updates
+                  (sg_write_buffer/image_transient per frame
                 - the max number of compute-dispatch calls in a compute pass
             Not all of those limit values are used by all backends, but it is
             good practice to provide them none-the-less.
@@ -811,7 +808,7 @@ package sokol_gfx
     storage images by running compute shader code on
     the GPU. Updating storage resources with a compute shader will almost always
     be more efficient than computing the same data on the CPU and then uploading
-    it via `sg_update_buffer()` or `sg_update_image()`.
+    it via `sg_write_buffer/image_transient()`.
 
     NOTE: compute passes are only supported on the following platforms and
     backends:
@@ -1464,6 +1461,230 @@ package sokol_gfx
         data, e.g. it's not possible to transition a resource back from
         'valid' to 'unsealed' resource state.
 
+    ON COPYING DATA BETWEEN RESOURCES
+    =================================
+    NOTE: all `sg_copy_*` functions must be called outside passes!
+
+    To copy data between buffers, call `sg_copy_buffer_to_buffer()`.
+
+        ```c
+        sg_copy_buffer_to_buffer(&(sg_copy_buffer_to_buffer_desc){
+            .src = {
+                .buffer = src_buffer,
+                .offset = src_offset_in_bytes,
+            },
+            .dst = {
+                .buffer = dst_buffer,
+                .offset = dst_offset_in_bytes,
+            },
+            .size = copy_size_in_bytes,
+        });
+        ```
+
+    The source buffer must have been created with `.usage.copy_src = true`,
+    and the destination buffer with `.usage.copy_dst = true`:
+
+        ```c
+        sg_buffer src_buf = sg_make_buffer(&(sg_buffer_desc){
+            .usage = {
+                .vertex_buffer = true,
+                .copy_src = true,
+            },
+            .data = { ... },
+        });
+
+        sg_buffer dst_buf = sg_make_buffer(&(sg_buffer_desc){
+            .usage = {
+                .vertex_buffer = true,
+                .copy_dst = true,
+            },
+            .size = ...,
+        });
+        ```
+
+    Likewise to copy data from a buffer into an image, call `sg_copy_buffer_to_image`:
+
+        ```c
+        sg_copy_buffer_to_image(&(sg_copy_buffer_to_image_desc){
+            // source buffer and image data layout
+            .src = {
+                .buffer = src_buf,
+                .offset = offset_in_bytes,
+                .bytes_per_row = ...,
+                .bytes_per_slice = ...,
+            },
+            // destination image, miplevel and location
+            .dst = {
+                .image = dst_img,
+                .mip_level = ...,
+                .x = ...,
+                .y = ...,
+                .slice = ...,
+            },
+            // size of region to copy in pixels
+            .size = {
+                .width = ...,
+                .height = ...,
+                .num_slices = ...,
+            },
+        });
+        ```
+
+    For detailed information on the parameter structs `sg_copy_buffer_to_buffer_desc` and
+    `sg_copy_buffer_to_image_desc` (especially how default values are populated),
+    see the struct documentation headers.
+
+    Copying between resources comes with a lot of caveats caused by backend 3D API
+    restrictions (alignments, valid resource types, etc...). These detailed
+    requirements are listed in the struct documentation below, but for portable
+    code you'll at least need to be aware of the following 'dynamic' restrictions
+    that only trigger a validation check on certain backends:
+
+    - D3D11 does not support copying from D3D buffers into textures, this means
+      that sg_copy_buffer_to_image() is restricted to staging buffers as source
+      (created with .usage.staging_buffer) - e.g. on the D3D11 backend,
+      sg_copy_buffer_to_image() is *only* useful for uploading CPU-side data into
+      images. To check for this restriction at runtime, look at the feature flag
+      `sg_features.copy_buffer_to_image_relaxed_buffer_type`.  When this is true,
+      sg_copy_buffer_to_image() supports copying from regular non-staging buffer
+      types, when false, only `.usage.staging_buffer` buffers are supported.
+    - WebGPU requires `sg_copy_buffer_to_image_desc.src.bytes_per_row` to be
+      a multiple-of-256 when copying from a non-staging buffer (e.g. regular
+      GPU buffers like storage buffers). To check for this restriction at runtime,
+      look at the feature flag `sg_features.copy_buffer_to_image_relaxed_bytes_per_row`.
+      When true, the multiple-of-256 bytes restriction does not apply for source
+      buffers of any type. When false, the restriction applies for non-staging
+      buffers.
+    - WebGL2 has a restriction that a copy into a buffer with `.usage.index_buffer`
+      can only happen from a compatible source buffer which also must contain
+      index data (e.g. the source buffer must have been created with either
+      `.usage.index_buffer` or the special `.usage.staging_index_buffer`).
+      This restriction is gated by the common feature flag
+      `sg_features.separate_buffer_types` which also prevents 'multi-usage'
+      buffers (like combined vertex- and index-buffers).
+    - Also on WebGL2 and for the same reason, attempting to copy from an
+      index buffer into an image via `sg_copy_buffer_to_image` is prohibited
+    - On the Apple GL/GLES3 backends, when calling `sg_copy_buffer_to_image()`
+      from a non-staging buffer, the source buffer offset is ignored because
+      of a GL driver bug (which is unlikely to be fixed because
+      GL on macOS is long deprecated), sokol_gfx.h will log a one-time message
+      when the bug would be triggered. For copying from staging buffers, the
+      offset works because of a special workaround in the sokol-gfx GL backend
+      (staging buffers are actually heap memory allocations).
+
+
+    ON UPLOADING PERSISTENT DATA INTO RESOURCES
+    ===========================================
+    To upload CPU-side data into buffers and images (for instance to manage
+    a dynamic texture atlas), first write the data into a 'staging buffer'
+    with a `sg_write_buffer_transient()` call, and then copy the data
+    into the destination resource via `sg_copy_buffer_to_buffer()` or
+    `sg_copy_buffer_to_image()`.
+
+    Create the staging buffer with the usage flags `.staging_buffer`, `.write_transient`
+    and `.copy_src`, this is the same no matter if the destination is a buffer
+    or image:
+
+        ```c
+        sg_buffer staging_buf = sg_make_buffer(&(sg_buffer_desc){
+            .usage = {
+                .staging_buffer = true,
+                .write_transient = true,
+                .copy_src = true,
+            },
+            .size = ...,
+        });
+        ```
+    The destination resource must be created with the additional usage flag
+    `.copy_dst`, e.g. for a destination buffer used as vertex buffer:
+
+        ```c
+        sg_buffer dst_buf = sg_make_buffer(&(sg_buffer_desc){
+            .usage = {
+                .vertex_buffer = true,
+                .copy_dst = true,
+            },
+            .size = ...,
+        });
+        ```
+
+    ...now first write the data into the staging buffer via a regular
+    sg_write_buffer_transient() call:
+
+        ```c
+        sg_write_buffer_transient(&(sg_write_buffer_desc){
+            .src.data = { .ptr = ..., .size = ... },
+            .dst.buffer = staging_buf,
+        });
+        ```
+
+    You can do multiple sg_write_buffer_transient() calls to the same
+    buffer in a frame, but *only* until the first `sg_copy_*` call
+    in the same frame using this buffer as source.
+
+    Next, *outside* a pass, call sg_copy_buffer_to_buffer to copy the
+    data from the transient staging buffer into the 'persistent' destination
+    buffer:
+
+        ```c
+        sg_copy_buffer_to_buffer(&(sg_copy_buffer_to_buffer_desc){
+            .src = {
+                .buffer = staging_buf,
+                .offset = ...,
+            },
+            .dst = {
+                .buffer = dst_buf,
+                .offset = ...,
+            },
+            .size = ...,
+        });
+        ```
+
+    For images the process is similar: the destination image must be created
+    with `usage.copy_dst` and no initial data:
+
+        ```c
+        sg_image dst_img = sg_make_image(&(sg_image_desc){
+            .usage = {
+                .copy_dst = true,
+            },
+            .width = ...,
+            .height = ...,
+            .pixel_format = ...,
+        });
+        ```
+
+    ...then copy a pixel region from the source buffer into the destination
+    image (note that you probably want to provide explicit bytes_per_row and
+    bytes_per_slice values for the source data instead of relying on sokol-gfx
+    filling in the defaults because the default values assume that the entire
+    mip level is copied):
+
+        ```c
+        sg_copy_buffer_to_image(&(sg_copy_buffer_to_image_desc){
+            // source buffer and image data layout
+            .src = {
+                .buffer = staging_buf,
+                .offset = offset_in_bytes,
+                .bytes_per_row = ...,
+                .bytes_per_slice = ...,
+            },
+            // destination image, miplevel and location
+            .dst = {
+                .image = dst_img,
+                .mip_level = ...,
+                .x = ...,
+                .y = ...,
+                .slice = ...,
+            },
+            // size of region to copy in pixels
+            .size = {
+                .width = ...,
+                .height = ...,
+                .num_slices = ...,
+            },
+        });
+        ```
 
     ON STORAGE BUFFERS
     ==================
@@ -2215,12 +2436,8 @@ foreign sokol_gfx_clib {
     write_image_unsealed :: proc(#by_ptr desc: Write_Image_Desc)  ---
     seal_buffer :: proc(buf: Buffer)  ---
     seal_image :: proc(img: Image)  ---
-    // update functions (will be deprecated by new resource update functions)
-    update_buffer :: proc(buf: Buffer, #by_ptr data: Range)  ---
-    update_image :: proc(img: Image, #by_ptr data: Image_Data)  ---
-    append_buffer :: proc(buf: Buffer, #by_ptr data: Range) -> c.int ---
-    query_buffer_overflow :: proc(buf: Buffer) -> bool ---
-    query_buffer_will_overflow :: proc(buf: Buffer, size: c.size_t) -> bool ---
+    copy_buffer_to_buffer :: proc(#by_ptr desc: Copy_Buffer_To_Buffer_Desc)  ---
+    copy_buffer_to_image :: proc(#by_ptr desc: Copy_Buffer_To_Image_Desc)  ---
     // getting information
     query_desc :: proc() -> Desc ---
     query_backend :: proc() -> Backend ---
@@ -2229,6 +2446,7 @@ foreign sokol_gfx_clib {
     query_pixelformat :: proc(fmt: Pixel_Format) -> Pixelformat_Info ---
     query_row_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int row_align_bytes: c.int) -> c.int ---
     query_surface_pitch :: proc(fmt: Pixel_Format, #any_int width: c.int, #any_int height: c.int, #any_int row_align_bytes: c.int) -> c.int ---
+    query_pass_state :: proc() -> Pass_State ---
     // get current state of a resource (INITIAL, ALLOC, VALID, FAILED, INVALID)
     query_buffer_state :: proc(buf: Buffer) -> Resource_State ---
     query_image_state :: proc(img: Image) -> Resource_State ---
@@ -2621,6 +2839,8 @@ Features :: struct {
     draw_base_instance : bool,
     dual_source_blending : bool,
     vertexformat_int10_n2 : bool,
+    copy_buffer_to_image_relaxed_buffer_type : bool,
+    copy_buffer_to_image_relaxed_bytes_per_row : bool,
     gl_texture_views : bool,
 }
 
@@ -3425,6 +3645,17 @@ Pass :: struct {
 }
 
 /*
+    sg_pass_state
+
+    Result of sg_query_pass_state().
+*/
+Pass_State :: enum i32 {
+    NONE,
+    RENDER,
+    COMPUTE,
+}
+
+/*
     sg_bindings
 
     The sg_bindings structure defines the resource bindings for
@@ -3532,9 +3763,15 @@ Bindings :: struct {
     .storage_buffer (default: false)
         the buffer will be bound as storage buffer via storage-buffer-view
         in sg_bindings.views[]
-    .immutable (default: true)
-        the buffer content will never be updated from the CPU side while
-        in 'valid' resource state (but may be written to by a compute shader)
+    .staging_buffer (default: false)
+        the buffer cannot be bound as rendering or compute resource and
+        can only be used as copy source, used together with .write_transient
+        for uploading CPU data into GPU buffers or images via a combination
+        of `sg_write_buffer_transient()` followed by `sg_copy_buffer_to_buffer()`
+        or `sg_copy_buffer_to_image()`
+    .staging_index_buffer (default: false)
+        special staging buffer type for WebGL2 for copying data into index
+        buffers (in WebGL2 such copies are only allowed between index buffers)
     .write_unsealed (default: false)
         when true, creates an immutable buffer in 'unsealed' resource state,
         unsealed buffers can be populated with data by one or multiple
@@ -3547,19 +3784,22 @@ Bindings :: struct {
         scenarios where data that's written from the CPU side is consumed in the
         same frame by the GPU-side and doesn't need to survive into the next
         frame
-    .dynamic_update (default: false)
-        the buffer content will be infrequently updated from the CPU side
-        NOTE: dynamic_update is deprecated and will be replaced with a
-        .write_persistent flag in one of the next updates
+    .copy_src (default: false)
+        the buffer is used as source in a sg_copy_buffer_to_buffer()
+        or sg_copy_buffer_to_image() call
+    .copy_dst (default: false)
+        the buffer is used as destination in an sg_copy_buffer_to_buffer() call
 */
 Buffer_Usage :: struct {
     vertex_buffer : bool,
     index_buffer : bool,
     storage_buffer : bool,
-    immutable : bool,
+    staging_buffer : bool,
+    staging_index_buffer : bool,
     write_unsealed : bool,
     write_transient : bool,
-    dynamic_update : bool,
+    copy_src : bool,
+    copy_dst : bool,
 }
 
 /*
@@ -3570,9 +3810,9 @@ Buffer_Usage :: struct {
     The default configuration is:
 
     .size:      0       (*must* be >0 for buffers without data)
-    .usage      { .vertex_buffer = true, .immutable = true }
-    .data.ptr   0       (*must* be valid for immutable buffers without storage buffer usage)
-    .data.size  0       (*must* be > 0 for immutable buffers without storage buffer usage)
+    .usage      { .vertex_buffer = true }
+    .data.ptr   0
+    .data.size  0
     .label      0       (optional string label)
 
     For immutable buffers which are initialized with initial data,
@@ -3585,9 +3825,6 @@ Buffer_Usage :: struct {
     You can also set both size values, but both size values must
     be identical.
 
-    NOTE: Immutable buffers that are neither storage-buffers or have
-    write-unsealed usage *must* be created with initial data.
-
     NOTE: Buffers without initial data will have undefined content, e.g.
     do *not* expect the buffer to be zero-initialized!
 
@@ -3596,20 +3833,15 @@ Buffer_Usage :: struct {
     The following struct members allow to inject your own GL, Metal
     or D3D11 buffers into sokol_gfx:
 
-    .gl_buffers[SG_NUM_INFLIGHT_FRAMES]
-    .mtl_buffers[SG_NUM_INFLIGHT_FRAMES]
+    .gl_buffer
+    .mtl_buffer
     .d3d11_buffer
     .wgpu_buffer
 
     You must still provide all other struct items except the .data item, and
     these must match the creation parameters of the native buffers you provide.
-    For sg_buffer_desc.usage.immutable buffers, only provide a single native
-    3D-API buffer, otherwise you need to provide SG_NUM_INFLIGHT_FRAMES buffers
-    (only for GL and Metal, not D3D11 or WebGPU). Providing multiple buffers for GL and
-    Metal is necessary because sokol_gfx will rotate through them when calling
-    sg_update_buffer() to prevent lock-stalls.
 
-    Note that it is expected that immutable injected buffer have already been
+    Note that it is expected that injected buffer have already been
     initialized with content, and the .content member must be 0!
 
     Also you need to call sg_reset_state_cache() after calling native 3D-API
@@ -3621,8 +3853,8 @@ Buffer_Desc :: struct {
     usage : Buffer_Usage,
     data : Range,
     label : cstring,
-    gl_buffers : [2]u32,
-    mtl_buffers : [2]rawptr,
+    gl_buffer : u32,
+    mtl_buffer : rawptr,
     d3d11_buffer : rawptr,
     wgpu_buffer : rawptr,
     _ : u32,
@@ -3650,9 +3882,6 @@ Buffer_Desc :: struct {
         the image can be used as parent resource of a depth-stencil-attachmnet-view
         which is then passes into sg_begin_pass via sg_pass.attachments.depth_stencil
         as depth-stencil-buffer
-    .immutable (default: true)
-        the image content cannot be updated from the CPU side
-        (but may be updated by the GPU in a render- or compute-pass)
     .write_unsealed (default: false)
         when true, creates an immutable image in 'unsealed' resource state,
         unsealed images can be populated with data by one or multiple
@@ -3665,10 +3894,15 @@ Buffer_Desc :: struct {
         scenarios where data that's written from the CPU side is consumed in the
         same frame by the GPU-side and doesn't need to survive into the next
         frame
-    .dynamic_update (default: false)
-        the image content is updated infrequently by the CPU via sg_update_image()
-        NOTE: dynamic_update is deprecated and will be replaced with a
-        .write_persistent flag in one of the next updates
+    .copy_src (default: false)
+        TODO: currently unused, will become useful when the rest of the
+        sg_copy_* functions are implemented
+    .copy_dst (default: false)
+        the image is going to be used as destination in an `sg_copy_buffer_to_image()`
+        call
+    .immutable (default: true, deprecated)
+        the image content cannot be updated from the CPU side
+        (but may be updated by the GPU in a render- or compute-pass)
 
     Note that creating a texture view from the image to be used for
     texture-sampling in vertex-, fragment- or compute-shaders
@@ -3679,10 +3913,11 @@ Image_Usage :: struct {
     color_attachment : bool,
     resolve_attachment : bool,
     depth_stencil_attachment : bool,
-    immutable : bool,
     write_unsealed : bool,
     write_transient : bool,
-    dynamic_update : bool,
+    copy_src : bool,
+    copy_dst : bool,
+    immutable : bool,
 }
 
 /*
@@ -3839,11 +4074,31 @@ Write_Image_Desc :: struct {
 
     Describes the source or destination location in a buffer.
 
-    NOTE: .offset must be 4-byte aligned (ensured by the validation layer)
+    Caveats:
+        - .offset must be 4-byte aligned (ensured by the validation layer)
 */
 Buffer_Location :: struct {
     buffer : Buffer,
     offset : c.size_t,
+}
+
+/*
+    sg_buffer_image_location
+
+    A buffer location for image data with row- and surface-pitch.
+
+    Caveats (all checked by the validation layer):
+        - .offset must be a multiple of the destination image pixel- or
+          compression-block size
+        - .bytes_per_row must be a multiple of the destination image's
+          per-pixel or per-compression-block size
+        - .bytes_per_slice must be a multiple of .bytes_per_row
+*/
+Buffer_Image_Location :: struct {
+    buffer : Buffer,
+    offset : c.size_t,
+    bytes_per_row : c.int,
+    bytes_per_slice : c.int,
 }
 
 /*
@@ -3881,6 +4136,109 @@ Write_Buffer_Desc :: struct {
     src : Write_Buffer_Source,
     dst : Buffer_Location,
     size : c.size_t,
+}
+
+/*
+    sg_copy_buffer_to_buffer_desc
+
+    Describes a buffer-to-buffer copy operation via sg_copy_buffer_to_buffer()
+
+    .src
+        .buffer     the source buffer
+        .offset     byte offset into the source buffer
+    .dst
+        .buffer     the destination buffer
+        .offset     byte offset into the destination buffer
+    .size           number of bytes to copy (must be > 0)
+
+    Caveats (all checked by the validation layer):
+        - sg_copy_buffer_to_buffer() must be called outside a pass
+        - the source buffer must have been created with .usage.copy_src
+        - the destination buffer must have been created with .usage.copy_dst
+        - the source and destination buffer cannot be identical
+        - src and dst offset must be 4-byte aligned
+        - WebGL2 specific: when copying into an index buffer, the source
+          buffer must have been created with .usage.index_buffer or
+          .usage.staging_index_buffer (this requirement can be checked
+          via `sg_query_features().separate_buffer_types`)
+*/
+Copy_Buffer_To_Buffer_Desc :: struct {
+    src : Buffer_Location,
+    dst : Buffer_Location,
+    size : c.size_t,
+}
+
+/*
+    sg_copy_buffer_to_image_desc
+
+    Describes a buffer-to-image copy operation via sg_copy_buffer_to_image():
+
+    .src
+        .buffer             the source buffer
+        .offset             offset into the buffer
+        .bytes_per_row      row pitch in bytes of the source data (default: see below)
+        .bytes_per_slice    slice pitch in bytes of the source data (default: see below)
+    .dst
+        .image              the destination image
+        .mip_level          the mip level to copy to
+        .x, .y              destination [x,y] coordinate
+        .slice              destination array or 3d slice
+    .size
+        .width              copy region width in pixels
+        .height             copy region height in pixels
+        .num_slices         number of array or 3d slices to copy
+
+    Note on default values:
+
+        The default values are the same as sg_write_image_desc, which may
+        be a bit unintuitive for a copy operation. TL;DR: the defaults
+        are for copying a whole, tightly packed mip level into the
+        destination image:
+
+        .src.bytes_per_row
+            Default is the row pitch of the selected destination image miplevel
+            (e.g. *not* computed from the copy-width)
+        .src.bytes_per_slice
+            Likewise, the default is the slice pitch of the destination image
+            mip level (e.g. *not* computed from the copy width and height)
+        .size
+            The size default is the 'rest after offset' for the destination mip
+            level, e.g.:
+                .size.width = mip_width - .dst.x
+                .size.height = mip_height - .dst.y
+                .size.num_slices = mip_depth_or_slices - .dst.slice
+
+    Caveats (all checked by the validation layer or via logged errors and warnings):
+        - sg_copy_buffer_to_image() must be called outside a pass
+        - for compressed image formats, .size.width and .size.height must be
+          a multiple of the compression block size
+        - the source buffer must have been created with .usage.copy_src
+        - the destination image must have been created with .usage.copy_dst
+        - the source buffer type cannot be .usage.staging_index_buffer
+        - the source buffer type cannot be .usage.index_buffer when
+          `sg_query_features().separate_buffer_types` is true (this is a
+           WebGL2 restriction)
+        - only .usage.staging_buffer sources are allowed when
+          `sg_query_features().copy_buffer_to_image_relaxed_buffer_type` is false
+          (this is a D3D11 restriction)
+        - when copying from a *non-staging buffer*, .src.bytes_per_row must be a
+          multiple of 256 when `sg_query_features().copy_buffer_to_image_relaxed_bytes_per_row`
+          is false (this is a WebGPU restriction)
+        - 'fuzzy' GL restriction (this is not currently enforced by the validation layer):
+          when copying into compressed textures, the source data must be tightly packed
+          (e.g. .src.bytes_per_row and .src.bytes_per_slice will be ignored)
+        - On the Apple GL/GLES3 backends, when calling `sg_copy_buffer_to_image()`
+          from a non-staging buffer, the source buffer offset is ignored because
+          of a GL driver bug (which is unlikely to be fixed because
+          GL on macOS is long deprecated), sokol_gfx.h will log a one-time message
+          when the bug would be triggered. For copying from staging buffers, the
+          offset works because of a special workaround in the sokol-gfx GL backend
+          (staging buffers are actually heap memory allocations).
+*/
+Copy_Buffer_To_Image_Desc :: struct {
+    src : Buffer_Image_Location,
+    dst : Image_Location,
+    size : Image_Extent,
 }
 
 /*
@@ -3950,9 +4308,9 @@ Image_Desc :: struct {
     sample_count : c.int,
     data : Image_Data,
     label : cstring,
-    gl_textures : [2]u32,
+    gl_texture : u32,
     gl_texture_target : u32,
-    mtl_textures : [2]rawptr,
+    mtl_texture : rawptr,
     d3d11_texture : rawptr,
     wgpu_texture : rawptr,
     _ : u32,
@@ -4544,17 +4902,12 @@ Buffer_Info :: struct {
     slot : Slot_Info,
     num_slots : c.int,
     active_slot : c.int,
-    update_frame_index : u32,
-    append_frame_index : u32,
-    append_pos : c.int,
-    append_overflow : bool,
 }
 
 Image_Info :: struct {
     slot : Slot_Info,
     num_slots : c.int,
     active_slot : c.int,
-    upd_frame_index : u32,
 }
 
 Sampler_Info :: struct {
@@ -4777,19 +5130,17 @@ Frame_Stats :: struct {
     num_draw : u32,
     num_draw_ex : u32,
     num_dispatch : u32,
-    num_update_buffer : u32,
-    num_append_buffer : u32,
-    num_update_image : u32,
     num_write_buffer_transient : u32,
     num_write_image_transient : u32,
     num_write_buffer_unsealed : u32,
     num_write_image_unsealed : u32,
     num_seal_buffer : u32,
     num_seal_image : u32,
+    num_copy_buffer_to_buffer : u32,
+    num_copy_buffer_to_image : u32,
     size_apply_uniforms : u32,
-    size_update_buffer : u32,
-    size_append_buffer : u32,
-    size_update_image : u32,
+    size_copy_buffer_to_buffer : u32,
+    size_copy_buffer_to_image : u32,
     buffers : Frame_Resource_Stats,
     images : Frame_Resource_Stats,
     samplers : Frame_Resource_Stats,
@@ -4828,6 +5179,7 @@ Log_Item :: enum i32 {
     GL_FRAMEBUFFER_STATUS_UNSUPPORTED,
     GL_FRAMEBUFFER_STATUS_INCOMPLETE_MULTISAMPLE,
     GL_FRAMEBUFFER_STATUS_UNKNOWN,
+    GL_APPLE_PIXEL_UNPACK_OFFSET_BUG,
     D3D11_FEATURE_LEVEL_0_DETECTED,
     D3D11_CREATE_BUFFER_FAILED,
     D3D11_CREATE_BUFFER_SRV_FAILED,
@@ -4859,9 +5211,6 @@ Log_Item :: enum i32 {
     D3D11_CREATE_RTV_FAILED,
     D3D11_CREATE_DSV_FAILED,
     D3D11_CREATE_UAV_FAILED,
-    D3D11_MAP_FOR_UPDATE_BUFFER_FAILED,
-    D3D11_MAP_FOR_APPEND_BUFFER_FAILED,
-    D3D11_MAP_FOR_UPDATE_IMAGE_FAILED,
     D3D11_MAP_FOR_WRITE_BUFFER_TRANSIENT_FAILED,
     METAL_CREATE_BUFFER_FAILED,
     METAL_TEXTURE_FORMAT_NOT_SUPPORTED,
@@ -4975,11 +5324,23 @@ Log_Item :: enum i32 {
     BEGINPASS_ATTACHMENTS_ALIVE,
     DRAW_WITHOUT_BINDINGS,
     WRITE_BUFFER_TRANSIENT_BUFFER_ALIVE,
+    WRITE_BUFFER_TRANSIENT_BUFFER_VALID,
     WRITE_IMAGE_TRANSIENT_IMAGE_ALIVE,
+    WRITE_IMAGE_TRANSIENT_IMAGE_VALID,
     WRITE_BUFFER_UNSEALED_BUFFER_ALIVE,
+    WRITE_BUFFER_UNSEALED_BUFFER_UNSEALED,
     WRITE_IMAGE_UNSEALED_IMAGE_ALIVE,
+    WRITE_IMAGE_UNSEALED_IMAGE_UNSEALED,
     SEAL_BUFFER_ALIVE,
     SEAL_IMAGE_ALIVE,
+    COPY_BUFFER_TO_BUFFER_SRC_ALIVE,
+    COPY_BUFFER_TO_BUFFER_DST_ALIVE,
+    COPY_BUFFER_TO_BUFFER_SRC_VALID,
+    COPY_BUFFER_TO_BUFFER_DST_VALID,
+    COPY_BUFFER_TO_IMAGE_SRC_ALIVE,
+    COPY_BUFFER_TO_IMAGE_DST_ALIVE,
+    COPY_BUFFER_TO_IMAGE_SRC_VALID,
+    COPY_BUFFER_TO_IMAGE_DST_VALID,
     SHADERDESC_TOO_MANY_VERTEXSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURES,
@@ -4993,13 +5354,25 @@ Log_Item :: enum i32 {
     SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURESAMPLERPAIRS,
     SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURESAMPLERPAIRS,
     VALIDATE_BUFFERDESC_CANARY,
-    VALIDATE_BUFFERDESC_IMMUTABLE_VS_WRITABLE,
-    VALIDATE_BUFFERDESC_UNSEALED_VS_IMMUTABLE,
-    VALIDATE_BUFFERDESC_SEPARATE_BUFFER_TYPES,
     VALIDATE_BUFFERDESC_EXPECT_NONZERO_SIZE,
+    VALIDATE_BUFFERDESC_STAGING_VS_VERTEXBUFFER,
+    VALIDATE_BUFFERDESC_STAGING_VS_INDEXBUFFER,
+    VALIDATE_BUFFERDESC_STAGING_VS_STORAGEBUFFER,
+    VALIDATE_BUFFERDESC_STAGING_VS_INJECTED,
+    VALIDATE_BUFFERDESC_STAGING_VS_COPYDST,
+    VALIDATE_BUFFERDESC_STAGING_VS_INITIALDATA,
+    VALIDATE_BUFFERDESC_STAGING_COPYSRC,
+    VALIDATE_BUFFERDESC_SEPARATE_BUFFER_TYPES,
+    VALIDATE_BUFFERDESC_WRITEUNSEALED_VS_WRITETRANSIENT,
+    VALIDATE_BUFFERDESC_WRITEUNSEALED_VS_COPYDST,
+    VALIDATE_BUFFERDESC_WRITEUNSEALED_VS_STAGING,
+    VALIDATE_BUFFERDESC_WRITEUNSEALED_VS_INITIALDATA,
+    VALIDATE_BUFFERDESC_WRITETRANSIENT_VS_COPYDST,
+    VALIDATE_BUFFERDESC_WRITETRANSIENT_VS_INITIALDATA,
+    VALIDATE_BUFFERDESC_WRITETRANSIENT_VS_INJECTED,
+    VALIDATE_BUFFERDESC_COPYDST_VS_INITIALDATA,
     VALIDATE_BUFFERDESC_EXPECT_MATCHING_DATA_SIZE,
     VALIDATE_BUFFERDESC_EXPECT_ZERO_DATA_SIZE,
-    VALIDATE_BUFFERDESC_EXPECT_NO_DATA,
     VALIDATE_BUFFERDESC_EXPECT_DATA,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SUPPORTED,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SIZE_MULTIPLE_4,
@@ -5007,10 +5380,11 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDATA_DATA_SIZE,
     VALIDATE_IMAGEDESC_CANARY,
     VALIDATE_IMAGEDESC_IMMUTABLE_VS_WRITABLE,
-    VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_IMMUTABLE,
-    VALIDATE_IMAGEDESC_WRITE_UNSEALED_VS_ATTACHMENT,
-    VALIDATE_IMAGEDESC_WRITE_TRANSIENT_VS_ATTACHMENT,
-    VALIDATE_IMAGEDESC_DYNAMIC_UPDATE_VS_ATTACHMENT,
+    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_IMMUTABLE,
+    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_ATTACHMENT,
+    VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_ATTACHMENT,
+    VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_INJECTED,
+    VALIDATE_IMAGEDESC_COPYDST_VS_ATTACHMENT,
     VALIDATE_IMAGEDESC_ATTACHMENT_COLOR_DEPTH_STENCIL,
     VALIDATE_IMAGEDESC_IMAGETYPE_2D_NUMSLICES,
     VALIDATE_IMAGEDESC_IMAGETYPE_CUBE_NUMSLICES,
@@ -5037,7 +5411,6 @@ Log_Item :: enum i32 {
     VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_NO_MSAA,
     VALIDATE_IMAGEDESC_INJECTED_NO_DATA,
     VALIDATE_IMAGEDESC_WRITABLE_NO_DATA,
-    VALIDATE_IMAGEDESC_COMPRESSED_IMMUTABLE,
     VALIDATE_SAMPLERDESC_CANARY,
     VALIDATE_SAMPLERDESC_ANISTROPIC_REQUIRES_LINEAR_FILTERING,
     VALIDATE_SHADERDESC_CANARY,
@@ -5242,23 +5615,21 @@ Log_Item :: enum i32 {
     VALIDATE_ABND_EXPECTED_VBUF,
     VALIDATE_ABND_VBUF_ALIVE,
     VALIDATE_ABND_VBUF_USAGE,
-    VALIDATE_ABND_VBUF_OVERFLOW,
     VALIDATE_ABND_EXPECTED_NO_IBUF,
     VALIDATE_ABND_EXPECTED_IBUF,
     VALIDATE_ABND_IBUF_ALIVE,
     VALIDATE_ABND_IBUF_USAGE,
-    VALIDATE_ABND_IBUF_OVERFLOW,
     VALIDATE_ABND_EXPECTED_VIEW_BINDING,
     VALIDATE_ABND_VIEW_ALIVE,
     VALIDATE_ABND_EXPECT_TEXVIEW,
     VALIDATE_ABND_EXPECT_SBVIEW,
+    VALIDATE_ABND_SBVIEW_READWRITE_VS_WRITETRANSIENT,
     VALIDATE_ABND_EXPECT_SIMGVIEW,
     VALIDATE_ABND_TEXVIEW_IMAGETYPE_MISMATCH,
     VALIDATE_ABND_TEXVIEW_EXPECTED_MULTISAMPLED_IMAGE,
     VALIDATE_ABND_TEXVIEW_EXPECTED_NON_MULTISAMPLED_IMAGE,
     VALIDATE_ABND_TEXVIEW_EXPECTED_FILTERABLE_IMAGE,
     VALIDATE_ABND_TEXVIEW_EXPECTED_DEPTH_IMAGE,
-    VALIDATE_ABND_SBVIEW_READWRITE_IMMUTABLE,
     VALIDATE_ABND_SIMGVIEW_COMPUTE_PASS_EXPECTED,
     VALIDATE_ABND_SIMGVIEW_IMAGETYPE_MISMATCH,
     VALIDATE_ABND_SIMGVIEW_ACCESSFORMAT,
@@ -5303,19 +5674,10 @@ Log_Item :: enum i32 {
     VALIDATE_DISPATCH_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
     VALIDATE_DISPATCH_WRITE_BUFFER_TRANSIENT_MISSING,
     VALIDATE_DISPATCH_WRITE_IMAGE_TRANSIENT_MISSING,
-    VALIDATE_UPDATEBUF_USAGE,
-    VALIDATE_UPDATEBUF_SIZE,
-    VALIDATE_UPDATEBUF_ONCE,
-    VALIDATE_UPDATEBUF_APPEND,
-    VALIDATE_APPENDBUF_USAGE,
-    VALIDATE_APPENDBUF_SIZE,
-    VALIDATE_APPENDBUF_UPDATE,
-    VALIDATE_UPDIMG_USAGE,
-    VALIDATE_UPDIMG_ONCE,
     VALIDATE_WRITEBUFFERUNSEALED_USAGE,
-    VALIDATE_WRITEBUFFERUNSEALED_RESOURCESTATE,
     VALIDATE_WRITEBUFFERTRANSIENT_USAGE,
     VALIDATE_WRITEBUFFERTRANSIENT_WRITE_BEFORE_BIND,
+    VALIDATE_WRITEBUFFERTRANSIENT_WRITE_BEFORE_COPY,
     VALIDATE_WRITEBUFFERTRANSIENT_DST_OFFSET_ALIGNMENT,
     VALIDATE_WRITEBUFFER_SRC_DATA_POINTER,
     VALIDATE_WRITEBUFFER_SRC_DATA_SIZE,
@@ -5323,13 +5685,14 @@ Log_Item :: enum i32 {
     VALIDATE_WRITEBUFFER_WRITE_OVERFLOW,
     VALIDATE_WRITEBUFFER_READ_OVERFLOW,
     VALIDATE_WRITEIMAGEUNSEALED_USAGE,
-    VALIDATE_WRITEIMAGEUNSEALED_RESOURCESTATE,
     VALIDATE_WRITEIMAGETRANSIENT_USAGE,
     VALIDATE_WRITEIMAGETRANSIENT_WRITE_BEFORE_BIND,
     VALIDATE_WRITEIMAGE_SRC_DATA_POINTER,
     VALIDATE_WRITEIMAGE_SRC_DATA_SIZE,
     VALIDATE_WRITEIMAGE_BYTESPERROW,
     VALIDATE_WRITEIMAGE_BYTESPERSLICE,
+    VALIDATE_WRITEIMAGE_BYTESPERROW_TOO_SMALL,
+    VALIDATE_WRITEIMAGE_BYTESPERSLICE_TOO_SMALL,
     VALIDATE_WRITEIMAGE_MIPLEVEL,
     VALIDATE_WRITEIMAGE_WIDTH,
     VALIDATE_WRITEIMAGE_HEIGHT,
@@ -5341,8 +5704,49 @@ Log_Item :: enum i32 {
     VALIDATE_WRITEIMAGE_WRITE_WIDTH_OVERFLOW,
     VALIDATE_WRITEIMAGE_WRITE_HEIGHT_OVERFLOW,
     VALIDATE_WRITEIMAGE_WRITE_NUMSLICES_OVERFLOW,
+    VALIDATE_WRITEIMAGE_DST_X_ALIGNMENT,
+    VALIDATE_WRITEIMAGE_DST_Y_ALIGNMENT,
+    VALIDATE_WRITEIMAGE_WIDTH_MULTIPLE,
+    VALIDATE_WRITEIMAGE_HEIGHT_MULTIPLE,
     VALIDATE_SEALBUFFER_RESOURCESTATE,
     VALIDATE_SEALIMAGE_RESOURCESTATE,
+    VALIDATE_COPYBUFFERTOBUFFER_INSIDE_PASS,
+    VALIDATE_COPYBUFFERTOBUFFER_SRC_VS_DST_BUFFER,
+    VALIDATE_COPYBUFFERTOBUFFER_COPY_SRC,
+    VALIDATE_COPYBUFFERTOBUFFER_COPY_DST,
+    VALIDATE_COPYBUFFERTOBUFFER_ZERO_SIZE,
+    VALIDATE_COPYBUFFERTOBUFFER_SRC_OFFSET_ALIGNMENT,
+    VALIDATE_COPYBUFFERTOBUFFER_DST_OFFSET_ALIGNMENT,
+    VALIDATE_COPYBUFFERTOBUFFER_SRC_OVERFLOW,
+    VALIDATE_COPYBUFFERTOBUFFER_DST_OVERFLOW,
+    VALIDATE_COPYBUFFERTOBUFFER_WEBGL2_INDEX_BUFFER,
+    VALIDATE_COPYBUFFERTOIMAGE_WEBGL2_INDEX_BUFFER,
+    VALIDATE_COPYBUFFERTOIMAGE_BYTESPERROW_TOO_SMALL,
+    VALIDATE_COPYBUFFERTOIMAGE_BYTESPERSLICE_TOO_SMALL,
+    VALIDATE_COPYBUFFERTOIMAGE_SRC_STAGING_INDEX_BUFFER,
+    VALIDATE_COPYBUFFERTOIMAGE_SRC_STAGING_BUFFER,
+    VALIDATE_COPYBUFFERTOIMAGE_INSIDE_PASS,
+    VALIDATE_COPYBUFFERTOIMAGE_COPY_SRC,
+    VALIDATE_COPYBUFFERTOIMAGE_COPY_DST,
+    VALIDATE_COPYBUFFERTOIMAGE_SRC_OFFSET_ALIGNMENT,
+    VALIDATE_COPYBUFFERTOIMAGE_BYTESPERROW_MULTIPLE_BLOCKSIZE,
+    VALIDATE_COPYBUFFERTOIMAGE_BYTESPERROW_MULTIPLE_256,
+    VALIDATE_COPYBUFFERTOIMAGE_BYTESPERSLICE,
+    VALIDATE_COPYBUFFERTOIMAGE_SRC_OVERFLOW,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_MIPLEVEL,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_WIDTH,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_HEIGHT,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_WIDTH_MULTIPLE,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_HEIGHT_MULTIPLE,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_NUMSLICES,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_X_RANGE,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_Y_RANGE,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_X_ALIGNMENT,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_Y_ALIGNMENT,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_SLICE_RANGE,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_WIDTH_OVERFLOW,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_HEIGHT_OVERFLOW,
+    VALIDATE_COPYBUFFERTOIMAGE_DST_NUMSLICES_OVERFLOW,
     VALIDATION_FAILED,
 }
 
@@ -5436,10 +5840,9 @@ Log_Item :: enum i32 {
     Vulkan specific:
         .vulkan.copy_staging_buffer_size
             Size of the staging buffer in bytes for uploading the initial
-            content of buffers and images, and for updating
-            .usage.dynamic_update resources. The default is 4 MB,
-            bigger resource updates are split into multiple chunks
-            of the staging buffer size
+            content of buffers and images and for write-unsealed writes.
+            The default is 4 MB, bigger resource updates are split into
+            multiple chunks of the staging buffer size
         .vulkan.transient_staging_buffer_size
             Size of the staging buffer in bytes for updating .usage.write_transient
             resources. The default is 16 MB. The size must be big enough

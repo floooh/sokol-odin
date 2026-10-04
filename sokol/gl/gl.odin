@@ -563,7 +563,7 @@ package sokol_gl
 
         sgl_draw() (and variants)
             - copy all recorded vertex data into the dynamic sokol-gfx buffer
-              via a call to sg_update_buffer()
+              via a call to sg_write_buffer_transient()
             - for each recorded command:
                 - if the layer number stored in the command doesn't match
                   the layer that's to be rendered, skip to the next

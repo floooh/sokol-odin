@@ -196,13 +196,19 @@ package sokol_imgui
             .dpi_scale = sapp_dpi_scale()
         });
 
-    --- at the end of the frame, before the sg_end_pass() where you
-        want to render the UI, call:
+    --- after issuing Dear ImGui UI calls and outside the sokol-gfx
+        pass which renders the UI (the later in the frame the better):
 
-        simgui_render()
+        simgui_flush();
 
-        This will first call ImGui::Render(), and then render ImGui's draw list
-        through sokol_gfx.h
+        this may create and update font textures and 'renders'
+        the Dear ImGui UI into command lists.
+
+    --- ...and finally inside a sokol-gfx render pass, call:
+
+        simgui_draw();
+
+        To actually render the UI.
 
     --- if you're using sokol_app.h, from inside the sokol_app.h event callback,
         call:
@@ -465,7 +471,8 @@ when ODIN_OS == .Windows {
 foreign sokol_imgui_clib {
     setup :: proc(#by_ptr desc: Desc)  ---
     new_frame :: proc(#by_ptr desc: Frame_Desc)  ---
-    render :: proc()  ---
+    flush :: proc()  ---
+    draw :: proc()  ---
     imtextureid :: proc(tex_view: sg.View) -> u64 ---
     imtextureid_with_sampler :: proc(tex_view: sg.View, smp: sg.Sampler) -> u64 ---
     texture_view_from_imtextureid :: proc(imtex_id: u64) -> sg.View ---
@@ -487,6 +494,10 @@ foreign sokol_imgui_clib {
 Log_Item :: enum i32 {
     OK,
     BUFFER_OVERFLOW,
+    NEW_FRAME_NOT_CALLED_BEFORE_FLUSH,
+    FLUSH_CALLED_IN_SOKOLGFX_PASS,
+    FLUSH_NOT_CALLED_BEFORE_DRAW,
+    DRAW_CALLED_OUTSIDE_SOKOLGFX_RENDER_PASS,
 }
 
 /*
