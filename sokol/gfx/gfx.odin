@@ -1351,11 +1351,7 @@ package sokol_gfx
     uint8_t mip1_data[] = { ... };
     // ... more mip levels
     const sg_image img = sg_make_image(&(sg_image_desc){
-        .data.mip_levels = {
-            [0] = SG_RANGE(mip0_data),
-            [1] = SG_RANGE(mip1_data),
-            // ...
-        },
+        .data.= SG_RANGE(image_data),
         // ... more create options
     });
     ```
@@ -2469,6 +2465,7 @@ foreign sokol_gfx_clib {
     seal_image :: proc(img: Image)  ---
     copy_buffer_to_buffer :: proc(#by_ptr desc: Copy_Buffer_To_Buffer_Desc)  ---
     copy_buffer_to_image :: proc(#by_ptr desc: Copy_Buffer_To_Image_Desc)  ---
+    copy_image_to_image :: proc(#by_ptr desc: Copy_Image_To_Image_Desc)  ---
     // getting information
     query_desc :: proc() -> Desc ---
     query_backend :: proc() -> Backend ---
@@ -2872,6 +2869,7 @@ Features :: struct {
     vertexformat_int10_n2 : bool,
     copy_buffer_to_image_relaxed_buffer_type : bool,
     copy_buffer_to_image_relaxed_bytes_per_row : bool,
+    copy_image_to_image_relaxed : bool,
     gl_texture_views : bool,
 }
 
@@ -3931,9 +3929,6 @@ Buffer_Desc :: struct {
     .copy_dst (default: false)
         the image is going to be used as destination in an `sg_copy_buffer_to_image()`
         call
-    .immutable (default: true, deprecated)
-        the image content cannot be updated from the CPU side
-        (but may be updated by the GPU in a render- or compute-pass)
 
     Note that creating a texture view from the image to be used for
     texture-sampling in vertex-, fragment- or compute-shaders
@@ -3948,7 +3943,6 @@ Image_Usage :: struct {
     write_transient : bool,
     copy_src : bool,
     copy_dst : bool,
-    immutable : bool,
 }
 
 /*
@@ -3964,43 +3958,6 @@ View_Type :: enum i32 {
     COLORATTACHMENT,
     RESOLVEATTACHMENT,
     DEPTHSTENCILATTACHMENT,
-}
-
-/*
-    sg_image_data
-
-    Defines the content of an image through an array of sg_range structs, each
-    range pointing to the pixel data for one mip-level. For array-, cubemap- and
-    3D-images each mip-level contains all slice-surfaces for that mip-level in a
-    single tightly packed memory block.
-
-    The size of a single surface in a mip-level for a regular 2D texture
-    can be computed via:
-
-        sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
-
-    For array- and 3d-images the size of a single miplevel is:
-
-        num_slices * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
-
-    For cubemap-images the size of a single mip-level is:
-
-        6 * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
-
-    The order of cubemap-faces is in a mip-level data chunk is:
-
-        [0] => +X
-        [1] => -X
-        [2] => +Y
-        [3] => -Y
-        [4] => +Z
-        [5] => -Z
-
-    NOTE: for more flexible resource initialization of immutable images
-    also consider the sg_write_image_unsealed() function!
-*/
-Image_Data :: struct {
-    mip_levels : [16]Range,
 }
 
 /*
@@ -4273,6 +4230,17 @@ Copy_Buffer_To_Image_Desc :: struct {
 }
 
 /*
+    sg_copy_image_to_image_desc
+
+    FIXME
+*/
+Copy_Image_To_Image_Desc :: struct {
+    src : Image_Location,
+    dst : Image_Location,
+    size : Image_Extent,
+}
+
+/*
     sg_image_desc
 
     Creation parameters for sg_image objects, used in the sg_make_image() call.
@@ -4280,14 +4248,14 @@ Copy_Buffer_To_Image_Desc :: struct {
     The default configuration is:
 
     .type               SG_IMAGETYPE_2D
-    .usage              .immutable = true
+    .usage              { .texture = true }
     .width              0 (must be set to >0)
     .height             0 (must be set to >0)
     .num_slices         1 (3D textures: depth; array textures: number of layers)
     .num_mipmaps        1
     .pixel_format       SG_PIXELFORMAT_RGBA8 for textures, or sg_desc.environment.defaults.color_format for render targets
     .sample_count       1 for textures, or sg_desc.environment.defaults.sample_count for render targets
-    .data               an sg_image_data struct to define the initial content
+    .data               optional ptr/size pair with complete and tightly packed initial data
     .label              0 (optional string label for trace hooks)
 
     Q: Why is the default sample_count for render targets identical with the
@@ -4301,9 +4269,37 @@ Copy_Buffer_To_Image_Desc :: struct {
 
     NOTE:
 
-    Regular images used as texture binding with usage.immutable must be fully
-    initialized by providing a valid .data member which points to initialization
-    data.
+    When initial data is provided via sg_image_desc.data, it must be the complete
+    and tightly packed data for all mip levels and slices in one continuous block
+    of memory. For a more flexible initialization of the initial image content,
+    use sg_write_image_unsealed().
+
+    The size of a single surface in a mip-level for a regular 2D texture
+    can be computed via:
+
+        sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
+
+    For array-images the size of a single miplevel is:
+
+        num_slices * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
+
+    For 3d-images the size of a single miplevel is:
+
+        mip_slices * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
+
+    For cubemap-images the size of a single mip-level is:
+
+        6 * sg_query_surface_pitch(pixel_format, mip_width, mip_height, 1);
+
+    The order of cubemap-faces is in a mip-level data chunk is:
+
+        [0] => +X
+        [1] => -X
+        [2] => +Y
+        [3] => -Y
+        [4] => +Z
+        [5] => -Z
+
 
     Images with usage.*_attachment or usage.storage_image must
     *not* be created with initial content. Be aware that the initial
@@ -4315,8 +4311,9 @@ Copy_Buffer_To_Image_Desc :: struct {
     The following struct members allow to inject your own GL, Metal or D3D11
     textures into sokol_gfx:
 
-    .gl_textures[SG_NUM_INFLIGHT_FRAMES]
-    .mtl_textures[SG_NUM_INFLIGHT_FRAMES]
+    .gl_texture
+    .gl_texture_target
+    .mtl_texture
     .d3d11_texture
     .wgpu_texture
 
@@ -4337,7 +4334,7 @@ Image_Desc :: struct {
     num_mipmaps : c.int,
     pixel_format : Pixel_Format,
     sample_count : c.int,
-    data : Image_Data,
+    data : Range,
     label : cstring,
     gl_texture : u32,
     gl_texture_target : u32,
@@ -5125,6 +5122,7 @@ Frame_Stats_Vk :: struct {
     num_delete_queue_collected : u32,
     num_cmd_copy_buffer : u32,
     num_cmd_copy_buffer_to_image : u32,
+    num_cmd_copy_image : u32,
     num_cmd_set_descriptor_buffer_offsets : u32,
     size_descriptor_buffer_writes : u32,
 }
@@ -5173,9 +5171,11 @@ Frame_Stats :: struct {
     num_seal_image : u32,
     num_copy_buffer_to_buffer : u32,
     num_copy_buffer_to_image : u32,
+    num_copy_image_to_image : u32,
     size_apply_uniforms : u32,
     size_copy_buffer_to_buffer : u32,
     size_copy_buffer_to_image : u32,
+    size_copy_image_to_image : u32,
     buffers : Frame_Resource_Stats,
     images : Frame_Resource_Stats,
     samplers : Frame_Resource_Stats,
@@ -5376,6 +5376,10 @@ Log_Item :: enum i32 {
     COPY_BUFFER_TO_IMAGE_DST_ALIVE,
     COPY_BUFFER_TO_IMAGE_SRC_VALID,
     COPY_BUFFER_TO_IMAGE_DST_VALID,
+    COPY_IMAGE_TO_IMAGE_SRC_ALIVE,
+    COPY_IMAGE_TO_IMAGE_DST_ALIVE,
+    COPY_IMAGE_TO_IMAGE_SRC_VALID,
+    COPY_IMAGE_TO_IMAGE_DST_VALID,
     SHADERDESC_TOO_MANY_VERTEXSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURES,
@@ -5411,41 +5415,47 @@ Log_Item :: enum i32 {
     VALIDATE_BUFFERDESC_EXPECT_DATA,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SUPPORTED,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SIZE_MULTIPLE_4,
-    VALIDATE_IMAGEDATA_NODATA,
-    VALIDATE_IMAGEDATA_DATA_SIZE,
+    VALIDATE_IMAGEDESC_DATA_SIZE,
     VALIDATE_IMAGEDESC_CANARY,
-    VALIDATE_IMAGEDESC_IMMUTABLE_VS_WRITABLE,
-    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_IMMUTABLE,
-    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_ATTACHMENT,
-    VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_ATTACHMENT,
+    VALIDATE_IMAGEDESC_ANY_ATTACHMENT_VS_COPYDST,
+    VALIDATE_IMAGEDESC_ANY_ATTACHMENT_VS_INITIALDATA,
+    VALIDATE_IMAGEDESC_ANY_ATTACHMENT_VS_WRITETRANSIENT,
+    VALIDATE_IMAGEDESC_ANY_ATTACHMENT_VS_WRITEUNSEALED,
+    VALIDATE_IMAGEDESC_COLOR_ATTACHMENT_PIXELFORMAT,
+    VALIDATE_IMAGEDESC_COLOR_ATTACHMENT_VS_DEPTHSTENCIL_ATTACHMENT,
+    VALIDATE_IMAGEDESC_RESOLVE_ATTACHMENT_EXPECT_NO_MSAA,
+    VALIDATE_IMAGEDESC_RESOLVE_ATTACHMENT_VS_DEPTHSTENCIL_ATTACHMENT,
+    VALIDATE_IMAGEDESC_COPYDST_VS_INITIALDATA,
+    VALIDATE_IMAGEDESC_DEPTHFORMAT_3D_IMAGE,
+    VALIDATE_IMAGEDESC_DEPTHFORMAT_ATTACHMENT_OR_COPYDST,
+    VALIDATE_IMAGEDESC_DEPTHSTENCIL_ATTACHMENT_PIXELFORMAT,
+    VALIDATE_IMAGEDESC_DEPTHSTENCIL_ATTACHMENT_VS_STORAGEIMAGE,
+    VALIDATE_IMAGEDESC_STORAGEIMAGE_VS_INITIALDATA,
+    VALIDATE_IMAGEDESC_STORAGEIMAGE_VS_WRITETRANSIENT,
+    VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_COPYDST,
+    VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_INITIALDATA,
     VALIDATE_IMAGEDESC_WRITETRANSIENT_VS_INJECTED,
-    VALIDATE_IMAGEDESC_COPYDST_VS_ATTACHMENT,
-    VALIDATE_IMAGEDESC_ATTACHMENT_COLOR_DEPTH_STENCIL,
+    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_COPYDST,
+    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_INITIALDATA,
+    VALIDATE_IMAGEDESC_WRITEUNSEALED_VS_WRITETRANSIENT,
+    VALIDATE_IMAGEDESC_INITIAL_DATA_REQUIRED,
+    VALIDATE_IMAGEDESC_INJECTED_EXPECT_NO_DATA,
+    VALIDATE_IMAGEDESC_NO_DATA_BUT_SIZE_SET,
     VALIDATE_IMAGEDESC_IMAGETYPE_2D_NUMSLICES,
     VALIDATE_IMAGEDESC_IMAGETYPE_CUBE_NUMSLICES,
     VALIDATE_IMAGEDESC_IMAGETYPE_ARRAY_NUMSLICES,
     VALIDATE_IMAGEDESC_IMAGETYPE_3D_NUMSLICES,
-    VALIDATE_IMAGEDESC_NUMSLICES,
     VALIDATE_IMAGEDESC_WIDTH,
     VALIDATE_IMAGEDESC_HEIGHT,
-    VALIDATE_IMAGEDESC_NONRT_PIXELFORMAT,
     VALIDATE_IMAGEDESC_MSAA_BUT_NO_ATTACHMENT,
-    VALIDATE_IMAGEDESC_DEPTH_3D_IMAGE,
-    VALIDATE_IMAGEDESC_ATTACHMENT_EXPECT_IMMUTABLE,
-    VALIDATE_IMAGEDESC_ATTACHMENT_EXPECT_NO_DATA,
     VALIDATE_IMAGEDESC_ATTACHMENT_PIXELFORMAT,
-    VALIDATE_IMAGEDESC_ATTACHMENT_RESOLVE_EXPECT_NO_MSAA,
     VALIDATE_IMAGEDESC_ATTACHMENT_NO_MSAA_SUPPORT,
     VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_NUM_MIPMAPS,
     VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_3D_IMAGE,
     VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_CUBE_IMAGE,
     VALIDATE_IMAGEDESC_ATTACHMENT_MSAA_ARRAY_IMAGE,
-    VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_IMMUTABLE,
-    VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_NO_DATA,
     VALIDATE_IMAGEDESC_STORAGEIMAGE_PIXELFORMAT,
     VALIDATE_IMAGEDESC_STORAGEIMAGE_EXPECT_NO_MSAA,
-    VALIDATE_IMAGEDESC_INJECTED_NO_DATA,
-    VALIDATE_IMAGEDESC_WRITABLE_NO_DATA,
     VALIDATE_SAMPLERDESC_CANARY,
     VALIDATE_SAMPLERDESC_ANISTROPIC_REQUIRES_LINEAR_FILTERING,
     VALIDATE_SHADERDESC_CANARY,
@@ -5609,7 +5619,6 @@ Log_Item :: enum i32 {
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_IMAGE_ALIVE,
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_IMAGE_VALID,
     VALIDATE_BEGINPASS_RESOLVEATTACHMENTVIEW_SIZES,
-    VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEWS_CONTINUOUS,
     VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_ALIVE,
     VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_VALID,
     VALIDATE_BEGINPASS_DEPTHSTENCILATTACHMENTVIEW_TYPE,
@@ -5713,7 +5722,6 @@ Log_Item :: enum i32 {
     VALIDATE_DISPATCH_NUMGROUPSX,
     VALIDATE_DISPATCH_NUMGROUPSY,
     VALIDATE_DISPATCH_NUMGROUPSZ,
-    VALIDATE_DISPATCH_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
     VALIDATE_DISPATCH_WRITE_BUFFER_TRANSIENT_MISSING,
     VALIDATE_DISPATCH_WRITE_IMAGE_TRANSIENT_MISSING,
     VALIDATE_WRITEBUFFERUNSEALED_USAGE,
@@ -5729,6 +5737,7 @@ Log_Item :: enum i32 {
     VALIDATE_WRITEIMAGEUNSEALED_USAGE,
     VALIDATE_WRITEIMAGETRANSIENT_USAGE,
     VALIDATE_WRITEIMAGETRANSIENT_WRITE_BEFORE_BIND,
+    VALIDATE_WRITEIMAGETRANSIENT_WRITE_BEFORE_COPY,
     VALIDATE_WRITEIMAGE_SRC_DATA_POINTER,
     VALIDATE_WRITEIMAGE_SRC_DATA_SIZE,
     VALIDATE_WRITEIMAGE_BYTESPERROW,
@@ -5762,6 +5771,7 @@ Log_Item :: enum i32 {
     VALIDATE_COPYBUFFERTOBUFFER_SRC_OVERFLOW,
     VALIDATE_COPYBUFFERTOBUFFER_DST_OVERFLOW,
     VALIDATE_COPYBUFFERTOBUFFER_WEBGL2_INDEX_BUFFER,
+    VALIDATE_COPYBUFFERTOIMAGE_DEPTH_FORMAT_NOT_ALLOWED,
     VALIDATE_COPYBUFFERTOIMAGE_WEBGL2_INDEX_BUFFER,
     VALIDATE_COPYBUFFERTOIMAGE_BYTESPERROW_TOO_SMALL,
     VALIDATE_COPYBUFFERTOIMAGE_BYTESPERSLICE_TOO_SMALL,
@@ -5789,6 +5799,45 @@ Log_Item :: enum i32 {
     VALIDATE_COPYBUFFERTOIMAGE_DST_WIDTH_OVERFLOW,
     VALIDATE_COPYBUFFERTOIMAGE_DST_HEIGHT_OVERFLOW,
     VALIDATE_COPYBUFFERTOIMAGE_DST_NUMSLICES_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_VS_DST_IMAGE,
+    VALIDATE_COPYIMAGETOIMAGE_INSIDE_PASS,
+    VALIDATE_COPYIMAGETOIMAGE_COPY_SRC,
+    VALIDATE_COPYIMAGETOIMAGE_COPY_DST,
+    VALIDATE_COPYIMAGETOIMAGE_3D_VS_OTHER,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_VS_DST_FORMAT,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_VS_DST_SAMPLE_COUNT,
+    VALIDATE_COPYIMAGETOIMAGE_RENDERABLE,
+    VALIDATE_COPYIMAGETOIMAGE_MSAA,
+    VALIDATE_COPYIMAGETOIMAGE_WHOLE_MIPLEVEL,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_VS_DST_SIZE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_MIPLEVEL,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_WIDTH,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_HEIGHT,
+    VALIDATE_COPYIMAGETOIMAGE_DST_MIPLEVEL,
+    VALIDATE_COPYIMAGETOIMAGE_DST_WIDTH,
+    VALIDATE_COPYIMAGETOIMAGE_DST_HEIGHT,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_WIDTH_MULTIPLE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_HEIGHT_MULTIPLE,
+    VALIDATE_COPYIMAGETOIMAGE_DST_WIDTH_MULTIPLE,
+    VALIDATE_COPYIMAGETOIMAGE_DST_HEIGHT_MULTIPLE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_NUMSLICES,
+    VALIDATE_COPYIMAGETOIMAGE_DST_NUMSLICES,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_X_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_DST_X_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_Y_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_DST_Y_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_X_ALIGNMENT,
+    VALIDATE_COPYIMAGETOIMAGE_DST_X_ALIGNMENT,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_Y_ALIGNMENT,
+    VALIDATE_COPYIMAGETOIMAGE_DST_Y_ALIGNMENT,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_SLICE_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_DST_SLICE_RANGE,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_WIDTH_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_DST_WIDTH_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_HEIGHT_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_DST_HEIGHT_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_SRC_NUMSLICES_OVERFLOW,
+    VALIDATE_COPYIMAGETOIMAGE_DST_NUMSLICES_OVERFLOW,
     VALIDATION_FAILED,
 }
 

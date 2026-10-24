@@ -101,11 +101,7 @@ init :: proc "c" () {
             image = sg.make_image({
                 width = 4,
                 height = 4,
-                data = {
-                    mip_levels = {
-                        0 = { ptr = &pixels, size = size_of(pixels) },
-                    },
-                },
+                data = { ptr = &pixels, size = size_of(pixels) },
             }),
         },
     })

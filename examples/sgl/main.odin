@@ -44,9 +44,7 @@ init :: proc "c" () {
     img := sg.make_image({
         width = 8,
         height = 8,
-        data = {
-            mip_levels = { 0 = { ptr = &pixels, size = size_of(pixels) } },
-        },
+        data = { ptr = &pixels, size = size_of(pixels) },
     })
     state.tex_view = sg.make_view({ texture = { image = img } })
 
