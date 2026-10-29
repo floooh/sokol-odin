@@ -22,7 +22,9 @@ package sokol_audio
     SOKOL_API_DECL      - same as SOKOL_AUDIO_API_DECL
     SOKOL_API_IMPL      - public function implementation prefix (default: -)
 
-    SAUDIO_RING_MAX_SLOTS           - max number of slots in the push-audio ring buffer (default 1024)
+    SAUDIO_RING_MAX_SLOTS - max number of slots in the push-audio ring buffer (default 1024)
+    SAUDIO_USE_ALSA     - force the ALSA backend on Linux
+                          (otherwise the PulseAudio backend is used)
 
     If sokol_audio.h is compiled as a DLL, define the following before
     including the declaration or implementation:
@@ -36,8 +38,8 @@ package sokol_audio
 
     - on macOS: AudioToolbox
     - on iOS: AudioToolbox, AVFoundation
-    - on FreeBSD: asound
-    - on Linux: asound
+    - on Linux/FreeBSD with ALSA: asound
+    - on Linux/FreeBSD with PulseAudio: pulse-simple, pulse
     - on Android: aaudio
     - on Windows with MSVC or Clang toolchain: no action needed, libs are defined in-source via pragma-comment-lib
     - on Windows with MINGW/MSYS2 gcc: compile with '-mwin32' and link with -lole32
@@ -50,8 +52,7 @@ package sokol_audio
     Sokol Audio feeds into platform-specific audio backends:
 
     - Windows: WASAPI
-    - Linux: ALSA
-    - FreeBSD: ALSA
+    - Linux/FreeBSD: PulseAudio (default) or ALSA
     - macOS: CoreAudio
     - iOS: CoreAudio+AVAudioSession
     - emscripten: WebAudio with ScriptProcessorNode
@@ -376,19 +377,25 @@ package sokol_audio
     so you shouldn't need to add additional linker libs in the build process
     (otherwise this is a bug which should be fixed in sokol_audio.h).
 
+    THE PULSEAUDIO BACKEND
+    ======================
+    The PulseAudio backend is automatically selected when compiling
+    on Linux or FreeBSD.
+
+    You need to link with the 'pulse-simple' and 'pulse' libraries,
+    and the header <pulse/simple.h> must be present (on Ubuntu, those
+    are installed via the libpulse-dev package).
+
     THE ALSA BACKEND
     ================
-    The ALSA backend is automatically selected when compiling on Linux
-    ('linux' is defined).
+    NOTE: the ALSA backend is deprecated.
 
-    For thread synchronisation, the pthread_mutex_* functions are used.
-
-    Samples are directly forwarded to ALSA in 32-bit float format, no
-    further conversion is taking place.
+    To build the ALSA backend on Linux/FreeBSD, define SAUDIO_USE_ALSA before
+    including the sokol_audio.h implementation.
 
     You need to link with the 'asound' library, and the <alsa/asoundlib.h>
-    header must be present (usually both are installed with some sort
-    of ALSA development package).
+    header must be present (on Ubuntu, those are installed via the
+    `libasound2-dev` package).
 
     THE VITA BACKEND
     ================
@@ -599,8 +606,8 @@ when ODIN_OS == .Windows {
         when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.so", "system:dl", "system:pthread" } }
         else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.so", "system:dl", "system:pthread" } }
     } else {
-        when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:asound", "system:dl", "system:pthread" } }
-        else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:asound", "system:dl", "system:pthread" } }
+        when DEBUG { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_debug.a", "system:pulse-simple", "system:pulse", "system:dl", "system:pthread" } }
+        else       { foreign import sokol_audio_clib { "sokol_audio_linux_x64_gl_release.a", "system:pulse-simple", "system:pulse", "system:dl", "system:pthread" } }
     }
 } else when ODIN_ARCH == .wasm32 || ODIN_ARCH == .wasm64p32 {
     // Feed sokol_audio_wasm_gl_debug.a or sokol_audio_wasm_gl_release.a into emscripten compiler.
@@ -645,6 +652,10 @@ Log_Item :: enum i32 {
     ALSA_SND_PCM_HW_PARAMS_SET_RATE_NEAR_FAILED,
     ALSA_SND_PCM_HW_PARAMS_FAILED,
     ALSA_PTHREAD_CREATE_FAILED,
+    PULSEAUDIO_INVALID_SAMPLE_SPEC,
+    PULSEAUDIO_SIMPLE_NEW_FAILED,
+    PULSEAUDIO_SIMPLE_WRITE_FAILED,
+    PULSEAUDIO_PTHREAD_CREATE_FAILED,
     WASAPI_CREATE_EVENT_FAILED,
     WASAPI_CREATE_DEVICE_ENUMERATOR_FAILED,
     WASAPI_GET_DEFAULT_AUDIO_ENDPOINT_FAILED,
