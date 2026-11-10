@@ -522,7 +522,7 @@ Render_Desc :: struct {
     use_nearest_filter : bool,
     pip : sg.Pipeline,
     views : [32]sg.View,
-    samplers : [12]sg.Sampler,
+    samplers : [14]sg.Sampler,
     uniforms : [8]sg.Range,
 }
 

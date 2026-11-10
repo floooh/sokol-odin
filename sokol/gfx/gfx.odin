@@ -1079,8 +1079,8 @@ package sokol_gfx
             - SG_SAMPLERTYPE_NONFILTERING,
             - SG_SAMPLERTYPE_COMPARISON,
         - a backend-specific bind slot:
-            - D3D11/HLSL: the sampler register N (`register(sN)`) where N is 0..SG_MAX_SAMPLER_BINDINGS
-            - Metal/MSL: the sampler bind slot N (`[[sampler(N)]]`) where N is 0..SG_MAX_SAMPLER_BINDINGS
+            - D3D11/HLSL: the sampler register N (`register(sN)`) where N is 0..(SG_MAX_SAMPLER_BINDSLOTS-1)
+            - Metal/MSL: the sampler bind slot N (`[[sampler(N)]]`) where N is 0..(SG_MAX_SAMPLER_BINDSLOTS-1)
             - WebGPU/WGSL: the binding N in `@group(1) @binding(N)` where N is 0..127
 
     - An array of 'texture-sampler-pairs' used by the shader to sample textures,
@@ -1110,13 +1110,13 @@ package sokol_gfx
               compute shaders: `register(u0..u31)`
             - read/write storage-buffer-bindings in fragment shaders: `register(uN..u31)`
               where N is >= the number of color attachments
-            - samplers: `register(s0..s11)`
+            - samplers: `register(s0..s13)`
         - Metal/MSL:
             - separate bindslot space per shader stage
             - uniform blocks: `[[buffer(0..7)]]`
             - storage buffers: `[[buffer(8..23)]]`
             - textures and storage image bindings: `[[texture(0..31)]]`
-            - samplers: `[[sampler(0..11)]]`
+            - samplers: `[[sampler(0..13)]]`
         - WebGPU/WGSL:
             - common bindslot space across shader stages
             - uniform blocks: `@group(0) @binding(0..15)`
@@ -2720,7 +2720,7 @@ MAX_VERTEX_ATTRIBUTES :: 16
 MAX_VERTEXBUFFER_BINDSLOTS :: 8
 MAX_UNIFORMBLOCK_BINDSLOTS :: 8
 MAX_VIEW_BINDSLOTS :: 32
-MAX_SAMPLER_BINDSLOTS :: 12
+MAX_SAMPLER_BINDSLOTS :: 14
 MAX_TEXTURE_SAMPLER_PAIRS :: 32
 MAX_PORTABLE_COLOR_ATTACHMENTS :: 4
 MAX_PORTABLE_TEXTURE_BINDINGS_PER_STAGE :: 16
@@ -3801,14 +3801,12 @@ Pass_State :: enum i32 {
     chunks of vertex- and/or index-data into the same buffer objects.
 */
 Bindings :: struct {
-    _ : u32,
     vertex_buffers : [8]Buffer,
     vertex_buffer_offsets : [8]c.int,
     index_buffer : Buffer,
     index_buffer_offset : c.int,
     views : [32]View,
-    samplers : [12]Sampler,
-    _ : u32,
+    samplers : [14]Sampler,
 }
 
 /*
@@ -4562,8 +4560,8 @@ Sampler_Desc :: struct {
         - the shader stage the sampler appears in (SG_SHADERSTAGE_*)
         - the sampler type (SG_SAMPLERTYPE_*)
         - backend specific bindslots:
-            - HLSL: the sampler register `register(s0..11)`
-            - MSL: the sampler attribute `[[sampler(0..11)]]`
+            - HLSL: the sampler register `register(s0..13)`
+            - MSL: the sampler attribute `[[sampler(0..13)]]`
             - WGSL: the binding in `@group(1) @binding(0..127)`
 
     - reflection information for each texture-sampler pair used by
@@ -4722,7 +4720,7 @@ Shader_Desc :: struct {
     attrs : [16]Shader_Vertex_Attr,
     uniform_blocks : [8]Shader_Uniform_Block,
     views : [32]Shader_View,
-    samplers : [12]Shader_Sampler,
+    samplers : [14]Shader_Sampler,
     texture_sampler_pairs : [32]Shader_Texture_Sampler_Pair,
     mtl_threads_per_threadgroup : Mtl_Shader_Threads_Per_Threadgroup,
     label : cstring,
