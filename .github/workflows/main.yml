@@ -8,25 +8,18 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{matrix.os}}
-    # NOTE: odin macos and ubuntu releases are zipped twice, so this is bit of a hack.
-    # The examples folder also conflicts with the sokol examples, so we just remove it.
     steps:
       - uses: actions/checkout@main
       - uses: ilammy/msvc-dev-cmd@v1
+      - uses: laytan/setup-odin@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release: latest
       - if: runner.os == 'Linux'
         name: prepare-linux
         run: |
           sudo apt-get update
           sudo apt-get install libglu1-mesa-dev mesa-common-dev xorg-dev libpulse-dev
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          echo "/usr/lib/llvm-17/bin" >> $GITHUB_PATH
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-ubuntu-amd64-dev-2024-04.zip --output odin.zip
-          unzip odin.zip
-          unzip dist.zip
-          rm -r ./dist/examples
-          mv ./dist/* ./
-          chmod a+x ./odin
           cd sokol
           chmod a+x ./build_clibs_linux.sh
           ./build_clibs_linux.sh
@@ -34,13 +27,6 @@ jobs:
       - if: runner.os == 'macOS'
         name: prepare-macos
         run: |
-          brew install llvm@17
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-macos-amd64-dev-2024-04.zip --output odin.zip
-          unzip odin.zip
-          unzip dist.zip
-          rm -r ./dist/examples
-          mv ./dist/* ./
-          chmod a+x ./odin
           cd sokol
           chmod a+x ./build_clibs_macos.sh
           ./build_clibs_macos.sh
@@ -50,31 +36,30 @@ jobs:
         name: prepare-windows
         shell: cmd
         run: |
-          curl -L https://github.com/odin-lang/Odin/releases/download/dev-2024-04/odin-windows-amd64-dev-2024-04.zip --output odin.zip
-          unzip odin.zip
           cd sokol
           build_clibs_windows.cmd
           cd ..
       - name: build
         run: |
-          ./odin build examples/blend -strict-style -debug
-          ./odin build examples/bufferoffsets -strict-style -debug
-          ./odin build examples/clear -strict-style -debug
-          ./odin build examples/cube -strict-style -debug
-          ./odin build examples/debugtext -strict-style -debug
-          ./odin build examples/debugtext-print -strict-style -debug
-          ./odin build examples/debugtext-userfont -strict-style -debug
-          ./odin build examples/instancing -strict-style -debug
-          ./odin build examples/mrt -strict-style -debug
-          ./odin build examples/noninterleaved -strict-style -debug
-          ./odin build examples/offscreen -strict-style -debug
-          ./odin build examples/quad -strict-style -debug
-          ./odin build examples/saudio -strict-style -debug
-          ./odin build examples/sgl -strict-style -debug
-          ./odin build examples/sgl-context -strict-style -debug
-          ./odin build examples/sgl-points -strict-style -debug
-          ./odin build examples/shapes -strict-style -debug
-          ./odin build examples/texcube -strict-style -debug
-          ./odin build examples/triangle -strict-style -debug
-          ./odin build examples/vertexpull -strict-style -debug
-          ./odin build examples/instancing-compute -strict-style -debug
+          odin version
+          odin build examples/blend -strict-style -debug
+          odin build examples/bufferoffsets -strict-style -debug
+          odin build examples/clear -strict-style -debug
+          odin build examples/cube -strict-style -debug
+          odin build examples/debugtext -strict-style -debug
+          odin build examples/debugtext-print -strict-style -debug
+          odin build examples/debugtext-userfont -strict-style -debug
+          odin build examples/instancing -strict-style -debug
+          odin build examples/mrt -strict-style -debug
+          odin build examples/noninterleaved -strict-style -debug
+          odin build examples/offscreen -strict-style -debug
+          odin build examples/quad -strict-style -debug
+          odin build examples/saudio -strict-style -debug
+          odin build examples/sgl -strict-style -debug
+          odin build examples/sgl-context -strict-style -debug
+          odin build examples/sgl-points -strict-style -debug
+          odin build examples/shapes -strict-style -debug
+          odin build examples/texcube -strict-style -debug
+          odin build examples/triangle -strict-style -debug
+          odin build examples/vertexpull -strict-style -debug
+          odin build examples/instancing-compute -strict-style -debug
