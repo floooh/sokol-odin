@@ -128,7 +128,9 @@ package sokol_cmdbuf
         scb_apply_uniforms(cb, ub_slot, &(sg_range){ ... });
         scb_draw(cb, base_element, num_elements, num_instances);
         scb_draw_ex(cb, base_element, num_elements, num_instances, base_vertex, base_instance);
+        scb_draw_indirect(cb, buf, offset);
         scb_dispatch(cb, num_groups_x, num_groups_y, num_groups_z);
+        scb_dispatch_indirect(cb, buf, offset);
 
       Uniform data will be copied into the command buffer, and with the
       required alignment.
@@ -359,8 +361,12 @@ foreign sokol_cmdbuf_clib {
     draw :: proc(cb: Cmdbuf, #any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int)  ---
     // record draw-ex command
     draw_ex :: proc(cb: Cmdbuf, #any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int, #any_int base_vertex: c.int, #any_int base_instance: c.int)  ---
+    // record draw-indirect command
+    draw_indirect :: proc(cb: Cmdbuf, buf: sg.Buffer, #any_int offset: c.int)  ---
     // record dispatch command
     dispatch :: proc(cb: Cmdbuf, #any_int num_groups_x: c.int, #any_int num_groups_y: c.int, #any_int num_groups_z: c.int)  ---
+    // record dispatch-indirect command
+    dispatch_indirect :: proc(cb: Cmdbuf, buf: sg.Buffer, #any_int offset: c.int)  ---
     // query command buffer resource state (valid, failed, invalid)
     query_cmdbuf_state :: proc(cb: Cmdbuf) -> Resource_State ---
     // query current command buffer properties

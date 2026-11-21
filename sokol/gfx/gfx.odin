@@ -230,7 +230,7 @@ package sokol_gfx
         to provide a base-vertex and/or base-instance which allows to render
         from different sections of a vertex buffer without rebinding the
         vertex buffer with a different offset. Note that `sg_draw_ex()`
-        only has limited portability on OpenGL, check the sg_limits struct
+        only has limited portability on OpenGL, check the sg_features struct
         members .draw_base_vertex and .draw_base_instance for runtime support,
         those are generally true on non-GL-backends, and on GL the feature
         flags are set according to the GL version:
@@ -240,12 +240,21 @@ package sokol_gfx
             - on GLES3.x, base_vertex is only supported since GLES3.2
               (e.g. not supported on WebGL2)
 
-    --- ...or kick of a dispatch call to invoke a compute shader workload:
+    --- ...or kick off a dispatch call to invoke a compute shader workload:
 
             sg_dispatch(int num_groups_x, int num_groups_y, int num_groups_z)
 
         The dispatch args define the number of 'compute workgroups' processed
         by the currently applied compute shader.
+
+    --- on backends with compute support, indirect-draw or -dispatch is
+        supported via
+
+            sg_draw_indirect(sg_buffer buf, int offset)
+            sg_dispatch_indirect(sg_buffer buf, int offset)
+
+        For details on indirect-draw/dispatch see the doc section
+        'ON INDIRECT DRAW AND DISPATCH'.
 
     --- finish the current pass with:
 
@@ -1750,7 +1759,9 @@ package sokol_gfx
           read from storage buffers, while compute- and fragment-shaders can both
           read and write storage buffers)
         - create one or more storage buffers via sg_make_buffer() with the
-          `.usage.storage_buffer = true`
+          `.usage.storage_buffer = true`, and matching storage buffer views
+          via `sg_make_view()` (a storage buffer view can define an offset
+          into a storage buffer)
         - when creating a shader via sg_make_shader(), populate the sg_shader_desc
           struct with binding info (when using sokol-shdc, this step will be taken care
           of automatically)
@@ -1760,9 +1771,8 @@ package sokol_gfx
               bindings are required for vertex-shaders, and in fragment- and compute-
               shaders the readonly flag is used to control hazard tracking in some
               3D backends)
-
         - when calling sg_apply_bindings(), apply the matching bind slots with the previously
-          created storage buffers
+          created storage buffer views
         - ...and that's it.
 
     For more details, see the following backend-agnostic sokol samples:
@@ -1857,7 +1867,7 @@ package sokol_gfx
     restrictions apply:
 
     A storage buffer that's written to in a fragment shader cannot be used
-    in another role in the same render pass, e.g. as vertex- or index-buffer,
+    in another role in the same render pass, e.g. as vertex-, index- or indirect-buffer,
     or bound as a readonly storage buffer. This means that writing to a storage
     buffer in one draw call, and then reading the results back in another draw
     call must happen in separate render passes (in compute passes this restriction
@@ -1949,6 +1959,127 @@ package sokol_gfx
 
         - C code: https://github.com/floooh/sokol-samples/blob/master/sapp/imageblur-sapp.c
         - shader: https://github.com/floooh/sokol-samples/blob/master/sapp/imageblur-sapp.glsl
+
+
+    ON INDIRECT DRAW AND DISPATCH
+    =============================
+    On backends with compute support, indirect draw and dispatch allows a GPU
+    buffer to provide the arguments for a single draw- or dispatch-call.
+
+    Usually a compute shader writes the draw/dispatch args. This lets the GPU
+    decide how much work to do without a round trip to the CPU. For instance,
+    a compute shader can cull objects and write the number of visible objects
+    into the instance count of a draw call.
+
+    First, create a buffer with `usage.indirect_buffer`. If a compute shader
+    writes the arguments, also set `usage.storage_buffer`. The size of the
+    buffer must be a multiple of 4 and large enough for all argument sets.
+
+    Sokol-gfx provides 'reference structs' for the different argument sets:
+
+        - sg_draw_indirect_args: for non-indexed draws
+        - sg_draw_indirect_indexed_args: for indexed draws
+        - sg_dispatch_indirect_args: for compute dispatches
+
+    For instance to create an indirect buffer which will be populated
+    by a compute shader and which holds a single argument set for
+    an indexed draw-call:
+
+        sg_buffer buf = sg_make_buffer(&(sg_buffer_desc){
+            .usage = {
+                .indirect_buffer = true,
+                .storage_buffer = true,
+            },
+            .size = sizeof(sg_draw_indirect_indexed_args),
+        });
+
+    In the shader, declare a matching struct, e.g. for the
+    `sg_draw_indirect_indexed_args` used above:
+
+        struct draw_args {
+            uint num_elements;
+            uint num_instances;
+            uint base_element;
+            int base_vertex;
+            uint base_instance;
+        };
+        layout(binding=0) buffer cs_args { draw_args args[]; };
+
+    After populating the draw args in a compute pass, call sg_draw_indirect()
+    in a render pass instead of sg_draw():
+
+        sg_begin_pass(...);
+        sg_apply_pipeline(pip);
+        sg_apply_bindings(...);
+        sg_apply_uniforms(...);
+        sg_draw_indirect(buf, offset);
+        sg_end_pass();
+
+    NOTE: the pipeline object's `sg_pipeline_desc.index_type` decides
+    whether indexed- or non-indexed draw argument layout is expected.
+
+    ...or to issue a dispatch, call sg_dispatch_indirect():
+
+        sg_begin_pass(&(sg_pass){ .compute = true });
+        sg_apply_pipeline(pip);
+        sg_apply_bindings(...);
+        sg_dispatch_indirect(buf, offset);
+        sg_end_pass();
+
+    The offset is a byte offset into the indirect-buffer to the start of the
+    draw- or dispatch-arguments and must be a multiple of 4.
+
+    One sg_draw_indirect() or sg_dispatch_indirect() call reads exactly one
+    set of arguments (i.e. sokol-gfx does not support 'multi-draw-indirect').
+
+    Zero counts in the argument sets are allowed and will cause the GPU
+    to skip the draw- or dispatch-call.
+
+    The following restrictions are checked by the validation layer:
+
+        - sg_draw_indirect() can only be called in a render pass,
+          and sg_dispatch_indirect() only in a compute pass
+        - the buffer must have `.usage.indirect_buffer`
+        - writing an indirect buffer via a fragment shader cannot
+          happen in the same render pass the same indirect buffer is
+          used in a sg_draw_indirect() call
+        - in a compute pass, an indirect buffer cannot be used in
+          an sg_dispatch_indirect() call while it is also bound as
+          a read/write storage buffer (a read-only storage buffer binding
+          is fine)
+        - a write-transient indirect buffer must have been populated
+          in the same frame and before it is used in an sg_draw_indirect()
+          or sg_dispatch_indirect() call
+
+    The following draw/dispatch-arguments restrictions can *NOT* be
+    checked by the sokol-gfx validation layer and may result in
+    undefined GPU behaviour:
+
+        - the index and vertex ranges must be inside the bound
+          vertex- and index-buffers
+        - the dispatch workgroup counts must be less than 65536
+
+    Portability caveats:
+
+        - a base_instance value other than 0 needs
+          `sg_features.draw_indirect_base_instance`. This is always false
+          on GLES3, false on GL < 4.3, optional on WebGPU and Vulkan and
+          always true on D3D11 and Metal.
+        - an indexed sg_draw_indirect() with sg_bindings.index_buffer_offset != 0
+          needs `sg_features.draw_indirect_index_buffer_offset`. This is
+          always false on GL/GLES and true on all other backends. As a
+          workaround, use the base_element indirect draw arg to select
+          the start index.
+        - in shader code, the instance-id (e.g. gl_InstanceIndex) differs
+          between backends on whether base_instance is included or not:
+          on Metal, WebGPU and Vulkan the base_instance is included,
+          on GL and D3D11 the shader instance-id is always zero-based
+
+    For an example, see the draw-indirect-sapp sample:
+
+        - C code: https://github.com/floooh/sokol-samples/blob/master/sapp/draw-indirect-sapp.c
+        - shader: https://github.com/floooh/sokol-samples/blob/master/sapp/draw-indirect-sapp.glsl
+
 
     TRACE HOOKS:
     ============
@@ -2485,7 +2616,9 @@ foreign sokol_gfx_clib {
     apply_uniforms :: proc(#any_int ub_slot: c.int, #by_ptr data: Range)  ---
     draw :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int)  ---
     draw_ex :: proc(#any_int base_element: c.int, #any_int num_elements: c.int, #any_int num_instances: c.int, #any_int base_vertex: c.int, #any_int base_instance: c.int)  ---
+    draw_indirect :: proc(buf: Buffer, #any_int offset: c.int)  ---
     dispatch :: proc(#any_int num_groups_x: c.int, #any_int num_groups_y: c.int, #any_int num_groups_z: c.int)  ---
+    dispatch_indirect :: proc(buf: Buffer, #any_int offset: c.int)  ---
     end_pass :: proc()  ---
     commit :: proc()  ---
     // resource update functions (wip new resource update api)
@@ -2896,6 +3029,8 @@ Features :: struct {
     separate_buffer_types : bool,
     draw_base_vertex : bool,
     draw_base_instance : bool,
+    draw_indirect_base_instance : bool,
+    draw_indirect_index_buffer_offset : bool,
     dual_source_blending : bool,
     vertexformat_int10_n2 : bool,
     copy_buffer_to_image_relaxed_buffer_type : bool,
@@ -3821,6 +3956,13 @@ Bindings :: struct {
     .storage_buffer (default: false)
         the buffer will be bound as storage buffer via storage-buffer-view
         in sg_bindings.views[]
+    .indirect_buffer (default: false)
+        the buffer will be used to provide indirect draw- or dispatch-
+        parameters in sg_draw_indirect() or sg_dispatch_indirect().
+        Requires sg_features.compute, and the buffer size must be
+        a multiple of 4. Combine with .storage_buffer to write the arguments
+        in a compute shader. Cannot be combined with .staging_buffer or
+        .staging_index_buffer.
     .staging_buffer (default: false)
         the buffer cannot be bound as rendering or compute resource and
         can only be used as copy source, used together with .write_transient
@@ -3852,6 +3994,7 @@ Buffer_Usage :: struct {
     vertex_buffer : bool,
     index_buffer : bool,
     storage_buffer : bool,
+    indirect_buffer : bool,
     staging_buffer : bool,
     staging_index_buffer : bool,
     write_unsealed : bool,
@@ -4976,6 +5119,59 @@ View_Desc :: struct {
 }
 
 /*
+    sg_draw_indirect_args
+    sg_draw_indirect_indexed_args
+    sg_dispatch_indirect_args
+
+    These are reference structs which define the layout of
+    indirect draw and dispatch arguments in indirect buffers. The
+    struct members have the same meaning as the same-named arguments
+    of sg_draw_ex() and sg_dispatch():
+
+    sg_draw_indirect_args: for non-indexed draws (16 bytes)
+        .num_elements:  number of vertices
+        .num_instances: number of instances
+        .base_element:  first vertex
+        .base_instance: first instance
+
+    sg_draw_indirect_indexed_args: for indexed draws (20 bytes)
+        .num_elements:  number of indices
+        .num_instances: number of instances
+        .base_element:  first index in the index buffer
+        .base_vertex:   signed value added to each index
+        .base_instance: first instance
+
+    sg_dispatch_indirect_args: for dispatches (12 bytes)
+        .num_groups_x/y/z: number of workgroups
+
+    The pipeline's index type selects the indexed or non-indexed
+    draw layout.
+
+    For details and caveats of indirect draw and dispatch
+    see the documentation section `ON INDIRECT DRAW AND DISPATCH`!
+*/
+Draw_Indirect_Args :: struct {
+    num_elements : u32,
+    num_instances : u32,
+    base_element : u32,
+    base_instance : u32,
+}
+
+Draw_Indirect_Indexed_Args :: struct {
+    num_elements : u32,
+    num_instances : u32,
+    base_element : u32,
+    base_vertex : i32,
+    base_instance : u32,
+}
+
+Dispatch_Indirect_Args :: struct {
+    num_groups_x : u32,
+    num_groups_y : u32,
+    num_groups_z : u32,
+}
+
+/*
     sg_buffer_info
     sg_image_info
     sg_sampler_info
@@ -5093,6 +5289,13 @@ Frame_Stats_D3d11_Draw :: struct {
     num_draw_indexed : u32,
     num_draw_instanced : u32,
     num_draw : u32,
+    num_draw_indexed_instanced_indirect : u32,
+    num_draw_instanced_indirect : u32,
+}
+
+Frame_Stats_D3d11_Dispatch :: struct {
+    num_dispatch : u32,
+    num_dispatch_indirect : u32,
 }
 
 Frame_Stats_D3d11 :: struct {
@@ -5100,6 +5303,7 @@ Frame_Stats_D3d11 :: struct {
     pipeline : Frame_Stats_D3d11_Pipeline,
     bindings : Frame_Stats_D3d11_Bindings,
     draw : Frame_Stats_D3d11_Draw,
+    dispatch : Frame_Stats_D3d11_Dispatch,
     num_update_subresource : u32,
     num_copy_subresource_region : u32,
     num_map : u32,
@@ -5234,7 +5438,9 @@ Frame_Stats :: struct {
     num_apply_uniforms : u32,
     num_draw : u32,
     num_draw_ex : u32,
+    num_draw_indirect : u32,
     num_dispatch : u32,
+    num_dispatch_indirect : u32,
     num_write_buffer_transient : u32,
     num_write_image_transient : u32,
     num_write_buffer_unsealed : u32,
@@ -5452,6 +5658,8 @@ Log_Item :: enum i32 {
     COPY_IMAGE_TO_IMAGE_DST_ALIVE,
     COPY_IMAGE_TO_IMAGE_SRC_VALID,
     COPY_IMAGE_TO_IMAGE_DST_VALID,
+    DRAW_INDIRECT_BUFFER_ALIVE,
+    DISPATCH_INDIRECT_BUFFER_ALIVE,
     SHADERDESC_TOO_MANY_VERTEXSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_FRAGMENTSTAGE_TEXTURES,
     SHADERDESC_TOO_MANY_COMPUTESTAGE_TEXTURES,
@@ -5469,6 +5677,7 @@ Log_Item :: enum i32 {
     VALIDATE_BUFFERDESC_STAGING_VS_VERTEXBUFFER,
     VALIDATE_BUFFERDESC_STAGING_VS_INDEXBUFFER,
     VALIDATE_BUFFERDESC_STAGING_VS_STORAGEBUFFER,
+    VALIDATE_BUFFERDESC_STAGING_VS_INDIRECTBUFFER,
     VALIDATE_BUFFERDESC_STAGING_VS_INJECTED,
     VALIDATE_BUFFERDESC_STAGING_VS_COPYDST,
     VALIDATE_BUFFERDESC_STAGING_VS_INITIALDATA,
@@ -5485,6 +5694,8 @@ Log_Item :: enum i32 {
     VALIDATE_BUFFERDESC_EXPECT_DATA,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SUPPORTED,
     VALIDATE_BUFFERDESC_STORAGEBUFFER_SIZE_MULTIPLE_4,
+    VALIDATE_BUFFERDESC_INDIRECTBUFFER_SUPPORTED,
+    VALIDATE_BUFFERDESC_INDIRECTBUFFER_SIZE_MULTIPLE_4,
     VALIDATE_IMAGEDESC_DATA_SIZE,
     VALIDATE_IMAGEDESC_CANARY,
     VALIDATE_IMAGEDESC_ANY_ATTACHMENT_VS_COPYDST,
@@ -5785,16 +5996,37 @@ Log_Item :: enum i32 {
     VALIDATE_DRAW_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
     VALIDATE_DRAW_WRITE_BUFFER_TRANSIENT_MISSING,
     VALIDATE_DRAW_WRITE_IMAGE_TRANSIENT_MISSING,
+    VALIDATE_DRAW_INDIRECT_RENDERPASS_EXPECTED,
+    VALIDATE_DRAW_INDIRECT_BUFFER_USAGE,
+    VALIDATE_DRAW_INDIRECT_OFFSET_RANGE,
+    VALIDATE_DRAW_INDIRECT_OFFSET_MULTIPLE_4,
+    VALIDATE_DRAW_INDIRECT_INDEX_BUFFER_OFFSET,
+    VALIDATE_DRAW_INDIRECT_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
+    VALIDATE_DRAW_INDIRECT_WRITE_BUFFER_TRANSIENT_MISSING,
+    VALIDATE_DRAW_INDIRECT_WRITE_IMAGE_TRANSIENT_MISSING,
+    VALIDATE_DRAW_INDIRECT_BUFFER_WRITE_BUFFER_TRANSIENT_MISSING,
+    VALIDATE_DRAW_INDIRECT_BUFFER_VS_SBVIEW_READWRITE,
     VALIDATE_DISPATCH_COMPUTEPASS_EXPECTED,
     VALIDATE_DISPATCH_NUMGROUPSX,
     VALIDATE_DISPATCH_NUMGROUPSY,
     VALIDATE_DISPATCH_NUMGROUPSZ,
+    VALIDATE_DISPATCH_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
     VALIDATE_DISPATCH_WRITE_BUFFER_TRANSIENT_MISSING,
     VALIDATE_DISPATCH_WRITE_IMAGE_TRANSIENT_MISSING,
+    VALIDATE_DISPATCH_INDIRECT_COMPUTEPASS_EXPECTED,
+    VALIDATE_DISPATCH_INDIRECT_BUFFER_USAGE,
+    VALIDATE_DISPATCH_INDIRECT_OFFSET_RANGE,
+    VALIDATE_DISPATCH_INDIRECT_OFFSET_MULTIPLE_4,
+    VALIDATE_DISPATCH_INDIRECT_REQUIRED_BINDINGS_OR_UNIFORMS_MISSING,
+    VALIDATE_DISPATCH_INDIRECT_WRITE_BUFFER_TRANSIENT_MISSING,
+    VALIDATE_DISPATCH_INDIRECT_WRITE_IMAGE_TRANSIENT_MISSING,
+    VALIDATE_DISPATCH_INDIRECT_BUFFER_WRITE_BUFFER_TRANSIENT_MISSING,
+    VALIDATE_DISPATCH_INDIRECT_BUFFER_VS_SBVIEW_READWRITE,
     VALIDATE_WRITEBUFFERUNSEALED_USAGE,
     VALIDATE_WRITEBUFFERTRANSIENT_USAGE,
     VALIDATE_WRITEBUFFERTRANSIENT_WRITE_BEFORE_BIND,
     VALIDATE_WRITEBUFFERTRANSIENT_WRITE_BEFORE_COPY,
+    VALIDATE_WRITEBUFFERTRANSIENT_WRITE_BEFORE_INDIRECT,
     VALIDATE_WRITEBUFFERTRANSIENT_DST_OFFSET_ALIGNMENT,
     VALIDATE_WRITEBUFFER_SRC_DATA_POINTER,
     VALIDATE_WRITEBUFFER_SRC_DATA_SIZE,
